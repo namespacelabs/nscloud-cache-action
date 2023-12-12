@@ -116,23 +116,15 @@ async function resolveCacheMode(cacheMode: string): Promise<Path[]> {
       const paths: Path[] = [{ path: pnpmCache }];
 
       const json = await getExecStdout(`pnpm m ls --depth -1 --json`);
-      console.log(json);
-
       const jsonMultiParse = require("json-multi-parse");
-
       const parsed = jsonMultiParse(json);
-      console.log(parsed);
 
-      const mapped = await getExecStdout(`jq 'map(.path)'`, json);
-      console.log(mapped);
-
-      const pnpmModules = await getExecStdout(
-        `pnpm m ls --depth -1 --json | jq 'map(.path)' | jq -r '.[]'`
-      );
-      console.log(pnpmModules);
-
-      for (const mod of pnpmModules.split("\n")) {
-        paths.push({ path: mod + "/node_modules", wipe: true });
+      for (const list of parsed) {
+        for (const entry of list) {
+          if (entry.path) {
+            paths.push({ path: entry.path + "/node_modules", wipe: true });
+          }
+        }
       }
 
       return paths;
