@@ -117,6 +117,10 @@ async function resolveCacheMode(cacheMode: string): Promise<Path[]> {
 
       const json = await getExecStdout(`pnpm m ls --depth -1 --json`);
       console.log(json);
+      const parsed = JSON.parse(json);
+
+      console.log(parsed);
+
       const mapped = await getExecStdout(
         `pnpm m ls --depth -1 --json | jq 'map(.path)'`
       );
