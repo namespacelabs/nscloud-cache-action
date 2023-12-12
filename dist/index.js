@@ -27115,7 +27115,7 @@ async function resolveCacheMode(cacheMode) {
 }
 async function getExecStdout(cmd, input) {
     const { stdout } = await exec.getExecOutput(cmd, [], {
-        input: Buffer.from(input, "utf8"),
+        input: input ? Buffer.from(input, "utf8") : undefined,
         //  silent: true,
     });
     return stdout.trim();
