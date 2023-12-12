@@ -118,6 +118,11 @@ async function resolveCacheMode(cacheMode: string): Promise<Path[]> {
       const json = await getExecStdout(`pnpm m ls --depth -1 --json`);
       console.log(json);
 
+      const jsonMultiParse = require("json-multi-parse");
+
+      const parsed = jsonMultiParse(json);
+      console.log(parsed);
+
       const mapped = await getExecStdout(`jq 'map(.path)'`, json);
       console.log(mapped);
 
