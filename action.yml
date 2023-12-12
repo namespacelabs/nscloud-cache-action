@@ -4,13 +4,16 @@ author: "Namespace Labs"
 inputs:
   path:
     description: "A list of files, directories, and wildcard patterns to cache and restore"
-    required: true
+    required: false
   # key:
   #   description: "An explicit key for restoring and saving the cache"
   #   required: false
   fail-on-cache-miss:
     description: "Fail the workflow if cache entry is not found"
     default: "false"
+    required: false
+  cache:
+    description: "A list of native cache modes. Supported options are 'go,yarn'"
     required: false
 outputs:
   cache-hit:
