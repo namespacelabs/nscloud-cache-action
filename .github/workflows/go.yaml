@@ -31,4 +31,4 @@ jobs:
           cache: go
       - name: Run a Go build
         run: |
-          go build namespacelabs.dev/foundation/cmd/ns@latest
+          go install namespacelabs.dev/foundation/cmd/ns@latest
