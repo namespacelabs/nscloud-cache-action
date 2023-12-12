@@ -27098,7 +27098,11 @@ async function resolveCacheMode(cacheMode) {
             return paths;
         case "rust":
             // Do not cache the whole ~/.cargo dir as it contains ~/.cargo/bin, where the cargo binary lives
-            return [{ path: "~/.cargo/registry" }, { path: "~/.cargo/git" }, { path: "./target" }];
+            return [
+                { path: "~/.cargo/registry" },
+                { path: "~/.cargo/git" },
+                { path: "./target" },
+            ];
         default:
             core.warning(`Unknown cache option: ${cacheMode}.`);
             return [];
@@ -27106,7 +27110,7 @@ async function resolveCacheMode(cacheMode) {
 }
 async function getExecStdout(cmd) {
     const { stdout } = await exec.getExecOutput(cmd, [], {
-        silent: true,
+    //  silent: true,
     });
     return stdout.trim();
 }
