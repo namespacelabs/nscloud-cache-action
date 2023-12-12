@@ -25,6 +25,13 @@ jobs:
       - uses: pnpm/action-setup@v2
         with:
           version: 8.x.x
+
+      - name: debug loc
+        run: |
+          pwd
+          ls
+          ls ./cache-action
+
       - name: Setup PNPM cache
         uses: ./cache-action
         with:
