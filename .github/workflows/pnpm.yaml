@@ -32,9 +32,9 @@ jobs:
           cache: pnpm
       - run: pnpm install --frozen-lockfile
 
-      - name: Breakpoint
-        if: always()
-        uses: namespacelabs/breakpoint-action@v0
-        with:
-          duration: 15m
-          authorized-users: edganiukov,hugosantos,n-g,htr,nichtverstehen,gmichelo
+      # - name: Breakpoint
+      #   if: always()
+      #   uses: namespacelabs/breakpoint-action@v0
+      #   with:
+      #     duration: 15m
+      #     authorized-users: edganiukov,hugosantos,n-g,htr,nichtverstehen,gmichelo
