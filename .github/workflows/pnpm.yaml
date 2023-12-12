@@ -1,0 +1,29 @@
+name: Test PNPM caching
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - "*"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  yarn:
+    runs-on:
+      - namespace-profile-e2e-small
+    steps:
+      - uses: actions/checkout@v3
+      - name: Setup PNPM cache
+        uses: ./ # Uses an action in the root directory
+        with:
+          cache: pnpm
+      - uses: actions/checkout@v3
+        with:
+          repository: PostHog/posthog
+          path: demo
+      - run: pnpm install --frozen-lockfile
+        working-directory: ./demo
