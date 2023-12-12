@@ -17,16 +17,16 @@ jobs:
       - namespace-profile-e2e-small
     steps:
       - uses: actions/checkout@v3
+        with:
+          path: cache-action
+      - uses: actions/checkout@v3
+        with:
+          repository: PostHog/posthog
       - uses: pnpm/action-setup@v2
         with:
           version: 8.x.x
       - name: Setup PNPM cache
-        uses: ./ # Uses an action in the root directory
+        uses: ./cache-action
         with:
           cache: pnpm
-      - uses: actions/checkout@v3
-        with:
-          repository: PostHog/posthog
-          path: demo
       - run: pnpm install --frozen-lockfile
-        working-directory: ./demo
