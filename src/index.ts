@@ -107,5 +107,5 @@ async function getExecStdout(cmd: string): Promise<string> {
     silent: true,
   });
 
-  return stdout;
+  return stdout.trim();
 }

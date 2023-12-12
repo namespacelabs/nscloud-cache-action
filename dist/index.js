@@ -27090,7 +27090,7 @@ async function getExecStdout(cmd) {
     const { stdout } = await exec.getExecOutput(cmd, [], {
         silent: true,
     });
-    return stdout;
+    return stdout.trim();
 }
 
 })();
