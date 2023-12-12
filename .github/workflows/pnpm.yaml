@@ -26,14 +26,15 @@ jobs:
         with:
           version: 8.x.x
 
-      - name: debug loc
-        run: |
-          pwd
-          ls
-          ls ./cache-action
-
       - name: Setup PNPM cache
         uses: ./cache-action
         with:
           cache: pnpm
       - run: pnpm install --frozen-lockfile
+
+      - name: Breakpoint
+        if: always()
+        uses: namespacelabs/breakpoint-action@v0
+        with:
+          duration: 15m
+          authorized-users: edganiukov,hugosantos,n-g,htr,nichtverstehen,gmichelo
