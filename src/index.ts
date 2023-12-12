@@ -147,9 +147,8 @@ async function resolveCacheMode(cacheMode: string): Promise<Path[]> {
   }
 }
 
-async function getExecStdout(cmd: string, input?: string): Promise<string> {
+async function getExecStdout(cmd: string): Promise<string> {
   const { stdout } = await exec.getExecOutput(cmd, [], {
-    input: input ? Buffer.from(input, "utf8") : undefined,
     //  silent: true,
   });
 
