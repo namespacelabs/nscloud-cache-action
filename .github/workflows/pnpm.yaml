@@ -18,10 +18,10 @@ jobs:
     steps:
       - uses: actions/checkout@v3
         with:
-          path: cache-action
+          repository: PostHog/posthog
       - uses: actions/checkout@v3
         with:
-          repository: PostHog/posthog
+          path: cache-action
       - uses: pnpm/action-setup@v2
         with:
           version: 8.x.x
