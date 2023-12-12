@@ -117,11 +117,13 @@ async function resolveCacheMode(cacheMode: string): Promise<Path[]> {
 
       const json = await getExecStdout(`pnpm m ls --depth -1 --json`);
       console.log(json);
-      const mapped = await `pnpm m ls --depth -1 --json \\| jq 'map(.path)'`;
+      const mapped = await getExecStdout(
+        `pnpm m ls --depth -1 --json | jq 'map(.path)'`
+      );
       console.log(mapped);
 
       const pnpmModules = await getExecStdout(
-        `pnpm m ls --depth -1 --json \\| jq 'map(.path)' \\| jq -r '.[]'`
+        `pnpm m ls --depth -1 --json | jq 'map(.path)' | jq -r '.[]'`
       );
       console.log(pnpmModules);
 
@@ -145,8 +147,9 @@ async function resolveCacheMode(cacheMode: string): Promise<Path[]> {
   }
 }
 
-async function getExecStdout(cmd: string): Promise<string> {
+async function getExecStdout(cmd: string, input?: string): Promise<string> {
   const { stdout } = await exec.getExecOutput(cmd, [], {
+    input: Buffer.from(input, "utf8"),
     //  silent: true,
   });
 
