@@ -17,6 +17,7 @@ jobs:
       - namespace-profile-e2e-small
     steps:
       - uses: actions/checkout@v3
+      - uses: pnpm/action-setup@v2
       - name: Setup PNPM cache
         uses: ./ # Uses an action in the root directory
         with:
