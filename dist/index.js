@@ -27247,10 +27247,9 @@ async function resolveCacheMode(cacheMode) {
             return [];
     }
 }
-async function getExecStdout(cmd, input) {
+async function getExecStdout(cmd) {
     const { stdout } = await exec.getExecOutput(cmd, [], {
-        input: input ? Buffer.from(input, "utf8") : undefined,
-        //  silent: true,
+        silent: true,
     });
     return stdout.trim();
 }
