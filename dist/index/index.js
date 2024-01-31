@@ -27314,6 +27314,8 @@ async function resolveCacheMode(cacheMode) {
                 { mountTarget: "~/.gradle/caches", framework: cacheMode },
                 { mountTarget: "~/.gradle/wrapper", framework: cacheMode },
             ];
+        case "maven":
+            return [{ mountTarget: "~/.m2/repository", framework: cacheMode }];
         default:
             core.warning(`Unknown cache option: ${cacheMode}.`);
             return [];
