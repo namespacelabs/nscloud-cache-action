@@ -177,6 +177,9 @@ async function resolveCacheMode(cacheMode: string): Promise<utils.CachePath[]> {
         { mountTarget: "~/.gradle/wrapper", framework: cacheMode },
       ];
 
+    case "maven":
+      return [{ mountTarget: "~/.m2/repository", framework: cacheMode }];
+
     default:
       core.warning(`Unknown cache option: ${cacheMode}.`);
       return [];

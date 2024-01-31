@@ -1,0 +1,44 @@
+name: Test Maven caching
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - "*"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  maven:
+    runs-on:
+      - namespace-profile-e2e-small
+    steps:
+      - uses: actions/checkout@v3
+      - name: Set up JDK 11
+        uses: actions/setup-java@v3
+        with:
+          java-version: "11"
+          distribution: "temurin"
+
+      - name: Setup Maven cache
+        uses: ./ # Uses an action in the root directory
+        with:
+          cache: maven
+
+      - uses: actions/checkout@v3
+        with:
+          repository: namespace-integration-demos/selenium-cache
+          path: demo
+
+      - uses: browser-actions/setup-chrome@latest
+      - run: chrome --version
+
+      - name: Build with Maven
+        run: mvn -B clean test
+        working-directory: ./demo
+
+      - name: Print cache metadata file
+        run: cat /cache/namespace/metadata.json
