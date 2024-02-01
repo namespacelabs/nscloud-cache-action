@@ -13,9 +13,6 @@ permissions:
 
 jobs:
   permissions:
-    strategy:
-      matrix:
-        go-version: [1.21.x]
     runs-on:
       - namespace-profile-niklas-testing
     steps:
