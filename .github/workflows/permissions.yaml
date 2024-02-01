@@ -21,19 +21,16 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v3
-      - name: Read .tool-versions
-        uses: marocchino/tool-versions-action@608d0ecb8f01e467223f0a854ead7d3fc784b540
-        id: versions
 
       - name: Install pnpm
         uses: pnpm/action-setup@v2
         with:
-          version: ${{ steps.versions.outputs.pnpm }}
+          version: 6.x.x
 
       - name: Install Node.js
         uses: actions/setup-node@v3
         with:
-          node-version: ${{ steps.versions.outputs.nodejs }}
+          node-version: 12.x
 
       - name: Install Doppler CLI
         uses: dopplerhq/cli-action@v2
