@@ -1,0 +1,57 @@
+name: Test Permissions
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - "*"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  permissions:
+    strategy:
+      matrix:
+        go-version: [1.21.x]
+    runs-on:
+      - namespace-profile-niklas-testing
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+      - name: Read .tool-versions
+        uses: marocchino/tool-versions-action@608d0ecb8f01e467223f0a854ead7d3fc784b540
+        id: versions
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: ${{ steps.versions.outputs.pnpm }}
+
+      - name: Install Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: ${{ steps.versions.outputs.nodejs }}
+
+      - name: Install Doppler CLI
+        uses: dopplerhq/cli-action@v2
+
+      - id: pnpm-store-path
+        name: Get pnpm store directory
+        shell: bash
+        run: echo "store-path=$(pnpm store path | tr -d '\n')" >> $GITHUB_OUTPUT
+  
+      - name: Setup npmrc to receive auth tokens
+        shell: bash
+        run: cp .npmrc .npmrc.bak && echo '//convoy.sheetjs.com/:_authToken=${SHEETJS_REGISTRY_AUTH_TOKEN}' >> ./.npmrc
+  
+      - name: Setup Namespace pnpm cache
+        uses: ./ # Uses an action in the root directory
+        with:
+          path: |
+            ${{ steps.pnpm-store-path.outputs.store-path }}
+            ./**/node_modules
+    
+  
