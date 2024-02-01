@@ -14,7 +14,7 @@ permissions:
 jobs:
   python:
     runs-on:
-      - namespace-profile-e2e-small
+      - namespace-profile-niklas-testing
     steps:
       - uses: actions/checkout@v3
       - name: Setup Python Pip cache
