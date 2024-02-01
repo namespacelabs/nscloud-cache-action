@@ -40,10 +40,6 @@ jobs:
         shell: bash
         run: echo "store-path=$(pnpm store path | tr -d '\n')" >> $GITHUB_OUTPUT
   
-      - name: Setup npmrc to receive auth tokens
-        shell: bash
-        run: cp .npmrc .npmrc.bak && echo '//convoy.sheetjs.com/:_authToken=${SHEETJS_REGISTRY_AUTH_TOKEN}' >> ./.npmrc
-  
       - name: Setup Namespace pnpm cache
         uses: ./ # Uses an action in the root directory
         with:
