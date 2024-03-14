@@ -22,8 +22,8 @@ jobs:
       - uses: actions/checkout@v4
 
       - run: |
-          mkdir -p /cache/.ns
-          echo "foo" > /cache/.ns/cache-metadata.json
+          sudo mkdir -p /cache/.ns
+          sudo echo "foo" > /cache/.ns/cache-metadata.json
 
       # Should not fail despite cache-metadata being invalid.
       - name: Set up NPM cache
@@ -42,8 +42,8 @@ jobs:
       - uses: actions/checkout@v4
 
       - run: |
-          mkdir -p /cache/.ns
-          echo "{}" > /cache/.ns/cache-metadata.json
+          sudo mkdir -p /cache/.ns
+          sudo echo "{}" > /cache/.ns/cache-metadata.json
           sudo chown -R root /cache/.ns
 
       # Should not fail despite cache-metadata being owned by root.
