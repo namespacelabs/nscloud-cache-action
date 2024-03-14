@@ -76,9 +76,7 @@ export interface CacheMount {
   mountTarget: string[];
 }
 
-export async function ensureCacheMetadata(
-  cachePath: string
-): Promise<CacheMetadata> {
+export function ensureCacheMetadata(cachePath: string): CacheMetadata {
   const namespaceFolderPath = path.join(cachePath, privateNamespaceDir);
   fs.mkdirSync(namespaceFolderPath, { recursive: true });
 
@@ -92,14 +90,11 @@ export async function ensureCacheMetadata(
   return metadata;
 }
 
-export async function writeCacheMetadata(
-  cachePath: string,
-  metadata: CacheMetadata
-) {
+export function writeCacheMetadata(cachePath: string, metadata: CacheMetadata) {
   const namespaceFolderPath = path.join(cachePath, privateNamespaceDir);
   fs.mkdirSync(namespaceFolderPath, { recursive: true });
 
   const metadataFilePath = path.join(namespaceFolderPath, metadataFileName);
   const rawData = JSON.stringify(metadata);
-  fs.writeFileSync(metadataFilePath, rawData);
+  fs.writeFileSync(metadataFilePath, rawData, { mode: 666 });
 }

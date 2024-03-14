@@ -1,0 +1,56 @@
+name: Test metadata access
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - "*"
+  schedule:
+    - cron: "55 */6 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  invalid-metadata:
+    runs-on:
+      - namespace-profile-default
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - run: |
+          mkdir -p /cache/.ns
+          echo "foo" > /cache/.ns/cache-metadata.json
+
+      # Should not fail despite cache-metadata being invalid.
+      - name: Set up NPM cache
+        uses: ./ # Uses an action in the root directory
+        with:
+          path: .npm
+
+      - name: Print cache metadata file
+        run: cat /cache/.ns/cache-metadata.json
+
+  owned-by-root:
+    runs-on:
+      - namespace-profile-default
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - run: |
+          mkdir -p /cache/.ns
+          echo "{}" > /cache/.ns/cache-metadata.json
+          sudo chown -R root /cache/.ns
+
+      # Should not fail despite cache-metadata being owned by root.
+      - name: Set up NPM cache
+        uses: ./ # Uses an action in the root directory
+        with:
+          path: .npm
+
+      - name: Print cache metadata file
+        run: cat /cache/.ns/cache-metadata.json

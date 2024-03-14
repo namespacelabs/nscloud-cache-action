@@ -42,7 +42,7 @@ async function main() {
 
   try {
     // Write/update cache volume metadata file
-    const metadata = await utils.ensureCacheMetadata(localCachePath);
+    const metadata = utils.ensureCacheMetadata(localCachePath);
     metadata.updatedAt = new Date().toISOString();
     metadata.version = 1;
     if (!metadata.userRequest) {
