@@ -23,13 +23,16 @@ jobs:
 
       - run: |
           sudo mkdir -p /cache/.ns
-          echo "foo" | sudo tee /cache/.ns/cache-metadata.json
+          sudo chown -R runner /cache
+          echo "foo" > /cache/.ns/cache-metadata.json
 
       # Should not fail despite cache-metadata being invalid.
       - name: Set up NPM cache
         uses: ./ # Uses an action in the root directory
         with:
           path: .npm
+        env:
+          NSC_CACHE_PATH: /cache
 
       - name: Print cache metadata file
         run: cat /cache/.ns/cache-metadata.json
@@ -43,7 +46,9 @@ jobs:
 
       - run: |
           sudo mkdir -p /cache/.ns
-          echo "{}" | sudo tee /cache/.ns/cache-metadata.json
+          sudo chown -R runner /cache
+          echo "{}" > /cache/.ns/cache-metadata.json
+
           sudo chown -R root /cache/.ns
 
       # Should not fail despite cache-metadata being owned by root.
@@ -51,6 +56,8 @@ jobs:
         uses: ./ # Uses an action in the root directory
         with:
           path: .npm
+        env:
+          NSC_CACHE_PATH: /cache
 
       - name: Print cache metadata file
         run: cat /cache/.ns/cache-metadata.json
