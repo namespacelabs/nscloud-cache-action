@@ -23,7 +23,7 @@ jobs:
 
       - run: |
           sudo mkdir -p /cache/.ns
-          sudo echo "foo" > /cache/.ns/cache-metadata.json
+          echo "foo" | sudo tee /cache/.ns/cache-metadata.json
 
       # Should not fail despite cache-metadata being invalid.
       - name: Set up NPM cache
@@ -43,7 +43,7 @@ jobs:
 
       - run: |
           sudo mkdir -p /cache/.ns
-          sudo echo "{}" > /cache/.ns/cache-metadata.json
+          echo "{}" | sudo tee /cache/.ns/cache-metadata.json
           sudo chown -R root /cache/.ns
 
       # Should not fail despite cache-metadata being owned by root.
