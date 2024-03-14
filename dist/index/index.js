@@ -27181,7 +27181,7 @@ async function getCacheUtil(cachePath) {
     const cacheUtil = parseInt(stdout.trim());
     return cacheUtil;
 }
-async function ensureCacheMetadata(cachePath) {
+function ensureCacheMetadata(cachePath) {
     const namespaceFolderPath = external_path_.join(cachePath, privateNamespaceDir);
     external_fs_.mkdirSync(namespaceFolderPath, { recursive: true });
     const metadataFilePath = external_path_.join(namespaceFolderPath, metadataFileName);
@@ -27192,12 +27192,12 @@ async function ensureCacheMetadata(cachePath) {
     const metadata = JSON.parse(rawData);
     return metadata;
 }
-async function writeCacheMetadata(cachePath, metadata) {
+function writeCacheMetadata(cachePath, metadata) {
     const namespaceFolderPath = external_path_.join(cachePath, privateNamespaceDir);
     external_fs_.mkdirSync(namespaceFolderPath, { recursive: true });
     const metadataFilePath = external_path_.join(namespaceFolderPath, metadataFileName);
     const rawData = JSON.stringify(metadata);
-    external_fs_.writeFileSync(metadataFilePath, rawData);
+    external_fs_.writeFileSync(metadataFilePath, rawData, { mode: 666 });
 }
 
 ;// CONCATENATED MODULE: ./src/index.ts
@@ -27236,7 +27236,7 @@ async function main() {
     }
     try {
         // Write/update cache volume metadata file
-        const metadata = await ensureCacheMetadata(localCachePath);
+        const metadata = ensureCacheMetadata(localCachePath);
         metadata.updatedAt = new Date().toISOString();
         metadata.version = 1;
         if (!metadata.userRequest) {
