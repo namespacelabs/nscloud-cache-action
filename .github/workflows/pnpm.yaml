@@ -35,5 +35,8 @@ jobs:
             ./node_modules/.cache
       - run: pnpm install
         working-directory: ./demo/fullstack
+
       - name: Print cache metadata file
-        run: cat /cache/.ns/cache-metadata.json
+        run: |
+          ls -al /cache/.ns
+          cat /cache/.ns/cache-metadata.json
