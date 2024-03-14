@@ -27197,7 +27197,7 @@ function writeCacheMetadata(cachePath, metadata) {
     external_fs_.mkdirSync(namespaceFolderPath, { recursive: true });
     const metadataFilePath = external_path_.join(namespaceFolderPath, metadataFileName);
     const rawData = JSON.stringify(metadata);
-    external_fs_.writeFileSync(metadataFilePath, rawData, { mode: 666 });
+    external_fs_.writeFileSync(metadataFilePath, rawData, { mode: 0o666 });
 }
 
 ;// CONCATENATED MODULE: ./src/index.ts

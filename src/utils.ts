@@ -96,5 +96,5 @@ export function writeCacheMetadata(cachePath: string, metadata: CacheMetadata) {
 
   const metadataFilePath = path.join(namespaceFolderPath, metadataFileName);
   const rawData = JSON.stringify(metadata);
-  fs.writeFileSync(metadataFilePath, rawData, { mode: 666 });
+  fs.writeFileSync(metadataFilePath, rawData, { mode: 0o666 });
 }
