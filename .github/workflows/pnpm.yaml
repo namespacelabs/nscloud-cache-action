@@ -33,7 +33,7 @@ jobs:
           cat <<EOF > .npmrc
           //my.special.registry/:_authToken=${MY_REGISTRY_TOKEN}
           EOF
-        working-directory: ./demo
+        working-directory: ./demo/fullstack
 
       - name: Setup pnpm cache
         uses: ./ # Uses an action in the root directory
