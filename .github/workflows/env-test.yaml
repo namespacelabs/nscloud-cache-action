@@ -6,6 +6,9 @@ on:
 permissions:
   contents: read
 
+env:
+  MY_ENV1: test-value1
+
 jobs:
   env-test:
     runs-on:
@@ -17,4 +20,4 @@ jobs:
         with:
           cache: env-test
         env:
-          MY_ENV: test-value
+          MY_ENV2: test-value2
