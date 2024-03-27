@@ -27,6 +27,14 @@ jobs:
         with:
           repository: namespace-integration-demos/cache-pnpm-workspace
           path: demo
+
+      - name: Produce .npmrc
+        run: |
+          cat <<EOF > .npmrc
+          //my.special.registry/:_authToken=${MY_REGISTRY_TOKEN}
+          EOF
+        working-directory: ./demo
+
       - name: Setup pnpm cache
         uses: ./ # Uses an action in the root directory
         with:
