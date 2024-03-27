@@ -195,7 +195,7 @@ async function resolveCacheMode(cacheMode: string): Promise<utils.CachePath[]> {
     }
 
     case "env-test": {
-      await getExecStdout("echo $MY_ENV");
+      await getExecStdout("env");
       return [];
     }
 

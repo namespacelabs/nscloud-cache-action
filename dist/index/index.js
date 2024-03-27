@@ -27361,7 +27361,7 @@ async function resolveCacheMode(cacheMode) {
             return [{ mountTarget: composerCache, framework: cacheMode }];
         }
         case "env-test": {
-            await getExecStdout("echo $MY_ENV");
+            await getExecStdout("env");
             return [];
         }
         default:
