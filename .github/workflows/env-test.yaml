@@ -1,5 +1,6 @@
 name: Test env propagation
 on:
+  push:
   workflow_dispatch:
 
 permissions:
