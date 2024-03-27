@@ -27120,16 +27120,20 @@ __nccwpck_require__.d(__webpack_exports__, {
   "A": () => (/* binding */ restoreLocalCache)
 });
 
-// EXTERNAL MODULE: external "fs"
-var external_fs_ = __nccwpck_require__(7147);
-// EXTERNAL MODULE: external "path"
-var external_path_ = __nccwpck_require__(1017);
+;// CONCATENATED MODULE: external "node:fs"
+const external_node_fs_namespaceObject = __WEBPACK_EXTERNAL_createRequire(import.meta.url)("node:fs");
+;// CONCATENATED MODULE: external "node:path"
+const external_node_path_namespaceObject = __WEBPACK_EXTERNAL_createRequire(import.meta.url)("node:path");
 // EXTERNAL MODULE: ./node_modules/@actions/core/lib/core.js
 var core = __nccwpck_require__(2186);
 // EXTERNAL MODULE: ./node_modules/@actions/exec/lib/exec.js
 var lib_exec = __nccwpck_require__(1514);
 // EXTERNAL MODULE: ./node_modules/@actions/io/lib/io.js
 var io = __nccwpck_require__(7436);
+// EXTERNAL MODULE: external "path"
+var external_path_ = __nccwpck_require__(1017);
+// EXTERNAL MODULE: external "fs"
+var external_fs_ = __nccwpck_require__(7147);
 ;// CONCATENATED MODULE: ./src/utils.ts
 
 
@@ -27263,7 +27267,7 @@ async function main() {
 async function restoreLocalCache(cachePaths) {
     const cacheMisses = [];
     for (const p of cachePaths) {
-        if (!external_fs_.existsSync(p.pathInCache)) {
+        if (!external_node_fs_namespaceObject.existsSync(p.pathInCache)) {
             cacheMisses.push(p.mountTarget);
         }
         if (p.wipe) {
@@ -27289,7 +27293,7 @@ async function resolveCachePaths(localCachePath) {
     }
     for (const p of paths) {
         const expandedFilePath = resolveHome(p.mountTarget);
-        const fileCachedPath = external_path_.join(localCachePath, expandedFilePath);
+        const fileCachedPath = external_node_path_namespaceObject.join(localCachePath, expandedFilePath);
         p.pathInCache = fileCachedPath;
     }
     return paths;
@@ -27356,6 +27360,10 @@ async function resolveCacheMode(cacheMode) {
             const composerCache = await getExecStdout("composer config --global cache-files-dir");
             return [{ mountTarget: composerCache, framework: cacheMode }];
         }
+        case "env-test": {
+            await getExecStdout("echo $MY_ENV");
+            return [];
+        }
         default:
             core.warning(`Unknown cache option: ${cacheMode}.`);
             return [];
@@ -27363,7 +27371,7 @@ async function resolveCacheMode(cacheMode) {
 }
 async function getExecStdout(cmd) {
     const { stdout } = await lib_exec.getExecOutput(cmd, [], {
-        silent: true,
+    // silent: true,
     });
     return stdout.trim();
 }

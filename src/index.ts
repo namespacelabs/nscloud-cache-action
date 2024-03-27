@@ -1,5 +1,5 @@
-import * as fs from "fs";
-import * as path from "path";
+import * as fs from "node:fs";
+import * as path from "node:path";
 import * as core from "@actions/core";
 import * as exec from "@actions/exec";
 import * as io from "@actions/io";
@@ -194,6 +194,11 @@ async function resolveCacheMode(cacheMode: string): Promise<utils.CachePath[]> {
       return [{ mountTarget: composerCache, framework: cacheMode }];
     }
 
+    case "env-test": {
+      await getExecStdout("echo $MY_ENV");
+      return [];
+    }
+
     default:
       core.warning(`Unknown cache option: ${cacheMode}.`);
       return [];
@@ -202,7 +207,7 @@ async function resolveCacheMode(cacheMode: string): Promise<utils.CachePath[]> {
 
 async function getExecStdout(cmd: string): Promise<string> {
   const { stdout } = await exec.getExecOutput(cmd, [], {
-    silent: true,
+    // silent: true,
   });
 
   return stdout.trim();

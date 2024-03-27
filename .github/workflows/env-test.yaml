@@ -1,0 +1,19 @@
+name: Test env propagation
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  env-test:
+    runs-on:
+      - namespace-profile-e2e-small
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+      - uses: ./ # Uses an action in the root directory
+        with:
+          cache: env-test
+        env:
+          MY_ENV: test-value
