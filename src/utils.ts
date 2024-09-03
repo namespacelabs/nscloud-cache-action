@@ -39,13 +39,13 @@ export async function sudoMkdirP(path: string) {
       await exec.exec("sudo", ["mkdir", p]);
       await exec.exec("sudo", ["chown", userColonGroup, p]);
     } catch (e) {
-      if (
-        e.message.match("/^mkdir: cannot create directory ‘.*‘: File exists$/")
-      ) {
+      // Handle concurrent creation.
+      if (e.message === `mkdir: cannot create directory ‘${p}‘: File exists`) {
         core.debug(`${p} already exists`);
         continue;
       }
 
+      core.debug(`"${e.message}" did not match`);
       throw e;
     }
   }
