@@ -27156,10 +27156,13 @@ async function sudoMkdirP(path) {
     const userColonGroup = `${uid}:${gid}`;
     const anc = ancestors(path);
     for (const p of anc) {
-        const { exitCode, stderr } = await lib_exec.getExecOutput("sudo", ["mkdir", p], {
+        const { exitCode, stdout, stderr } = await lib_exec.getExecOutput("sudo", ["mkdir", p], {
             silent: true,
             ignoreReturnCode: true,
         });
+        core.debug(`'sudo mkdir' returned exit code ${exitCode}`);
+        core.debug(stdout);
+        core.debug(stderr);
         // We're checking errors here, to handle the case of concurrent directory creation.
         // Sadly, the exit code is 1 and we cannot match for EEXIST.
         if (stderr === `mkdir: cannot create directory ‘${p}‘: File exists`) {
@@ -27167,7 +27170,6 @@ async function sudoMkdirP(path) {
             continue;
         }
         if (exitCode > 1) {
-            core.debug(stderr);
             throw new Error(`'sudo mkdir' failed with exit code ${exitCode}`);
         }
         await lib_exec.exec("sudo", ["chown", userColonGroup, p]);

@@ -35,7 +35,7 @@ export async function sudoMkdirP(path: string) {
 
   const anc = ancestors(path);
   for (const p of anc) {
-    const { exitCode, stderr } = await exec.getExecOutput(
+    const { exitCode, stdout, stderr } = await exec.getExecOutput(
       "sudo",
       ["mkdir", p],
       {
@@ -43,6 +43,9 @@ export async function sudoMkdirP(path: string) {
         ignoreReturnCode: true,
       }
     );
+    core.debug(`'sudo mkdir' returned exit code ${exitCode}`);
+    core.debug(stdout);
+    core.debug(stderr);
 
     // We're checking errors here, to handle the case of concurrent directory creation.
     // Sadly, the exit code is 1 and we cannot match for EEXIST.
@@ -52,8 +55,6 @@ export async function sudoMkdirP(path: string) {
     }
 
     if (exitCode > 1) {
-      core.debug(stderr);
-
       throw new Error(`'sudo mkdir' failed with exit code ${exitCode}`);
     }
 
