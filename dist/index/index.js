@@ -27156,11 +27156,10 @@ async function sudoMkdirP(path) {
     const userColonGroup = `${uid}:${gid}`;
     const anc = ancestors(path);
     for (const p of anc) {
-        // TODO
-        // if (fs.existsSync(p)) {
-        //   core.debug(`${p} already exists`);
-        //   continue;
-        // }
+        if (external_node_fs_namespaceObject.existsSync(p)) {
+            core.debug(`${p} already exists`);
+            continue;
+        }
         const { exitCode, stderr } = await lib_exec.getExecOutput("sudo", ["mkdir", p], {
             silent: true,
             ignoreReturnCode: true,
@@ -27172,7 +27171,7 @@ async function sudoMkdirP(path) {
                 continue;
             }
             core.info(stderr);
-            throw new Error(`'sudo mkdir' failed with exit code ${exitCode}`);
+            throw new Error(`'sudo mkdir ${p}' failed with exit code ${exitCode}`);
         }
         await lib_exec.exec("sudo", ["chown", userColonGroup, p]);
     }

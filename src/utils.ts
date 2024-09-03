@@ -35,11 +35,10 @@ export async function sudoMkdirP(path: string) {
 
   const anc = ancestors(path);
   for (const p of anc) {
-    // TODO
-    // if (fs.existsSync(p)) {
-    //   core.debug(`${p} already exists`);
-    //   continue;
-    // }
+    if (fs.existsSync(p)) {
+      core.debug(`${p} already exists`);
+      continue;
+    }
 
     const { exitCode, stderr } = await exec.getExecOutput(
       "sudo",
@@ -58,7 +57,7 @@ export async function sudoMkdirP(path: string) {
       }
 
       core.info(stderr);
-      throw new Error(`'sudo mkdir' failed with exit code ${exitCode}`);
+      throw new Error(`'sudo mkdir ${p}' failed with exit code ${exitCode}`);
     }
 
     await exec.exec("sudo", ["chown", userColonGroup, p]);
