@@ -33,7 +33,6 @@ jobs:
       - name: Check existing directories
         run: |
           ls -al /home/runner/go
-          ls -al /cache/home/runner
 
       - name: Setup Go cache
         uses: ./ # Uses an action in the root directory
