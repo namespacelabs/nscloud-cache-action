@@ -1,4 +1,5 @@
 import * as path from "node:path";
+import * as core from "@actions/core";
 import * as exec from "@actions/exec";
 import * as fs from "node:fs";
 
@@ -34,9 +35,14 @@ export async function sudoMkdirP(path: string) {
 
   const anc = ancestors(path);
   for (const p of anc) {
-    if (fs.existsSync(p)) continue;
-    await exec.exec("sudo", ["mkdir", p]);
-    await exec.exec("sudo", ["chown", userColonGroup, p]);
+    try {
+      await exec.exec("sudo", ["mkdir", p]);
+      await exec.exec("sudo", ["chown", userColonGroup, p]);
+    } catch (e) {
+      if (e.code !== "EEXIST") throw e;
+
+      core.debug(`${p} already exists`);
+    }
   }
 }
 
