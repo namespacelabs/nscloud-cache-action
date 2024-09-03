@@ -27167,6 +27167,7 @@ async function sudoMkdirP(path) {
             continue;
         }
         if (exitCode > 1) {
+            core.debug(stderr);
             throw new Error(`'sudo mkdir' failed with exit code ${exitCode}`);
         }
         await lib_exec.exec("sudo", ["chown", userColonGroup, p]);

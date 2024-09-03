@@ -52,6 +52,8 @@ export async function sudoMkdirP(path: string) {
     }
 
     if (exitCode > 1) {
+      core.debug(stderr);
+
       throw new Error(`'sudo mkdir' failed with exit code ${exitCode}`);
     }
 
