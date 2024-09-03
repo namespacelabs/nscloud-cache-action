@@ -27156,20 +27156,21 @@ async function sudoMkdirP(path) {
     const userColonGroup = `${uid}:${gid}`;
     const anc = ancestors(path);
     for (const p of anc) {
-        const { exitCode, stdout, stderr } = await lib_exec.getExecOutput("sudo", ["mkdir", p], {
+        // TODO
+        // if (fs.existsSync(p)) {
+        //   core.debug(`${p} already exists`);
+        //   continue;
+        // }
+        const { exitCode, stderr } = await lib_exec.getExecOutput("sudo", ["mkdir", p], {
             silent: true,
             ignoreReturnCode: true,
         });
-        core.debug(`'sudo mkdir' returned exit code ${exitCode}`);
-        core.debug(stdout);
-        core.debug(stderr);
-        // We're checking errors here, to handle the case of concurrent directory creation.
-        // Sadly, the exit code is 1 and we cannot match for EEXIST.
-        if (stderr === `mkdir: cannot create directory ‘${p}’: File exists`) {
-            core.debug(`${p} already exists`);
-            continue;
-        }
         if (exitCode > 0) {
+            // Sadly, the exit code is 1 and we cannot match for EEXIST in case of concurrent directory creation.
+            if (external_node_fs_namespaceObject.existsSync(p)) {
+                core.debug(`${p} was concurrently created`);
+                continue;
+            }
             core.info(stderr);
             throw new Error(`'sudo mkdir' failed with exit code ${exitCode}`);
         }
