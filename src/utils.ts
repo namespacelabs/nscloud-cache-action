@@ -35,19 +35,24 @@ export async function sudoMkdirP(path: string) {
 
   const anc = ancestors(path);
   for (const p of anc) {
-    try {
-      await exec.exec("sudo", ["mkdir", p]);
-      await exec.exec("sudo", ["chown", userColonGroup, p]);
-    } catch (e) {
-      // Handle concurrent creation.
-      if (e.message === `mkdir: cannot create directory ‘${p}‘: File exists`) {
-        core.debug(`${p} already exists`);
-        continue;
+    const { exitCode, stderr } = await exec.getExecOutput(
+      "sudo",
+      ["mkdir", p],
+      {
+        ignoreReturnCode: true,
       }
+    );
 
-      core.debug(`"${e.message}" did not match`);
-      throw e;
+    if (stderr === `mkdir: cannot create directory ‘${p}‘: File exists`) {
+      core.debug(`${p} already exists`);
+      continue;
     }
+
+    if (exitCode > 1) {
+      throw new Error(`'sudo mkdir' failed with exit code ${exitCode}`);
+    }
+
+    await exec.exec("sudo", ["chown", userColonGroup, p]);
   }
 }
 
