@@ -49,12 +49,13 @@ export async function sudoMkdirP(path: string) {
 
     // We're checking errors here, to handle the case of concurrent directory creation.
     // Sadly, the exit code is 1 and we cannot match for EEXIST.
-    if (stderr === `mkdir: cannot create directory ‘${p}‘: File exists\n`) {
+    if (stderr === `mkdir: cannot create directory ‘${p}’: File exists`) {
       core.debug(`${p} already exists`);
       continue;
     }
 
     if (exitCode > 0) {
+      core.info(stderr);
       throw new Error(`'sudo mkdir' failed with exit code ${exitCode}`);
     }
 
