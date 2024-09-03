@@ -27161,9 +27161,13 @@ async function sudoMkdirP(path) {
             await lib_exec.exec("sudo", ["chown", userColonGroup, p]);
         }
         catch (e) {
-            if (e.code !== "EEXIST")
-                throw e;
-            core.debug(`${p} already exists`);
+            // Handle concurrent creation.
+            if (e.message === `mkdir: cannot create directory ‘${p}‘: File exists`) {
+                core.debug(`${p} already exists`);
+                continue;
+            }
+            core.debug(`"${e.message}" did not match`);
+            throw e;
         }
     }
 }
