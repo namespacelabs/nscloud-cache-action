@@ -23,20 +23,30 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+
       - name: Install Go
         uses: actions/setup-go@v5
         with:
           go-version: ${{ matrix.go-version }}
           cache: false
+
+      - name: Check existing directories
+        run: |
+          ls -al /home/runner/go
+          ls -al /cache/home/runner
+
       - name: Setup Go cache
         uses: ./ # Uses an action in the root directory
         with:
           cache: go
+
       - name: Run a Go build
         run: |
           go install namespacelabs.dev/foundation/cmd/ns@latest
+
       - name: Print cache metadata file
         run: cat /cache/.ns/cache-metadata.json
+
       - name: Breakpoint on failure
         if: failure() && github.ref_name == 'main'
         uses: namespacelabs/breakpoint-action@v0
