@@ -27134,6 +27134,7 @@ var io = __nccwpck_require__(7436);
 
 
 
+
 const Env_CacheRoot = "NSC_CACHE_PATH";
 const StatePathsKey = "paths";
 const privateNamespaceDir = ".ns";
@@ -27155,10 +27156,15 @@ async function sudoMkdirP(path) {
     const userColonGroup = `${uid}:${gid}`;
     const anc = ancestors(path);
     for (const p of anc) {
-        if (external_node_fs_namespaceObject.existsSync(p))
-            continue;
-        await lib_exec.exec("sudo", ["mkdir", p]);
-        await lib_exec.exec("sudo", ["chown", userColonGroup, p]);
+        try {
+            await lib_exec.exec("sudo", ["mkdir", p]);
+            await lib_exec.exec("sudo", ["chown", userColonGroup, p]);
+        }
+        catch (e) {
+            if (e.code !== "EEXIST")
+                throw e;
+            core.debug(`${p} already exists`);
+        }
     }
 }
 function ancestors(filepath) {
