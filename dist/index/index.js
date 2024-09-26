@@ -27230,9 +27230,10 @@ const Output_CacheHit = "cache-hit";
 const ActionVersion = "nscloud-action-cache@v1";
 void main();
 async function main() {
-    const localCachePath = process.env[Env_CacheRoot];
-    if (localCachePath == null) {
-        let hint = `Please update your \x1b[1mruns-on\x1b[0m labels. E.g.:
+    try {
+        const localCachePath = process.env[Env_CacheRoot];
+        if (localCachePath == null) {
+            let hint = `Please update your \x1b[1mruns-on\x1b[0m labels. E.g.:
     
 \x1b[32mruns-on\x1b[34m:\x1b[0m
   - \x1b[34mnscloud-ubuntu-22.04-amd64-8x16-\x1b[1mwith-cache\x1b[0m
@@ -27240,58 +27241,63 @@ async function main() {
   - \x1b[34m\x1b[1mnscloud-cache-tag-my-cache-key\x1b[0m
   
 You can replace \x1b[1mmy-cache-key\x1b[0m with something that represents what you’re storing in the cache.`;
-        if (process.env.NSC_RUNNER_PROFILE_INFO) {
-            hint =
-                "Please enable \x1b[1mCaching\x1b[0m in your runner profile.";
-        }
-        throw new Error(`nscloud-cache-action requires a cache volume to be configured.
+            if (process.env.NSC_RUNNER_PROFILE_INFO) {
+                hint = "Please enable \x1b[1mCaching\x1b[0m in your runner profile.";
+            }
+            throw new Error(`nscloud-cache-action requires a cache volume to be configured.
 
 ${hint}
 
 See also https://namespace.so/docs/features/faster-github-actions#using-a-cache-volume
 
 Are you running in a container? Check out https://namespace.so/docs/actions/nscloud-cache-action#advanced-running-github-jobs-in-containers`);
-    }
-    core.info(`Found Namespace cross-invocation cache at ${localCachePath}.`);
-    const cachePaths = await resolveCachePaths(localCachePath);
-    const cacheMisses = await restoreLocalCache(cachePaths);
-    const fullHit = cacheMisses.length === 0;
-    core.setOutput(Output_CacheHit, fullHit.toString());
-    if (!fullHit) {
-        core.info(`Some cache paths missing: ${cacheMisses}.`);
-        const failOnCacheMiss = core.getBooleanInput(Input_FailOnCacheMiss);
-        if (failOnCacheMiss) {
-            throw new Error(`Some cache paths missing: ${cacheMisses}.`);
         }
-    }
-    else {
-        core.info("All cache paths found and restored.");
-    }
-    try {
-        // Write/update cache volume metadata file
-        const metadata = ensureCacheMetadata(localCachePath);
-        metadata.updatedAt = new Date().toISOString();
-        metadata.version = 1;
-        if (!metadata.userRequest) {
-            metadata.userRequest = {};
+        core.info(`Found Namespace cross-invocation cache at ${localCachePath}.`);
+        const cachePaths = await resolveCachePaths(localCachePath);
+        const cacheMisses = await restoreLocalCache(cachePaths);
+        const fullHit = cacheMisses.length === 0;
+        core.setOutput(Output_CacheHit, fullHit.toString());
+        if (!fullHit) {
+            core.info(`Some cache paths missing: ${cacheMisses}.`);
+            const failOnCacheMiss = core.getBooleanInput(Input_FailOnCacheMiss);
+            if (failOnCacheMiss) {
+                throw new Error(`Some cache paths missing: ${cacheMisses}.`);
+            }
         }
-        for (const p of cachePaths) {
-            metadata.userRequest[p.pathInCache] = {
-                cacheFramework: p.framework,
-                mountTarget: [p.mountTarget],
-                source: ActionVersion,
-            };
+        else {
+            core.info("All cache paths found and restored.");
         }
-        writeCacheMetadata(localCachePath, metadata);
+        try {
+            // Write/update cache volume metadata file
+            const metadata = ensureCacheMetadata(localCachePath);
+            metadata.updatedAt = new Date().toISOString();
+            metadata.version = 1;
+            if (!metadata.userRequest) {
+                metadata.userRequest = {};
+            }
+            for (const p of cachePaths) {
+                metadata.userRequest[p.pathInCache] = {
+                    cacheFramework: p.framework,
+                    mountTarget: [p.mountTarget],
+                    source: ActionVersion,
+                };
+            }
+            writeCacheMetadata(localCachePath, metadata);
+        }
+        catch (e) {
+            core.warning("Failed to record cache metadata.");
+            core.info(e.message);
+        }
+        // Save the list of cache paths to actions state for the post-cache action
+        core.saveState(StatePathsKey, cachePaths);
+        const cacheUtilInfo = await getCacheSummaryUtil(localCachePath);
+        core.info(`Total available cache space is ${cacheUtilInfo.size}, and ${cacheUtilInfo.used} have been used.`);
     }
-    catch (e) {
-        core.warning("Failed to record cache metadata.");
-        core.info(e.message);
+    catch (error) {
+        // Fail the workflow run if an error occurs
+        if (error instanceof Error)
+            core.setFailed(error.message);
     }
-    // Save the list of cache paths to actions state for the post-cache action
-    core.saveState(StatePathsKey, cachePaths);
-    const cacheUtilInfo = await getCacheSummaryUtil(localCachePath);
-    core.info(`Total available cache space is ${cacheUtilInfo.size}, and ${cacheUtilInfo.used} have been used.`);
 }
 async function restoreLocalCache(cachePaths) {
     const cacheMisses = [];
