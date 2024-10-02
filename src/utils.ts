@@ -29,10 +29,6 @@ export function resolveHome(filepath: string): string {
 // Creates directories in path. Exercises root permissions,
 // but sets owner for created dirs to the current user.
 export async function sudoMkdirP(path: string) {
-  const uid = process.getuid();
-  const gid = process.getgid();
-  const userColonGroup = `${uid}:${gid}`;
-
   const anc = ancestors(path);
   for (const p of anc) {
     if (fs.existsSync(p)) {
@@ -60,8 +56,15 @@ export async function sudoMkdirP(path: string) {
       throw new Error(`'sudo mkdir ${p}' failed with exit code ${exitCode}`);
     }
 
-    await exec.exec("sudo", ["chown", userColonGroup, p]);
+    await chownSelf(p);
   }
+}
+
+export async function chownSelf(path: string) {
+  const uid = process.getuid();
+  const gid = process.getgid();
+  const userColonGroup = `${uid}:${gid}`;
+  await exec.exec("sudo", ["chown", userColonGroup, path]);
 }
 
 function ancestors(filepath: string) {
