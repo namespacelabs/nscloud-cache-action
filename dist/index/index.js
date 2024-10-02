@@ -27151,9 +27151,6 @@ function resolveHome(filepath) {
 // Creates directories in path. Exercises root permissions,
 // but sets owner for created dirs to the current user.
 async function sudoMkdirP(path) {
-    const uid = process.getuid();
-    const gid = process.getgid();
-    const userColonGroup = `${uid}:${gid}`;
     const anc = ancestors(path);
     for (const p of anc) {
         if (external_node_fs_namespaceObject.existsSync(p)) {
@@ -27173,8 +27170,14 @@ async function sudoMkdirP(path) {
             core.info(stderr);
             throw new Error(`'sudo mkdir ${p}' failed with exit code ${exitCode}`);
         }
-        await lib_exec.exec("sudo", ["chown", userColonGroup, p]);
+        await chownSelf(p);
     }
+}
+async function chownSelf(path) {
+    const uid = process.getuid();
+    const gid = process.getgid();
+    const userColonGroup = `${uid}:${gid}`;
+    await lib_exec.exec("sudo", ["chown", userColonGroup, path]);
 }
 function ancestors(filepath) {
     const res = [];
@@ -27253,8 +27256,10 @@ See also https://namespace.so/docs/features/faster-github-actions#using-a-cache-
 Are you running in a container? Check out https://namespace.so/docs/actions/nscloud-cache-action#advanced-running-github-jobs-in-containers`);
         }
         core.info(`Found Namespace cross-invocation cache at ${localCachePath}.`);
+        const useSymlinks = process.env.RUNNER_OS === "macOS";
+        core.debug(`Using synlinks: ${useSymlinks} on ${process.env["RUNNER_OS"]}.`);
         const cachePaths = await resolveCachePaths(localCachePath);
-        const cacheMisses = await restoreLocalCache(cachePaths);
+        const cacheMisses = await restoreLocalCache(cachePaths, useSymlinks);
         const fullHit = cacheMisses.length === 0;
         core.setOutput(Output_CacheHit, fullHit.toString());
         if (!fullHit) {
@@ -27299,7 +27304,7 @@ Are you running in a container? Check out https://namespace.so/docs/actions/nscl
             core.setFailed(error.message);
     }
 }
-async function restoreLocalCache(cachePaths) {
+async function restoreLocalCache(cachePaths, useSymlinks) {
     const cacheMisses = [];
     for (const p of cachePaths) {
         if (!external_node_fs_namespaceObject.existsSync(p.pathInCache)) {
@@ -27310,9 +27315,17 @@ async function restoreLocalCache(cachePaths) {
         }
         const expandedFilePath = resolveHome(p.mountTarget);
         await io.mkdirP(p.pathInCache);
-        // Sudo to be able to create dirs in root (e.g. /nix), but set the runner as owner.
-        await sudoMkdirP(expandedFilePath);
-        await lib_exec.exec(`sudo mount --bind ${p.pathInCache} ${expandedFilePath}`);
+        if (useSymlinks) {
+            await sudoMkdirP(external_node_path_namespaceObject.dirname(expandedFilePath));
+            await lib_exec.exec("sudo", ["rm", "-rf", expandedFilePath]);
+            await lib_exec.exec("sudo", ["ln", "-sfn", p.pathInCache, expandedFilePath]);
+            await chownSelf(expandedFilePath);
+        }
+        else {
+            // Sudo to be able to create dirs in root (e.g. /nix), but set the runner as owner.
+            await sudoMkdirP(expandedFilePath);
+            await lib_exec.exec(`sudo mount --bind ${p.pathInCache} ${expandedFilePath}`);
+        }
     }
     return cacheMisses;
 }

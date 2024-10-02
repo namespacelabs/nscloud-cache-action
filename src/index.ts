@@ -43,8 +43,11 @@ Are you running in a container? Check out https://namespace.so/docs/actions/nscl
     }
     core.info(`Found Namespace cross-invocation cache at ${localCachePath}.`);
 
+    const useSymlinks = process.env.RUNNER_OS === "macOS";
+    core.debug(`Using synlinks: ${useSymlinks} on ${process.env["RUNNER_OS"]}.`);
+
     const cachePaths = await resolveCachePaths(localCachePath);
-    const cacheMisses = await restoreLocalCache(cachePaths);
+    const cacheMisses = await restoreLocalCache(cachePaths, useSymlinks);
 
     const fullHit = cacheMisses.length === 0;
     core.setOutput(Output_CacheHit, fullHit.toString());
@@ -96,7 +99,8 @@ Are you running in a container? Check out https://namespace.so/docs/actions/nscl
 }
 
 export async function restoreLocalCache(
-  cachePaths: utils.CachePath[]
+  cachePaths: utils.CachePath[],
+  useSymlinks: boolean,
 ): Promise<string[]> {
   const cacheMisses: string[] = [];
 
@@ -111,9 +115,17 @@ export async function restoreLocalCache(
 
     const expandedFilePath = utils.resolveHome(p.mountTarget);
     await io.mkdirP(p.pathInCache);
-    // Sudo to be able to create dirs in root (e.g. /nix), but set the runner as owner.
-    await utils.sudoMkdirP(expandedFilePath);
-    await exec.exec(`sudo mount --bind ${p.pathInCache} ${expandedFilePath}`);
+
+    if (useSymlinks) {
+      await utils.sudoMkdirP(path.dirname(expandedFilePath));
+      await exec.exec("sudo", ["rm", "-rf", expandedFilePath]);
+      await exec.exec("sudo", ["ln", "-sfn", p.pathInCache, expandedFilePath]);
+      await utils.chownSelf(expandedFilePath);
+    } else {
+      // Sudo to be able to create dirs in root (e.g. /nix), but set the runner as owner.
+      await utils.sudoMkdirP(expandedFilePath);
+      await exec.exec(`sudo mount --bind ${p.pathInCache} ${expandedFilePath}`);
+    }
   }
 
   return cacheMisses;
