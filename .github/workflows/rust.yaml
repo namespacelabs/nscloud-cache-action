@@ -18,21 +18,24 @@ jobs:
     runs-on:
       - namespace-profile-e2e-small
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - name: Setup Rust cache
         uses: ./ # Uses an action in the root directory
         with:
           cache: rust
-      - uses: actions/checkout@v3
+
+      - uses: actions/checkout@v4
         with:
           repository: namespace-integration-demos/rust-cache
           path: demo
+
       - run: cargo build --locked --release --no-default-features --all
         working-directory: ./demo
+
       - run: cargo test --locked --release --all
         working-directory: ./demo
+
       - name: Print cache metadata file
         run: |
           ls -al /cache/.ns
           cat /cache/.ns/cache-metadata.json
-  

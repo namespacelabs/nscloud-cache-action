@@ -44,7 +44,9 @@ Are you running in a container? Check out https://namespace.so/docs/actions/nscl
     core.info(`Found Namespace cross-invocation cache at ${localCachePath}.`);
 
     const useSymlinks = process.env.RUNNER_OS === "macOS";
-    core.debug(`Using synlinks: ${useSymlinks} on ${process.env["RUNNER_OS"]}.`);
+    core.debug(
+      `Using symlinks: ${useSymlinks} on ${process.env["RUNNER_OS"]}.`
+    );
 
     const cachePaths = await resolveCachePaths(localCachePath);
     const cacheMisses = await restoreLocalCache(cachePaths, useSymlinks);
@@ -100,7 +102,7 @@ Are you running in a container? Check out https://namespace.so/docs/actions/nscl
 
 export async function restoreLocalCache(
   cachePaths: utils.CachePath[],
-  useSymlinks: boolean,
+  useSymlinks: boolean
 ): Promise<string[]> {
   const cacheMisses: string[] = [];
 

@@ -11,6 +11,7 @@ jobs:
     steps:
       - name: Github Checkout current
         uses: actions/checkout@v4
+
       - name: Setup Go cache
         continue-on-error: true
         uses: ./ # Uses an action in the root directory
@@ -24,6 +25,7 @@ jobs:
     steps:
       - name: Github Checkout current
         uses: actions/checkout@v4
+
       - name: Setup Go cache
         continue-on-error: true
         uses: ./ # Uses an action in the root directory

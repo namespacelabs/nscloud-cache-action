@@ -18,21 +18,25 @@ jobs:
     runs-on:
       - namespace-profile-e2e-small
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
+        with:
+          path: nscloud-cache-action
+
       - name: Install pnpm
         uses: pnpm/action-setup@v4
         with:
           version: "8.6.2"
-      - uses: actions/checkout@v3
+
+      - uses: actions/checkout@v4
         with:
           repository: namespace-integration-demos/cache-pnpm-workspace
           path: demo
+
       - name: Setup pnpm cache
-        uses: ./ # Uses an action in the root directory
+        uses: ./nscloud-cache-action # Uses an action in the root directory
         with:
           cache: pnpm
-          path: |
-            ./node_modules/.cache
+
       - run: pnpm install
         working-directory: ./demo/fullstack
 
