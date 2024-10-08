@@ -36,8 +36,6 @@ jobs:
         uses: ./nscloud-cache-action # Uses an action in the root directory
         with:
           cache: pnpm
-          path: |
-            ./node_modules/.cache
 
       - run: pnpm install
         working-directory: ./demo/fullstack
