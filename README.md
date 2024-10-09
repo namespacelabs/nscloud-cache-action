@@ -1,15 +1,20 @@
-# Cache Action for GitHub based on Namespace Cache Volumes
+# High-performance caching on Namespace
 
-Cache artifacts like dependencies and build outputs to a Namespace Cache
-Volume to improve workflow execution time.
+Enable your GitHub jobs to cache dependencies and build outputs across invocations, with Namespace's cache volumes.
+
+With Namespace caching, there are no "upload" and no "download" cache phases; your caches are made available transparently, without a performance penalty. They're still backed by high-performance NVMe storage.
+
 
 ## Prerequisites
 
-In order to use `nscloud-cache-action`, you need to ensure that a cache volume is attached to the GitHub Actions job. Check out the [Cache Volumes guide](https://namespace.so/docs/features/faster-github-actions#using-a-cache-volume) for details.
+In order to use `nscloud-cache-action`, you need to ensure that caching is enabled on your job -- e.g. that a cache volume is attached to the GitHub Actions job.
+
+Check out the [Cache Volumes guide](https://namespace.so/docs/features/faster-github-actions#using-a-cache-volume) for an example of how to enable caching.
 
 ## Example
 
 Select which frameworks you'd like to cache.
+
 You can find a list of supported frameworks at [namespace.so/docs/actions/nscloud-cache-action#cache](https://namespace.so/docs/actions/nscloud-cache-action#cache).
 
 ```yaml
