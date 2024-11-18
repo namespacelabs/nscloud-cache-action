@@ -18,7 +18,7 @@ jobs:
     strategy:
       matrix:
         go-version: [1.23.x]
-        profile: [namespace-profile-e2e-medium, namespace-profile-default]
+        profile: [namespace-profile-e2e-medium]
     runs-on:
       - ${{ matrix.profile }}
     steps:
@@ -46,6 +46,37 @@ jobs:
 
       - name: Print cache metadata file
         run: cat /cache/.ns/cache-metadata.json
+
+      - name: Breakpoint on failure
+        if: failure() && github.ref_name == 'main'
+        uses: namespacelabs/breakpoint-action@v0
+        with:
+          duration: 15m
+          authorized-users: edganiukov,hugosantos,n-g,htr,nichtverstehen,gmichelo
+
+  gonocache:
+    strategy:
+      matrix:
+        go-version: [1.23.x]
+        profile: [namespace-profile-default]
+    runs-on:
+      - ${{ matrix.profile }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: ${{ matrix.go-version }}
+
+      - name: Check existing directories
+        run: |
+          ls -al /home/runner/go
+
+      - name: Run a Go build
+        run: |
+          go install namespacelabs.dev/foundation/cmd/ns@latest
 
       - name: Breakpoint on failure
         if: failure() && github.ref_name == 'main'
