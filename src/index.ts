@@ -237,6 +237,15 @@ async function resolveCacheMode(cacheMode: string): Promise<utils.CachePath[]> {
       return [{ mountTarget: poetryCache, framework: cacheMode }];
     }
 
+    case "uv": {
+      // Defaults to clone (also known as Copy-on-Write) on macOS, and hardlink on Linux and Windows.
+      // Neither works with cache volumes, and fall back to `copy`. Select `symlink` to avoid copies.
+      core.exportVariable("UV_LINK_MODE", "symlink");
+
+      const uvCache = await getExecStdout("uv cache dir");
+      return [{ mountTarget: uvCache, framework: cacheMode }];
+    }
+
     default:
       core.warning(`Unknown cache option: ${cacheMode}.`);
       return [];
