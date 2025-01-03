@@ -27257,7 +27257,7 @@ Are you running in a container? Check out https://namespace.so/docs/actions/nscl
         }
         core.info(`Found Namespace cross-invocation cache at ${localCachePath}.`);
         const useSymlinks = process.env.RUNNER_OS === "macOS";
-        core.debug(`Using synlinks: ${useSymlinks} on ${process.env["RUNNER_OS"]}.`);
+        core.debug(`Using symlinks: ${useSymlinks} on ${process.env["RUNNER_OS"]}.`);
         const cachePaths = await resolveCachePaths(localCachePath);
         const cacheMisses = await restoreLocalCache(cachePaths, useSymlinks);
         const fullHit = cacheMisses.length === 0;
@@ -27411,6 +27411,13 @@ async function resolveCacheMode(cacheMode) {
         case "poetry": {
             const poetryCache = await getExecStdout("poetry config cache-dir");
             return [{ mountTarget: poetryCache, framework: cacheMode }];
+        }
+        case "uv": {
+            // Defaults to clone (also known as Copy-on-Write) on macOS, and hardlink on Linux and Windows.
+            // Neither works with cache volumes, and fall back to `copy`. Select `symlink` to avoid copies.
+            core.exportVariable("UV_LINK_MODE", "symlink");
+            const uvCache = await getExecStdout("uv cache dir");
+            return [{ mountTarget: uvCache, framework: cacheMode }];
         }
         default:
             core.warning(`Unknown cache option: ${cacheMode}.`);
