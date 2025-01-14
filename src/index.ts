@@ -188,6 +188,8 @@ async function resolveCacheMode(cacheMode: string): Promise<utils.CachePath[]> {
       ];
 
       const json = await getExecStdout("pnpm m ls --depth -1 --json");
+
+      core.debug(`Extracting PNPM workspaces from: ${json}`);
       const jsonMultiParse = require("json-multi-parse");
       const parsed = jsonMultiParse(json);
 
@@ -254,7 +256,7 @@ async function resolveCacheMode(cacheMode: string): Promise<utils.CachePath[]> {
 
 async function getExecStdout(cmd: string): Promise<string> {
   const { stdout } = await exec.getExecOutput(cmd, [], {
-    silent: true,
+    silent: !core.isDebug(),
   });
 
   return stdout.trim();
@@ -272,7 +274,7 @@ async function getCacheSummaryUtil(
     `/bin/sh -c "df -h ${cachePath} | awk 'FNR == 2 {print $2,$3}'"`,
     [],
     {
-      silent: true,
+      silent: !core.isDebug(),
       ignoreReturnCode: true,
     }
   );

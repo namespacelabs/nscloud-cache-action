@@ -27125,7 +27125,7 @@ const external_node_fs_namespaceObject = __WEBPACK_EXTERNAL_createRequire(import
 ;// CONCATENATED MODULE: external "node:path"
 const external_node_path_namespaceObject = __WEBPACK_EXTERNAL_createRequire(import.meta.url)("node:path");
 // EXTERNAL MODULE: ./node_modules/@actions/core/lib/core.js
-var core = __nccwpck_require__(2186);
+var lib_core = __nccwpck_require__(2186);
 // EXTERNAL MODULE: ./node_modules/@actions/exec/lib/exec.js
 var lib_exec = __nccwpck_require__(1514);
 // EXTERNAL MODULE: ./node_modules/@actions/io/lib/io.js
@@ -27154,20 +27154,20 @@ async function sudoMkdirP(path) {
     const anc = ancestors(path);
     for (const p of anc) {
         if (external_node_fs_namespaceObject.existsSync(p)) {
-            core.debug(`${p} already exists`);
+            lib_core.debug(`${p} already exists`);
             continue;
         }
         const { exitCode, stderr } = await lib_exec.getExecOutput("sudo", ["mkdir", p], {
-            silent: true,
+            silent: !lib_core.isDebug(),
             ignoreReturnCode: true,
         });
         if (exitCode > 0) {
             // Sadly, the exit code is 1 and we cannot match for EEXIST in case of concurrent directory creation.
             if (external_node_fs_namespaceObject.existsSync(p)) {
-                core.debug(`${p} was concurrently created`);
+                lib_core.debug(`${p} was concurrently created`);
                 continue;
             }
-            core.info(stderr);
+            lib_core.info(stderr);
             throw new Error(`'sudo mkdir ${p}' failed with exit code ${exitCode}`);
         }
         await chownSelf(p);
@@ -27193,7 +27193,7 @@ function ancestors(filepath) {
 }
 async function getCacheUtil(cachePath) {
     const { stdout } = await exec.getExecOutput(`/bin/sh -c "du -sb ${cachePath} | cut -f1"`, [], {
-        silent: true,
+        silent: !core.isDebug(),
         ignoreReturnCode: true,
     });
     const cacheUtil = Number.parseInt(stdout.trim());
@@ -27255,22 +27255,22 @@ See also https://namespace.so/docs/features/faster-github-actions#using-a-cache-
 
 Are you running in a container? Check out https://namespace.so/docs/actions/nscloud-cache-action#advanced-running-github-jobs-in-containers`);
         }
-        core.info(`Found Namespace cross-invocation cache at ${localCachePath}.`);
+        lib_core.info(`Found Namespace cross-invocation cache at ${localCachePath}.`);
         const useSymlinks = process.env.RUNNER_OS === "macOS";
-        core.debug(`Using symlinks: ${useSymlinks} on ${process.env["RUNNER_OS"]}.`);
+        lib_core.debug(`Using symlinks: ${useSymlinks} on ${process.env["RUNNER_OS"]}.`);
         const cachePaths = await resolveCachePaths(localCachePath);
         const cacheMisses = await restoreLocalCache(cachePaths, useSymlinks);
         const fullHit = cacheMisses.length === 0;
-        core.setOutput(Output_CacheHit, fullHit.toString());
+        lib_core.setOutput(Output_CacheHit, fullHit.toString());
         if (!fullHit) {
-            core.info(`Some cache paths missing: ${cacheMisses}.`);
-            const failOnCacheMiss = core.getBooleanInput(Input_FailOnCacheMiss);
+            lib_core.info(`Some cache paths missing: ${cacheMisses}.`);
+            const failOnCacheMiss = lib_core.getBooleanInput(Input_FailOnCacheMiss);
             if (failOnCacheMiss) {
                 throw new Error(`Some cache paths missing: ${cacheMisses}.`);
             }
         }
         else {
-            core.info("All cache paths found and restored.");
+            lib_core.info("All cache paths found and restored.");
         }
         try {
             // Write/update cache volume metadata file
@@ -27290,18 +27290,18 @@ Are you running in a container? Check out https://namespace.so/docs/actions/nscl
             writeCacheMetadata(localCachePath, metadata);
         }
         catch (e) {
-            core.warning("Failed to record cache metadata.");
-            core.info(e.message);
+            lib_core.warning("Failed to record cache metadata.");
+            lib_core.info(e.message);
         }
         // Save the list of cache paths to actions state for the post-cache action
-        core.saveState(StatePathsKey, cachePaths);
+        lib_core.saveState(StatePathsKey, cachePaths);
         const cacheUtilInfo = await getCacheSummaryUtil(localCachePath);
-        core.info(`Total available cache space is ${cacheUtilInfo.size}, and ${cacheUtilInfo.used} have been used.`);
+        lib_core.info(`Total available cache space is ${cacheUtilInfo.size}, and ${cacheUtilInfo.used} have been used.`);
     }
     catch (error) {
         // Fail the workflow run if an error occurs
         if (error instanceof Error)
-            core.setFailed(error.message);
+            lib_core.setFailed(error.message);
     }
 }
 async function restoreLocalCache(cachePaths, useSymlinks) {
@@ -27331,11 +27331,11 @@ async function restoreLocalCache(cachePaths, useSymlinks) {
 }
 async function resolveCachePaths(localCachePath) {
     const paths = [];
-    const manual = core.getMultilineInput(Input_Path);
+    const manual = lib_core.getMultilineInput(Input_Path);
     for (const p of manual) {
         paths.push({ mountTarget: p, framework: "custom" });
     }
-    const cacheModes = core.getMultilineInput(Input_Cache);
+    const cacheModes = lib_core.getMultilineInput(Input_Cache);
     for (const mode of cacheModes) {
         paths.push(...(await resolveCacheMode(mode)));
     }
@@ -27373,6 +27373,7 @@ async function resolveCacheMode(cacheMode) {
                 { mountTarget: pnpmCache, framework: cacheMode },
             ];
             const json = await getExecStdout("pnpm m ls --depth -1 --json");
+            lib_core.debug(`Extracting PNPM workspaces from: ${json}`);
             const jsonMultiParse = __nccwpck_require__(3715);
             const parsed = jsonMultiParse(json);
             for (const list of parsed) {
@@ -27415,24 +27416,24 @@ async function resolveCacheMode(cacheMode) {
         case "uv": {
             // Defaults to clone (also known as Copy-on-Write) on macOS, and hardlink on Linux and Windows.
             // Neither works with cache volumes, and fall back to `copy`. Select `symlink` to avoid copies.
-            core.exportVariable("UV_LINK_MODE", "symlink");
+            lib_core.exportVariable("UV_LINK_MODE", "symlink");
             const uvCache = await getExecStdout("uv cache dir");
             return [{ mountTarget: uvCache, framework: cacheMode }];
         }
         default:
-            core.warning(`Unknown cache option: ${cacheMode}.`);
+            lib_core.warning(`Unknown cache option: ${cacheMode}.`);
             return [];
     }
 }
 async function getExecStdout(cmd) {
     const { stdout } = await lib_exec.getExecOutput(cmd, [], {
-        silent: true,
+        silent: !lib_core.isDebug(),
     });
     return stdout.trim();
 }
 async function getCacheSummaryUtil(cachePath) {
     const { stdout } = await lib_exec.getExecOutput(`/bin/sh -c "df -h ${cachePath} | awk 'FNR == 2 {print $2,$3}'"`, [], {
-        silent: true,
+        silent: !lib_core.isDebug(),
         ignoreReturnCode: true,
     });
     const cacheUtilData = stdout.trim().split(" ");
