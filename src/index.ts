@@ -187,7 +187,9 @@ async function resolveCacheMode(cacheMode: string): Promise<utils.CachePath[]> {
         { mountTarget: pnpmCache, framework: cacheMode },
       ];
 
-      const json = await getExecStdout("pnpm m ls --depth -1 --json");
+      const json = await getExecStdout(
+        "pnpm m ls --depth -1 --json --loglevel error"
+      );
 
       core.debug(`Extracting PNPM workspaces from: ${json}`);
       const jsonMultiParse = require("json-multi-parse");
