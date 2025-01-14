@@ -27372,7 +27372,7 @@ async function resolveCacheMode(cacheMode) {
             const paths = [
                 { mountTarget: pnpmCache, framework: cacheMode },
             ];
-            const json = await getExecStdout("pnpm m ls --depth -1 --json");
+            const json = await getExecStdout("pnpm m ls --depth -1 --json --loglevel error");
             lib_core.debug(`Extracting PNPM workspaces from: ${json}`);
             const jsonMultiParse = __nccwpck_require__(3715);
             const parsed = jsonMultiParse(json);
