@@ -27368,7 +27368,7 @@ async function resolveCacheMode(cacheMode) {
             return [{ mountTarget: pipCache, framework: cacheMode }];
         }
         case "pnpm": {
-            const pnpmCache = await getExecStdout("pnpm store path");
+            const pnpmCache = await getExecStdout("pnpm store path --loglevel error");
             const paths = [
                 { mountTarget: pnpmCache, framework: cacheMode },
             ];

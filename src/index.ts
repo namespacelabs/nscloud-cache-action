@@ -182,7 +182,7 @@ async function resolveCacheMode(cacheMode: string): Promise<utils.CachePath[]> {
     }
 
     case "pnpm": {
-      const pnpmCache = await getExecStdout("pnpm store path");
+      const pnpmCache = await getExecStdout("pnpm store path --loglevel error");
       const paths: utils.CachePath[] = [
         { mountTarget: pnpmCache, framework: cacheMode },
       ];
