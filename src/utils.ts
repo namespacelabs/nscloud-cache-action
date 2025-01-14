@@ -40,7 +40,7 @@ export async function sudoMkdirP(path: string) {
       "sudo",
       ["mkdir", p],
       {
-        silent: true,
+        silent: !core.isDebug(),
         ignoreReturnCode: true,
       }
     );
@@ -84,7 +84,7 @@ export async function getCacheUtil(cachePath: string): Promise<number> {
     `/bin/sh -c "du -sb ${cachePath} | cut -f1"`,
     [],
     {
-      silent: true,
+      silent: !core.isDebug(),
       ignoreReturnCode: true,
     }
   );
