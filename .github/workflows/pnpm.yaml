@@ -44,3 +44,31 @@ jobs:
         run: |
           ls -al /cache/.ns
           cat /cache/.ns/cache-metadata.json
+
+  ignore-warnings:
+    strategy:
+      matrix:
+        pnpm-version:
+          - "8.15.5"
+          - "9.7.0"
+          - "9.15.0"
+    runs-on:
+      - namespace-profile-e2e-small
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          path: nscloud-cache-action
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: ${{ matrix.pnpm-version }}
+
+      - name: Produce problematic .npmrc
+        run: |
+          cp ./nscloud-cache-action/.github/workflows/testdata/.npmrc .
+
+      - name: Setup pnpm cache
+        uses: ./nscloud-cache-action # Uses an action in the root directory
+        with:
+          cache: pnpm

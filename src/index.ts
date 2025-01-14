@@ -44,9 +44,7 @@ Are you running in a container? Check out https://namespace.so/docs/actions/nscl
     core.info(`Found Namespace cross-invocation cache at ${localCachePath}.`);
 
     const useSymlinks = process.env.RUNNER_OS === "macOS";
-    core.debug(
-      `Using symlinks: ${useSymlinks} on ${process.env["RUNNER_OS"]}.`
-    );
+    core.debug(`Using symlinks: ${useSymlinks} on ${process.env.RUNNER_OS}.`);
 
     const cachePaths = await resolveCachePaths(localCachePath);
     const cacheMisses = await restoreLocalCache(cachePaths, useSymlinks);
@@ -182,14 +180,20 @@ async function resolveCacheMode(cacheMode: string): Promise<utils.CachePath[]> {
     }
 
     case "pnpm": {
-      const pnpmCache = await getExecStdout("pnpm store path --loglevel error");
+      const ver = await pnpmVersion();
+      const semver = require("semver");
+
+      const execFn = semver.lt(ver, "9.7.0")
+        ? // pnpm prints warnings to stdout pre 9.7.
+          getExecStdoutDropWarnings
+        : getExecStdout;
+
+      const pnpmCache = await execFn("pnpm store path --loglevel error");
       const paths: utils.CachePath[] = [
         { mountTarget: pnpmCache, framework: cacheMode },
       ];
 
-      const json = await getExecStdout(
-        "pnpm m ls --depth -1 --json --loglevel error"
-      );
+      const json = await execFn("pnpm m ls --depth -1 --json --loglevel error");
 
       core.debug(`Extracting PNPM workspaces from: ${json}`);
       const jsonMultiParse = require("json-multi-parse");
@@ -286,4 +290,22 @@ async function getCacheSummaryUtil(
     size: cacheUtilData[0],
     used: cacheUtilData[1],
   };
+}
+
+async function pnpmVersion(): Promise<string> {
+  const out = await getExecStdout("pnpm --version");
+
+  // pnpm prints warnings to stdout pre 9.7, so only the last line contains the version.
+  const lines = out.split(/\r?\n/);
+
+  return lines[lines.length - 1];
+}
+
+async function getExecStdoutDropWarnings(cmd: string): Promise<string> {
+  const stdout = await getExecStdout(cmd);
+
+  return stdout
+    .split(/\r?\n/)
+    .filter((line) => !line.startsWith("WARN\u2009"))
+    .join("\r\n");
 }
