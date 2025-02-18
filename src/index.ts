@@ -104,6 +104,13 @@ export async function restoreLocalCache(
 ): Promise<string[]> {
   const cacheMisses: string[] = [];
 
+  // DEBUG
+  const pwd = await getExecStdout(`pwd`);
+  core.debug(`pwd: ${pwd}`);
+  core.debug(`pwd: ${process.env['GITHUB_WORKSPACE']}`);
+  core.debug(`pwd: ${process.cwd()}`);
+  // DEBUG
+
   for (const p of cachePaths) {
     if (!fs.existsSync(p.pathInCache)) {
       cacheMisses.push(p.mountTarget);
