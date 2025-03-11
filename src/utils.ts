@@ -125,3 +125,9 @@ export function writeCacheMetadata(cachePath: string, metadata: CacheMetadata) {
   const rawData = JSON.stringify(metadata);
   fs.writeFileSync(metadataFilePath, rawData, { mode: 0o666 });
 }
+
+export function shouldUseSymlinks() {
+  const useSymlinks = process.env.RUNNER_OS === "macOS";
+  core.debug(`Using symlinks: ${useSymlinks} on ${process.env.RUNNER_OS}.`);
+  return useSymlinks;
+}
