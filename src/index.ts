@@ -43,8 +43,7 @@ Are you running in a container? Check out https://namespace.so/docs/actions/nscl
     }
     core.info(`Found Namespace cross-invocation cache at ${localCachePath}.`);
 
-    const useSymlinks = process.env.RUNNER_OS === "macOS";
-    core.debug(`Using symlinks: ${useSymlinks} on ${process.env.RUNNER_OS}.`);
+    const useSymlinks = utils.shouldUseSymlinks();
 
     const cachePaths = await resolveCachePaths(localCachePath);
     const cacheMisses = await restoreLocalCache(cachePaths, useSymlinks);
@@ -184,8 +183,7 @@ async function resolveCacheMode(cacheMode: string): Promise<utils.CachePath[]> {
       const semver = require("semver");
 
       const execFn = semver.lt(ver, "9.7.0")
-        ? // pnpm prints warnings to stdout pre 9.7.
-          getExecStdoutDropWarnings
+        ? getExecStdoutDropWarnings // pnpm prints warnings to stdout pre 9.7.
         : getExecStdout;
 
       const pnpmCache = await execFn("pnpm store path --loglevel error");
