@@ -30738,20 +30738,15 @@ async function pnpmVersion() {
     return lines[lines.length - 1];
 }
 async function getExecStdoutDropWarnings(cmd) {
-    const { stdout } = await getExecOutput(cmd);
+    const { stdout } = await lib_exec.getExecOutput(cmd);
     return stdout
         .split(/\r?\n/)
         .filter((line) => !line.startsWith("\u2009WARN\u2009"))
         .join("\r\n")
         .trim();
 }
-async function getExecOutput(cmd) {
-    return await lib_exec.getExecOutput(cmd, [], {
-        silent: !core.isDebug(),
-    });
-}
 async function getExecStdout(cmd) {
-    const { stdout } = await getExecOutput(cmd);
+    const { stdout } = await lib_exec.getExecOutput(cmd);
     return stdout.trim();
 }
 

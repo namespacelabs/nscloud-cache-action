@@ -304,7 +304,7 @@ async function pnpmVersion(): Promise<string> {
 }
 
 async function getExecStdoutDropWarnings(cmd: string): Promise<string> {
-  const { stdout } = await getExecOutput(cmd);
+  const { stdout } = await exec.getExecOutput(cmd);
 
   return stdout
     .split(/\r?\n/)
@@ -313,13 +313,7 @@ async function getExecStdoutDropWarnings(cmd: string): Promise<string> {
     .trim();
 }
 
-async function getExecOutput(cmd: string): Promise<exec.ExecOutput> {
-  return await exec.getExecOutput(cmd, [], {
-    silent: !core.isDebug(),
-  });
-}
-
 async function getExecStdout(cmd: string): Promise<string> {
-  const { stdout } = await getExecOutput(cmd);
+  const { stdout } = await exec.getExecOutput(cmd);
   return stdout.trim();
 }
