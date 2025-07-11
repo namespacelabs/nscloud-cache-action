@@ -6,8 +6,6 @@ on:
   pull_request:
     branches:
       - "*"
-  schedule:
-    - cron: "35 */6 * * *"
   workflow_dispatch:
 
   # Allow check to run on the merge queue so that it is eligible to be a "required" check.
@@ -19,8 +17,11 @@ permissions:
 
 jobs:
   brew:
-    runs-on:
-      - namespace-profile-e2e-small
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [namespace-profile-macos, namespace-profile-e2e-small]
+    runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v4
 
@@ -34,7 +35,9 @@ jobs:
           brew install hello
           which hello
 
-      - run: brew tap vectordotdev/brew && brew install --HEAD vectordotdev/brew/vector
+      - if: runner.os == 'macOS'
+        # Not available on Linux.
+        run: brew tap vectordotdev/brew && brew install --HEAD vectordotdev/brew/vector
 
       - name: Print cache metadata file
         run: |
