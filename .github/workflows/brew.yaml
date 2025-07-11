@@ -37,7 +37,7 @@ jobs:
 
       - if: runner.os == 'macOS'
         # Not available on Linux.
-        run: brew tap vectordotdev/brew && brew install --HEAD vectordotdev/brew/vector
+        run: brew tap vectordotdev/brew && brew install vector
 
       - name: Print cache metadata file
         run: |
