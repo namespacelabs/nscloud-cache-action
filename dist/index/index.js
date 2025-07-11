@@ -30715,6 +30715,10 @@ async function resolveCacheMode(cacheMode) {
             const uvCache = await getExecStdout("uv cache dir");
             return [{ mountTarget: uvCache, framework: cacheMode }];
         }
+        case "brew": {
+            const brewCache = await getExecStdout("brew --cache");
+            return [{ mountTarget: brewCache, framework: cacheMode }];
+        }
         default:
             core.warning(`Unknown cache option: ${cacheMode}.`);
             return [];

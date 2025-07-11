@@ -264,6 +264,11 @@ async function resolveCacheMode(cacheMode: string): Promise<utils.CachePath[]> {
       return [{ mountTarget: uvCache, framework: cacheMode }];
     }
 
+    case "brew": {
+      const brewCache = await getExecStdout("brew --cache");
+      return [{ mountTarget: brewCache, framework: cacheMode }];
+    }
+
     default:
       core.warning(`Unknown cache option: ${cacheMode}.`);
       return [];
