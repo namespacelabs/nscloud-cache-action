@@ -1,0 +1,42 @@
+name: Test Homebrew caching
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - "*"
+  schedule:
+    - cron: "35 */6 * * *"
+  workflow_dispatch:
+
+  # Allow check to run on the merge queue so that it is eligible to be a "required" check.
+  merge_group:
+    types: [checks_requested]
+
+permissions:
+  contents: read
+
+jobs:
+  brew:
+    runs-on:
+      - namespace-profile-e2e-small
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Homebrew cache
+        uses: ./ # Uses an action in the root directory
+        with:
+          cache: brew
+
+      - run: |
+          brew --version
+          brew install hello
+          which hello
+
+      - run: brew tap vectordotdev/brew && brew install --HEAD vectordotdev/brew/vector
+
+      - name: Print cache metadata file
+        run: |
+          ls -al /cache/.ns
+          cat /cache/.ns/cache-metadata.json
