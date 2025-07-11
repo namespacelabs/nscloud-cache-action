@@ -1,0 +1,52 @@
+name: Test path globbing
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - "*"
+  schedule:
+    - cron: "15 */6 * * *"
+  workflow_dispatch:
+
+  # Allow check to run on the merge queue so that it is eligible to be a "required" check.
+  merge_group:
+    types: [ checks_requested ]
+
+permissions:
+  contents: read
+
+jobs:
+  glob:
+    runs-on:
+      - namespace-profile-e2e-small
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Create test files
+        run: |
+          mkdir -p ~/a/b/test
+          mkdir -p ~/a/b/c/test
+          mkdir -p ~/a/b/c/d/e/f/test
+          mkdir -p ~/a/test
+
+          mkdir -p ~/b/test          
+          mkdir -p ~/b/c/test
+          mkdir -p ~/b/c/d/test
+          mkdir -p ~/e/f/g/
+          
+          echo "foo" >> ~/e/f/g/foo.bar
+
+      - name: Setup cache
+        uses: ./ # Uses an action in the root directory
+        with:
+          path: |
+            ~/a/**/test
+            ~/b/*/test
+            ~/e/f/g/
+
+      - name: Print cache metadata file
+        run: |
+          ls -al /cache/.ns
+          cat /cache/.ns/cache-metadata.json
