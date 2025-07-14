@@ -1,5 +1,6 @@
 import * as fs from "node:fs";
 import * as path from "node:path";
+import * as glob from "glob";
 import * as core from "@actions/core";
 import * as exec from "@actions/exec";
 import * as io from "@actions/io";
@@ -149,7 +150,18 @@ async function resolveCachePaths(
 
   const manual: string[] = core.getMultilineInput(Input_Path);
   for (const p of manual) {
-    paths.push({ mountTarget: p, framework: "custom" });
+
+    // check if p contains either * or **
+    if (['*', '**'].some(e => p.includes(e))) {
+      // globs only work if there's no ~
+      const expandedFilePath = utils.resolveHome(p);
+
+      for (const sp of glob.globSync(expandedFilePath)) {
+        paths.push({mountTarget: sp, framework: "custom"});
+      }
+    } else {
+      paths.push({mountTarget: p, framework: "custom"});
+    }
   }
 
   const cacheModes: string[] = core.getMultilineInput(Input_Cache);
