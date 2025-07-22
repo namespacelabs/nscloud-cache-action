@@ -167,13 +167,16 @@ async function resolveCachePaths(
 }
 
 async function resolveCacheMode(cacheMode: string): Promise<utils.CachePath[]> {
+  const jsonMultiParse = require("json-multi-parse");
+
   switch (cacheMode) {
     case "go": {
-      const goCache = await getExecStdout("go env GOCACHE");
-      const goModCache = await getExecStdout("go env GOMODCACHE");
+      const goCache = await getExecStdout("go env -json GOCACHE GOMODCACHE");
+      const goCacheParsed = JSON.parse(goCache);
+
       return [
-        { mountTarget: goCache, framework: cacheMode },
-        { mountTarget: goModCache, framework: cacheMode },
+        { mountTarget: goCacheParsed.GOCACHE, framework: cacheMode },
+        { mountTarget: goCacheParsed.GOMODCACHE, framework: cacheMode },
       ];
     }
 
@@ -203,11 +206,12 @@ async function resolveCacheMode(cacheMode: string): Promise<utils.CachePath[]> {
         { mountTarget: pnpmCache, framework: cacheMode },
       ];
 
-      const json = await execFn("pnpm m ls --depth -1 --json --loglevel error");
+      const workspaces = await execFn(
+        "pnpm m ls --depth -1 --json --loglevel error"
+      );
 
-      core.debug(`Extracting PNPM workspaces from: ${json}`);
-      const jsonMultiParse = require("json-multi-parse");
-      const parsed = jsonMultiParse(json);
+      core.debug(`Extracting PNPM workspaces from: ${workspaces}`);
+      const parsed = jsonMultiParse(workspaces);
 
       for (const list of parsed) {
         for (const entry of list) {
