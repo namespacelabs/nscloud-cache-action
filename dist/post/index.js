@@ -27792,7 +27792,10 @@ function shouldUseSymlinks() {
     return useSymlinks;
 }
 
+// EXTERNAL MODULE: ./node_modules/.pnpm/@actions+io@1.1.3/node_modules/@actions/io/lib/io.js
+var io = __nccwpck_require__(2826);
 ;// CONCATENATED MODULE: ./src/post.ts
+
 
 
 
@@ -27801,12 +27804,16 @@ async function main() {
     const rawPaths = lib_core.getState(StatePathsKey);
     const cachePaths = JSON.parse(rawPaths);
     const useSymlinks = shouldUseSymlinks();
-    if (!useSymlinks) {
-        lib_core.debug("Using bind mounts: no risk of finding them deleted.");
-    }
-    else {
-        let foundProblems = false;
-        for (const p of cachePaths) {
+    let foundProblems = false;
+    for (const p of cachePaths) {
+        if (p.wipe) {
+            await io.rmRF(p.pathInCache);
+            continue;
+        }
+        if (!useSymlinks) {
+            lib_core.debug("Using bind mounts: no risk of finding them deleted.");
+        }
+        else {
             const st = external_node_fs_namespaceObject.lstatSync(p.mountTarget, { throwIfNoEntry: false });
             if (st == null) {
                 lib_core.warning(`${p.mountTarget}: was linked to the cache volume, but does not exist any more. Did another action (e.g. checkout) delete it?`);
@@ -27818,11 +27825,11 @@ async function main() {
                 foundProblems = true;
                 continue;
             }
-            lib_core.info(`${p.mountTarget}: cached`);
         }
-        if (foundProblems) {
-            lib_core.info(`See https://namespace.so/docs/actions/nscloud-cache-action for more info.`);
-        }
+        lib_core.info(`${p.mountTarget}: cached`);
+    }
+    if (foundProblems) {
+        lib_core.info(`See https://namespace.so/docs/actions/nscloud-cache-action for more info.`);
     }
 }
 
