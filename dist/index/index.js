@@ -30668,6 +30668,7 @@ async function resolveCacheMode(cacheMode) {
             const paths = [
                 { mountTarget: pnpmCache, framework: cacheMode },
             ];
+            core.exportVariable("npm_config_package_import_method", "copy");
             const workspaces = await execFn("pnpm m ls --depth -1 --json --loglevel error");
             core.debug(`Extracting PNPM workspaces from: ${workspaces}`);
             const parsed = jsonMultiParse(workspaces);
