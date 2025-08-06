@@ -30597,10 +30597,11 @@ Are you running in a container? Check out https://namespace.so/docs/actions/nscl
 async function restoreLocalCache(cachePaths, useSymlinks) {
     const cacheMisses = [];
     for (const p of cachePaths) {
-        if (!external_node_fs_namespaceObject.existsSync(p.pathInCache)) {
+        if (!external_node_fs_namespaceObject.existsSync(p.pathInCache) && !p.wipe) {
             cacheMisses.push(p.mountTarget);
         }
         if (p.wipe) {
+            core.debug(`Wiping ${p.pathInCache}.`);
             await io.rmRF(p.pathInCache);
         }
         const expandedFilePath = resolveHome(p.mountTarget);
