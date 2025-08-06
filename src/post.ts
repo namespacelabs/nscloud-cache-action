@@ -16,6 +16,7 @@ async function main() {
 
   for (const p of cachePaths) {
     if (p.wipe) {
+      core.debug(`Wiping ${p.pathInCache}.`);
       await io.rmRF(p.pathInCache);
       continue;
     }
@@ -23,7 +24,8 @@ async function main() {
     if (!useSymlinks) {
       core.debug("Using bind mounts: no risk of finding them deleted.");
     } else {
-      const st = fs.lstatSync(p.mountTarget, { throwIfNoEntry: false });
+      const expandedFilePath = utils.resolveHome(p.mountTarget);
+      const st = fs.lstatSync(expandedFilePath, { throwIfNoEntry: false });
 
       if (st == null) {
         core.warning(

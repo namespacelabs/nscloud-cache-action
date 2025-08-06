@@ -116,11 +116,12 @@ export async function restoreLocalCache(
   const cacheMisses: string[] = [];
 
   for (const p of cachePaths) {
-    if (!fs.existsSync(p.pathInCache)) {
+    if (!fs.existsSync(p.pathInCache) && !p.wipe) {
       cacheMisses.push(p.mountTarget);
     }
 
     if (p.wipe) {
+      core.debug(`Wiping ${p.pathInCache}.`);
       await io.rmRF(p.pathInCache);
     }
 
