@@ -30597,12 +30597,8 @@ Are you running in a container? Check out https://namespace.so/docs/actions/nscl
 async function restoreLocalCache(cachePaths, useSymlinks) {
     const cacheMisses = [];
     for (const p of cachePaths) {
-        if (!external_node_fs_namespaceObject.existsSync(p.pathInCache) && !p.wipe) {
+        if (!external_node_fs_namespaceObject.existsSync(p.pathInCache)) {
             cacheMisses.push(p.mountTarget);
-        }
-        if (p.wipe) {
-            core.debug(`Wiping ${p.pathInCache}.`);
-            await io.rmRF(p.pathInCache);
         }
         const expandedFilePath = resolveHome(p.mountTarget);
         await io.mkdirP(p.pathInCache);
@@ -30623,8 +30619,16 @@ async function restoreLocalCache(cachePaths, useSymlinks) {
 async function resolveCachePaths(localCachePath) {
     const paths = [];
     const manual = core.getMultilineInput(Input_Path);
+    let cachesNodeModules = false;
     for (const p of manual) {
         paths.push({ mountTarget: p, framework: "custom" });
+        if (p.endsWith("/node_modules")) {
+            cachesNodeModules = true;
+        }
+    }
+    if (cachesNodeModules) {
+        core.warning(`Caching node_modules is not always safe. Prefer using cache modes if possible.
+See also https://namespace.so/docs/reference/github-actions/nscloud-cache-action#cache`);
     }
     const cacheModes = core.getMultilineInput(Input_Cache);
     for (const mode of cacheModes) {
@@ -30669,21 +30673,8 @@ async function resolveCacheMode(cacheMode) {
             const paths = [
                 { mountTarget: pnpmCache, framework: cacheMode },
             ];
+            // Hard-linking and clone do not work. Select copy mode to avoid spurious warnings.
             core.exportVariable("npm_config_package_import_method", "copy");
-            const workspaces = await execFn("pnpm m ls --depth -1 --json --loglevel error");
-            core.debug(`Extracting PNPM workspaces from: ${workspaces}`);
-            const parsed = jsonMultiParse(workspaces);
-            for (const list of parsed) {
-                for (const entry of list) {
-                    if (entry.path) {
-                        paths.push({
-                            mountTarget: `${entry.path}/node_modules`,
-                            wipe: true,
-                            framework: cacheMode,
-                        });
-                    }
-                }
-            }
             return paths;
         }
         case "rust":

@@ -1,7 +1,6 @@
 import * as core from "@actions/core";
 import * as utils from "./utils";
 import * as fs from "node:fs";
-import * as io from "@actions/io";
 
 void main();
 
@@ -12,18 +11,14 @@ async function main() {
   ) as utils.CachePath[];
   const useSymlinks = utils.shouldUseSymlinks();
 
+  if (!useSymlinks) {
+    core.debug("Using bind mounts: no risk of finding them deleted.");
+  }
+
   let foundProblems = false;
 
   for (const p of cachePaths) {
-    if (p.wipe) {
-      core.debug(`Wiping ${p.pathInCache}.`);
-      await io.rmRF(p.pathInCache);
-      continue;
-    }
-
-    if (!useSymlinks) {
-      core.debug("Using bind mounts: no risk of finding them deleted.");
-    } else {
+    if (useSymlinks) {
       const expandedFilePath = utils.resolveHome(p.mountTarget);
       const st = fs.lstatSync(expandedFilePath, { throwIfNoEntry: false });
 

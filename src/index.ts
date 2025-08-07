@@ -116,13 +116,8 @@ export async function restoreLocalCache(
   const cacheMisses: string[] = [];
 
   for (const p of cachePaths) {
-    if (!fs.existsSync(p.pathInCache) && !p.wipe) {
+    if (!fs.existsSync(p.pathInCache)) {
       cacheMisses.push(p.mountTarget);
-    }
-
-    if (p.wipe) {
-      core.debug(`Wiping ${p.pathInCache}.`);
-      await io.rmRF(p.pathInCache);
     }
 
     const expandedFilePath = utils.resolveHome(p.mountTarget);
@@ -149,8 +144,21 @@ async function resolveCachePaths(
   const paths: utils.CachePath[] = [];
 
   const manual: string[] = core.getMultilineInput(Input_Path);
+
+  let cachesNodeModules = false;
   for (const p of manual) {
     paths.push({ mountTarget: p, framework: "custom" });
+
+    if (p.endsWith("/node_modules")) {
+      cachesNodeModules = true;
+    }
+  }
+
+  if (cachesNodeModules) {
+    core.warning(
+      `Caching node_modules is not always safe. Prefer using cache modes if possible.
+See also https://namespace.so/docs/reference/github-actions/nscloud-cache-action#cache`
+    );
   }
 
   const cacheModes: string[] = core.getMultilineInput(Input_Cache);
@@ -207,27 +215,8 @@ async function resolveCacheMode(cacheMode: string): Promise<utils.CachePath[]> {
         { mountTarget: pnpmCache, framework: cacheMode },
       ];
 
+      // Hard-linking and clone do not work. Select copy mode to avoid spurious warnings.
       core.exportVariable("npm_config_package_import_method", "copy");
-
-      const workspaces = await execFn(
-        "pnpm m ls --depth -1 --json --loglevel error"
-      );
-
-      core.debug(`Extracting PNPM workspaces from: ${workspaces}`);
-      const parsed = jsonMultiParse(workspaces);
-
-      for (const list of parsed) {
-        for (const entry of list) {
-          if (entry.path) {
-            paths.push({
-              mountTarget: `${entry.path}/node_modules`,
-              wipe: true,
-              framework: cacheMode,
-            });
-          }
-        }
-      }
-
       return paths;
     }
 

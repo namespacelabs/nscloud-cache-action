@@ -27792,10 +27792,7 @@ function shouldUseSymlinks() {
     return useSymlinks;
 }
 
-// EXTERNAL MODULE: ./node_modules/.pnpm/@actions+io@1.1.3/node_modules/@actions/io/lib/io.js
-var io = __nccwpck_require__(2826);
 ;// CONCATENATED MODULE: ./src/post.ts
-
 
 
 
@@ -27804,17 +27801,12 @@ async function main() {
     const rawPaths = lib_core.getState(StatePathsKey);
     const cachePaths = JSON.parse(rawPaths);
     const useSymlinks = shouldUseSymlinks();
+    if (!useSymlinks) {
+        lib_core.debug("Using bind mounts: no risk of finding them deleted.");
+    }
     let foundProblems = false;
     for (const p of cachePaths) {
-        if (p.wipe) {
-            lib_core.debug(`Wiping ${p.pathInCache}.`);
-            await io.rmRF(p.pathInCache);
-            continue;
-        }
-        if (!useSymlinks) {
-            lib_core.debug("Using bind mounts: no risk of finding them deleted.");
-        }
-        else {
+        if (useSymlinks) {
             const expandedFilePath = resolveHome(p.mountTarget);
             const st = external_node_fs_namespaceObject.lstatSync(expandedFilePath, { throwIfNoEntry: false });
             if (st == null) {

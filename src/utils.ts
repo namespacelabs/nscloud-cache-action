@@ -11,7 +11,6 @@ const metadataFileName = "cache-metadata.json";
 
 export interface CachePath {
   pathInCache?: string;
-  wipe?: boolean;
   framework: string;
   mountTarget: string;
 }
