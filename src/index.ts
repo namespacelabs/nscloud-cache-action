@@ -131,6 +131,11 @@ export async function restoreLocalCache(
     } else {
       // Sudo to be able to create dirs in root (e.g. /nix), but set the runner as owner.
       await utils.sudoMkdirP(expandedFilePath);
+      const st = fs.lstatSync(expandedFilePath, { throwIfNoEntry: false });
+      if (!st.isDirectory()) {
+        // If path exists and is not a directory, we can't mount over it
+        await exec.exec("sudo", ["rm", "-rf", expandedFilePath]);
+      }
       await exec.exec(`sudo mount --bind ${p.pathInCache} ${expandedFilePath}`);
     }
   }
