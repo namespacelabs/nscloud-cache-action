@@ -29883,13 +29883,13 @@ async function restoreLocalCache(cachePaths, useSymlinks) {
             await chownSelf(expandedFilePath);
         }
         else {
-            // Sudo to be able to create dirs in root (e.g. /nix), but set the runner as owner.
-            await sudoMkdirP(expandedFilePath);
             const st = external_node_fs_namespaceObject.lstatSync(expandedFilePath, { throwIfNoEntry: false });
-            if (!st.isDirectory()) {
+            if (st && !st.isDirectory()) {
                 // If path exists and is not a directory, we can't mount over it
                 await lib_exec.exec("sudo", ["rm", "-rf", expandedFilePath]);
             }
+            // Sudo to be able to create dirs in root (e.g. /nix), but set the runner as owner.
+            await sudoMkdirP(expandedFilePath);
             await lib_exec.exec(`sudo mount --bind ${p.pathInCache} ${expandedFilePath}`);
         }
     }
@@ -29963,7 +29963,7 @@ async function resolveCacheMode(cacheMode) {
                 { mountTarget: "~/.cargo/git", framework: cacheMode },
                 { mountTarget: "./target", framework: cacheMode },
                 // Cache cleaning feature uses SQLite file https://blog.rust-lang.org/2023/12/11/cargo-cache-cleaning.html
-                { mountTarget: "~/.cargo/.global-cache", framework: cacheMode }, // as this is a file, we need to delete before mounting
+                { mountTarget: "~/.cargo/.global-cache", framework: cacheMode },
             ];
         case "gradle":
             return [

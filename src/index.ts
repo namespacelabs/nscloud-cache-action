@@ -129,13 +129,13 @@ export async function restoreLocalCache(
       await exec.exec("sudo", ["ln", "-sfn", p.pathInCache, expandedFilePath]);
       await utils.chownSelf(expandedFilePath);
     } else {
-      // Sudo to be able to create dirs in root (e.g. /nix), but set the runner as owner.
-      await utils.sudoMkdirP(expandedFilePath);
       const st = fs.lstatSync(expandedFilePath, { throwIfNoEntry: false });
-      if (!st.isDirectory()) {
+      if (st && !st.isDirectory()) {
         // If path exists and is not a directory, we can't mount over it
         await exec.exec("sudo", ["rm", "-rf", expandedFilePath]);
       }
+      // Sudo to be able to create dirs in root (e.g. /nix), but set the runner as owner.
+      await utils.sudoMkdirP(expandedFilePath);
       await exec.exec(`sudo mount --bind ${p.pathInCache} ${expandedFilePath}`);
     }
   }
