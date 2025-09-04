@@ -68,7 +68,7 @@ jobs:
 
       - name: fastlane
         run: |
-          bundle exec fastlane screenshots
+          fastlane screenshots
 
       - name: Breakpoint on failure
         if: failure()
