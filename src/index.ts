@@ -11,6 +11,7 @@ const Input_Cache = "cache";
 const Input_FailOnCacheMiss = "fail-on-cache-miss";
 const Output_CacheHit = "cache-hit";
 const ActionVersion = "nscloud-action-cache@v1";
+const ModeXcode = "xcode";
 
 void main();
 
@@ -167,8 +168,15 @@ See also https://namespace.so/docs/reference/github-actions/nscloud-cache-action
   }
 
   const cacheModes: string[] = core.getMultilineInput(Input_Cache);
+  let cachesXcode = false;
   for (const mode of cacheModes) {
-    paths.push(...(await resolveCacheMode(mode)));
+    if (mode === ModeXcode) {
+      cachesXcode = true;
+    }
+  }
+
+  for (const mode of cacheModes) {
+    paths.push(...(await resolveCacheMode(mode, cachesXcode)));
   }
 
   for (const p of paths) {
@@ -180,9 +188,10 @@ See also https://namespace.so/docs/reference/github-actions/nscloud-cache-action
   return paths;
 }
 
-async function resolveCacheMode(cacheMode: string): Promise<utils.CachePath[]> {
-  const jsonMultiParse = require("json-multi-parse");
-
+async function resolveCacheMode(
+  cacheMode: string,
+  cachesXcode: boolean
+): Promise<utils.CachePath[]> {
   switch (cacheMode) {
     case "go": {
       const goCache = await getExecStdout("go env -json GOCACHE GOMODCACHE");
@@ -268,6 +277,74 @@ async function resolveCacheMode(cacheMode: string): Promise<utils.CachePath[]> {
     case "brew": {
       const brewCache = await getExecStdout("brew --cache");
       return [{ mountTarget: brewCache, framework: cacheMode }];
+    }
+
+    // Experimental, this can be huge.
+    case ModeXcode: {
+      return [
+        {
+          // Consider: `defaults read com.apple.dt.Xcode.plist IDECustomDerivedDataLocation`
+          mountTarget: "~/Library/Developer/Xcode/DerivedData",
+          framework: cacheMode,
+        },
+      ];
+    }
+
+    case "swift": {
+      const res = [
+        {
+          mountTarget: "./.build",
+          framework: cacheMode,
+        },
+        {
+          mountTarget: "~/Library/Caches/org.swift.swiftpm",
+          framework: cacheMode,
+        },
+        {
+          mountTarget: "~/Library/org.swift.swiftpm",
+          framework: cacheMode,
+        },
+      ];
+
+      if (!cachesXcode) {
+        // Xcode caching already caches all derived data.
+        // Cached data lands in the same location, so also restoring with `swift` mode will work.
+        res.push({
+          mountTarget:
+            "~/Library/Developer/Xcode/DerivedData/ModuleCache.noindex",
+          framework: cacheMode,
+        });
+      }
+
+      return res;
+    }
+
+    case "ruby": {
+      return [
+        {
+          // Caches output of `bundle install`.
+          mountTarget: "./vendor/bundle",
+          framework: cacheMode,
+        },
+        {
+          // Caches output of `bundle cache` (less common).
+          mountTarget: "./vendor/cache",
+          framework: cacheMode,
+        },
+      ];
+    }
+
+    case "cocoa": {
+      return [
+        {
+          mountTarget: "./Pods",
+          framework: cacheMode,
+        },
+        {
+          mountTarget: "~/Library/Caches/CocoaPods",
+          framework: cacheMode,
+        },
+      ];
     }
 
     default:

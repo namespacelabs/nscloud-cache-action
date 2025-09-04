@@ -51,13 +51,6 @@ jobs:
       - name: Print cache metadata file
         run: cat /cache/.ns/cache-metadata.json
 
-      - name: Breakpoint on failure
-        if: failure() && github.ref_name == 'main'
-        uses: namespacelabs/breakpoint-action@v0
-        with:
-          duration: 15m
-          authorized-users: edganiukov,hugosantos,n-g,htr,nichtverstehen,gmichelo
-
   gonocache:
     strategy:
       matrix:
@@ -81,10 +74,3 @@ jobs:
       - name: Run a Go build
         run: |
           go install namespacelabs.dev/foundation/cmd/ns@latest
-
-      - name: Breakpoint on failure
-        if: failure() && github.ref_name == 'main'
-        uses: namespacelabs/breakpoint-action@v0
-        with:
-          duration: 15m
-          authorized-users: edganiukov,hugosantos,n-g,htr,nichtverstehen,gmichelo

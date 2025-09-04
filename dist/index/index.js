@@ -4461,139 +4461,6 @@ module.exports = parseParams
 
 /***/ }),
 
-/***/ 3715:
-/***/ ((module, __unused_webpack_exports, __nccwpck_require__) => {
-
-const {splitByIndex, splitByLineAndChar} = __nccwpck_require__(8250);
-
-/**
- * List of regexes matching errors for unexpected characters after JSON data
- *
- * First placeholder: line number, 1-indexed
- * Second placeholder: character number, 1-indexed
- * Third placeholder: overall character index, 0-indexed
- */
-const ERROR_REGEXES = [
-	/^()()Unexpected .* in JSON at position (\d+)$/, // Node 8..18, Chrome 69
-	/^()()Unexpected non-whitespace character after JSON at position (\d+)$/, // Chromium 113
-	/^JSON.parse: unexpected non-whitespace character after JSON data at line (\d+) column (\d+) of the JSON data()$/, // Firefox 62
-];
-
-/**
- * Parse a string of multiple JSON objects/values
- *
- * @param {string} input String with zero or more JSON objects/values in series,
- *                       possibly separated by whitespace
- * @param {Object} [options] Options:
- * @param {boolean} [options.partial] Don't throw an error if the input ends
- *                                    partway through an object/value. Instead
- *                                    add a property `remainder` to the returned
- *                                    array with the remaining partial JSON
- *                                    string. Default: false
- * @param {string[]} [acc] Accumulator for internal use
- * @returns {(Object|Array|string|number|boolean|null)[]} Array of results
- */
-function jsonMultiParse(input, options = {}, acc = []) {
-	if (options.partial) {
-		acc.remainder = '';
-	}
-
-	if (input.trim().length === 0) {
-		return acc;
-	}
-
-	try {
-		acc.push(JSON.parse(input));
-		return acc;
-	} catch (error) {
-		let match = null;
-		for (const regex of ERROR_REGEXES) {
-			if (match = error.message.match(regex)) {
-				break;
-			}
-		}
-		if (!match) {
-			if (options.partial) {
-				acc.remainder = input;
-				return acc;
-			}
-			throw error;
-		}
-
-		const chunks = match[3]
-			? splitByIndex(input, parseInt(match[3], 10))
-			: splitByLineAndChar(input, parseInt(match[1], 10) - 1, parseInt(match[2], 10) - 1);
-
-		acc.push(JSON.parse(chunks[0]));
-		return jsonMultiParse(chunks[1], options, acc);
-	}
-}
-
-module.exports = jsonMultiParse;
-
-
-/***/ }),
-
-/***/ 8250:
-/***/ ((module) => {
-
-/**
- * Split a string by character index
- *
- * @param {string} input
- * @param {number} index Character index, 0-indexed
- * @returns {string[]} The two output chunks
- */
-function splitByIndex(input, index) {
-	if (index < 0 || index >= input.length) {
-		throw new Error(`Character index ${index} out of range`);
-	}
-	return [input.substr(0, index), input.substr(index)];
-}
-
-/**
- * Split a string by line index and character index
- *
- * @param {string} input
- * @param {number} lineIndex Line index, 0-indexed
- * @param {number} charIndex Character index, 0-indexed
- * @returns {string[]} The two output chunks
- */
-function splitByLineAndChar(input, lineIndex, charIndex) {
-	if (lineIndex < 0) {
-		throw new Error(`Line index ${lineIndex} out of range`);
-	}
-	if (charIndex < 0) {
-		throw new Error(`Character index ${charIndex} out of range`);
-	}
-
-	// Find the start of the line we are interested in
-	let lineStartIndex = 0;
-	for (let l = lineIndex; l > 0; l--) {
-		lineStartIndex = input.indexOf('\n', lineStartIndex);
-		if (lineStartIndex === -1) {
-			throw new Error(`Line index ${lineIndex} out of range`);
-		}
-		lineStartIndex++;
-	}
-
-	// Check the character number we want is within this line
-	const nextNl = input.indexOf('\n', lineStartIndex);
-	if (lineStartIndex + charIndex >= input.length || nextNl !== -1 && nextNl <= lineStartIndex + charIndex) {
-		throw new Error(`Character index ${charIndex} out of range for line ${lineIndex}`);
-	}
-
-	return splitByIndex(input, lineStartIndex + charIndex);
-}
-
-module.exports = {
-	splitByIndex,
-	splitByLineAndChar,
-};
-
-
-/***/ }),
-
 /***/ 1532:
 /***/ ((module, __unused_webpack_exports, __nccwpck_require__) => {
 
@@ -29785,6 +29652,7 @@ const Input_Cache = "cache";
 const Input_FailOnCacheMiss = "fail-on-cache-miss";
 const Output_CacheHit = "cache-hit";
 const ActionVersion = "nscloud-action-cache@v1";
+const ModeXcode = "xcode";
 void main();
 async function main() {
     // nscloud-cache-action should run within seconds. Time out after five minutes as a safety guard.
@@ -29910,8 +29778,14 @@ async function resolveCachePaths(localCachePath) {
 See also https://namespace.so/docs/reference/github-actions/nscloud-cache-action#cache`);
     }
     const cacheModes = core.getMultilineInput(Input_Cache);
+    let cachesXcode = false;
     for (const mode of cacheModes) {
-        paths.push(...(await resolveCacheMode(mode)));
+        if (mode === ModeXcode) {
+            cachesXcode = true;
+        }
+    }
+    for (const mode of cacheModes) {
+        paths.push(...(await resolveCacheMode(mode, cachesXcode)));
     }
     for (const p of paths) {
         const expandedFilePath = resolveHome(p.mountTarget);
@@ -29920,8 +29794,7 @@ See also https://namespace.so/docs/reference/github-actions/nscloud-cache-action
     }
     return paths;
 }
-async function resolveCacheMode(cacheMode) {
-    const jsonMultiParse = __nccwpck_require__(3715);
+async function resolveCacheMode(cacheMode, cachesXcode) {
     switch (cacheMode) {
         case "go": {
             const goCache = await getExecStdout("go env -json GOCACHE GOMODCACHE");
@@ -29990,6 +29863,67 @@ async function resolveCacheMode(cacheMode) {
         case "brew": {
             const brewCache = await getExecStdout("brew --cache");
             return [{ mountTarget: brewCache, framework: cacheMode }];
+        }
+        // Experimental, this can be huge.
+        case ModeXcode: {
+            return [
+                {
+                    // Consider: `defaults read com.apple.dt.Xcode.plist IDECustomDerivedDataLocation`
+                    mountTarget: "~/Library/Developer/Xcode/DerivedData",
+                    framework: cacheMode,
+                },
+            ];
+        }
+        case "swift": {
+            const res = [
+                {
+                    mountTarget: "./.build",
+                    framework: cacheMode,
+                },
+                {
+                    mountTarget: "~/Library/Caches/org.swift.swiftpm",
+                    framework: cacheMode,
+                },
+                {
+                    mountTarget: "~/Library/org.swift.swiftpm",
+                    framework: cacheMode,
+                },
+            ];
+            if (!cachesXcode) {
+                // Xcode caching already caches all derived data.
+                // Cached data lands in the same location, so also restoring with `swift` mode will work.
+                res.push({
+                    mountTarget: "~/Library/Developer/Xcode/DerivedData/ModuleCache.noindex",
+                    framework: cacheMode,
+                });
+            }
+            return res;
+        }
+        case "ruby": {
+            return [
+                {
+                    // Caches output of `bundle install`.
+                    mountTarget: "./vendor/bundle",
+                    framework: cacheMode,
+                },
+                {
+                    // Caches output of `bundle cache` (less common).
+                    mountTarget: "./vendor/cache",
+                    framework: cacheMode,
+                },
+            ];
+        }
+        case "cocoa": {
+            return [
+                {
+                    mountTarget: "./Pods",
+                    framework: cacheMode,
+                },
+                {
+                    mountTarget: "~/Library/Caches/CocoaPods",
+                    framework: cacheMode,
+                },
+            ];
         }
         default:
             core.warning(`Unknown cache option: ${cacheMode}.`);
