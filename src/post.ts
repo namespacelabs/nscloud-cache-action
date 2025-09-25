@@ -44,7 +44,7 @@ async function main() {
 
   if (foundProblems) {
     core.info(
-      `See https://namespace.so/docs/actions/nscloud-cache-action for more info.`
+      `See https://namespace.so/docs/reference/github-actions/nscloud-cache-action for more info.`
     );
   }
 }

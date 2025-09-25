@@ -53,9 +53,9 @@ You can replace \x1b[1mmy-cache-key\x1b[0m with something that represents what y
 
 ${hint}
 
-See also https://namespace.so/docs/features/faster-github-actions#using-a-cache-volume
+See also https://namespace.so/docs/solutions/github-actions/caching
 
-Are you running in a container? Check out https://namespace.so/docs/actions/nscloud-cache-action#advanced-running-github-jobs-in-containers`
+Are you running in a container? Check out https://namespace.so/docs/reference/github-actions/runner-configuration#jobs-in-containers`
     );
   }
   core.info(`Found Namespace cross-invocation cache at ${localCachePath}.`);
