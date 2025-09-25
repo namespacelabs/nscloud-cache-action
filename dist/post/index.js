@@ -27097,7 +27097,7 @@ async function main() {
         lib_core.info(`${p.mountTarget}: cached`);
     }
     if (foundProblems) {
-        lib_core.info(`See https://namespace.so/docs/actions/nscloud-cache-action for more info.`);
+        lib_core.info(`See https://namespace.so/docs/reference/github-actions/nscloud-cache-action for more info.`);
     }
 }
 
