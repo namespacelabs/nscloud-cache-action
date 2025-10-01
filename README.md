@@ -25,10 +25,10 @@ jobs:
  
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
  
       - name: Install Go
-        uses: actions/setup-go@v5
+        uses: actions/setup-go@v6
         with:
           cache: false # Skip remote GitHub caching
  
