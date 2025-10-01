@@ -31,7 +31,7 @@ jobs:
       options: --cap-add=SYS_ADMIN
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       - name: Install sudo
         run: |

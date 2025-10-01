@@ -22,13 +22,13 @@ jobs:
     runs-on:
       - namespace-profile-e2e-small
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - name: Setup Rust cache
         uses: ./ # Uses an action in the root directory
         with:
           cache: rust
 
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
         with:
           repository: namespace-integration-demos/rust-cache
           path: demo
@@ -48,7 +48,7 @@ jobs:
     runs-on:
       - namespace-profile-e2e-small
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       - name: Create .global-cache file that should be removed before creating mount
         run: touch ~/.cargo/.global-cache
@@ -58,7 +58,7 @@ jobs:
         with:
           cache: rust
 
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
         with:
           repository: namespace-integration-demos/rust-cache
           path: demo

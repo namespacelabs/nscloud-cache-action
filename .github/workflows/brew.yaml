@@ -23,7 +23,7 @@ jobs:
         os: [namespace-profile-macos, namespace-profile-e2e-small]
     runs-on: ${{ matrix.os }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       - name: Setup Homebrew cache
         uses: ./ # Uses an action in the root directory

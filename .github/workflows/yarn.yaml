@@ -22,14 +22,14 @@ jobs:
     runs-on:
       - namespace-profile-e2e-small
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       - name: Setup Yarn cache
         uses: ./ # Uses an action in the root directory
         with:
           cache: yarn
 
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
         with:
           repository: namespace-integration-demos/cache-yarn-workspaces
           path: demo
