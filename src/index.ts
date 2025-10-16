@@ -127,6 +127,12 @@ export async function restoreLocalCache(
     }
 
     const expandedFilePath = utils.resolveHome(p.mountTarget);
+    const st = fs.lstatSync(expandedFilePath, { throwIfNoEntry: false });
+
+    if (p.framework == "custom" && mountTargetExists(expandedFilePath, st)) {
+      core.warning(`Mount target path ${p.mountTarget} already exists, will be overwritten.`);
+    }
+
     await io.mkdirP(p.pathInCache);
 
     if (useSymlinks) {
@@ -135,7 +141,6 @@ export async function restoreLocalCache(
       await exec.exec("sudo", ["ln", "-sfn", p.pathInCache, expandedFilePath]);
       await utils.chownSelf(expandedFilePath);
     } else {
-      const st = fs.lstatSync(expandedFilePath, { throwIfNoEntry: false });
       if (st && !st.isDirectory()) {
         // If path exists and is not a directory, we can't mount over it
         await exec.exec("sudo", ["rm", "-rf", expandedFilePath]);
@@ -460,4 +465,33 @@ async function getExecStdoutDropWarnings(cmd: string): Promise<string> {
 async function getExecStdout(cmd: string): Promise<string> {
   const { stdout } = await exec.getExecOutput(cmd);
   return stdout.trim();
+}
+
+function mountTargetExists(
+  filePath: string,
+  stat: fs.Stats | undefined
+): boolean {
+  if (!stat) {
+    return false;
+  }
+
+  if (stat.isFile()) {
+    return true;
+  }
+
+  if (stat.isDirectory()) {
+    return fs.readdirSync(filePath).length > 0;
+  }
+
+  if (stat.isSymbolicLink()) {
+    const expandedFilePath = fs.realpathSync(filePath);
+    const linkStat = fs.lstatSync(expandedFilePath);
+    if (!linkStat || !linkStat.isDirectory()) {
+      // symlink to non-directory
+      return false;
+    }
+    return fs.readdirSync(expandedFilePath).length > 0;
+  }
+
+  return false;
 }

@@ -29763,6 +29763,10 @@ async function restoreLocalCache(cachePaths, useSymlinks) {
             cacheMisses.push(p.mountTarget);
         }
         const expandedFilePath = resolveHome(p.mountTarget);
+        const st = external_node_fs_namespaceObject.lstatSync(expandedFilePath, { throwIfNoEntry: false });
+        if (p.framework == "custom" && mountTargetExists(expandedFilePath, st)) {
+            core.warning(`Mount target path ${p.mountTarget} already exists, will be overwritten.`);
+        }
         await io.mkdirP(p.pathInCache);
         if (useSymlinks) {
             await sudoMkdirP(external_node_path_namespaceObject.dirname(expandedFilePath));
@@ -29771,7 +29775,6 @@ async function restoreLocalCache(cachePaths, useSymlinks) {
             await chownSelf(expandedFilePath);
         }
         else {
-            const st = external_node_fs_namespaceObject.lstatSync(expandedFilePath, { throwIfNoEntry: false });
             if (st && !st.isDirectory()) {
                 // If path exists and is not a directory, we can't mount over it
                 await lib_exec.exec("sudo", ["rm", "-rf", expandedFilePath]);
@@ -30023,6 +30026,27 @@ async function getExecStdoutDropWarnings(cmd) {
 async function getExecStdout(cmd) {
     const { stdout } = await lib_exec.getExecOutput(cmd);
     return stdout.trim();
+}
+function mountTargetExists(filePath, stat) {
+    if (!stat) {
+        return false;
+    }
+    if (stat.isFile()) {
+        return true;
+    }
+    if (stat.isDirectory()) {
+        return external_node_fs_namespaceObject.readdirSync(filePath).length > 0;
+    }
+    if (stat.isSymbolicLink()) {
+        const expandedFilePath = external_node_fs_namespaceObject.realpathSync(filePath);
+        const linkStat = external_node_fs_namespaceObject.lstatSync(expandedFilePath);
+        if (!linkStat || !linkStat.isDirectory()) {
+            // symlink to non-directory
+            return false;
+        }
+        return external_node_fs_namespaceObject.readdirSync(expandedFilePath).length > 0;
+    }
+    return false;
 }
 
 })();
