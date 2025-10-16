@@ -29968,7 +29968,7 @@ async function resolveCacheMode(cacheMode, cachesXcode) {
             const cacheKey = cfg.get(AptDirCacheKey);
             const archiveKey = cfg.get(AptDirCacheArchivesKey);
             return [{
-                    mountTarget: `/${cacheKey}/${archiveKey}/`,
+                    mountTarget: `/${cacheKey}/${archiveKey}`,
                     framework: cacheMode,
                 }];
         }

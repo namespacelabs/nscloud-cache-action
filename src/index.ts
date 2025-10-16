@@ -380,7 +380,7 @@ async function resolveCacheMode(
       const archiveKey = cfg.get(AptDirCacheArchivesKey);
 
       return [{
-        mountTarget: `/${cacheKey}/${archiveKey}/`,
+        mountTarget: `/${cacheKey}/${archiveKey}`,
         framework: cacheMode,
       }]
     }
