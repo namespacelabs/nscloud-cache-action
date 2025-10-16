@@ -29669,6 +29669,8 @@ const Input_FailOnCacheMiss = "fail-on-cache-miss";
 const Output_CacheHit = "cache-hit";
 const ActionVersion = "nscloud-action-cache@v1";
 const ModeXcode = "xcode";
+const AptDirCacheKey = "Dir::Cache";
+const AptDirCacheArchivesKey = "Dir::Cache::archives";
 void main();
 async function main() {
     // nscloud-cache-action should run within seconds. Time out after five minutes as a safety guard.
@@ -29959,6 +29961,17 @@ async function resolveCacheMode(cacheMode, cachesXcode) {
                     framework: cacheMode,
                 }];
         }
+        case "apt": {
+            // TODO: remove `/etc/apt/apt.conf.d/docker-clean`
+            // - /{Dir::Etc}/{Dir::Etc::parts}/
+            const cfg = await getAptConfigDump();
+            const cacheKey = cfg.get(AptDirCacheKey);
+            const archiveKey = cfg.get(AptDirCacheArchivesKey);
+            return [{
+                    mountTarget: `/${cacheKey}/${archiveKey}/`,
+                    framework: cacheMode,
+                }];
+        }
         default:
             core.warning(`Unknown cache option: ${cacheMode}.`);
             return [];
@@ -29980,6 +29993,19 @@ async function pnpmVersion() {
     // pnpm prints warnings to stdout pre 9.7, so only the last line contains the version.
     const lines = out.split(/\r?\n/);
     return lines[lines.length - 1];
+}
+async function getAptConfigDump() {
+    const { stdout } = await lib_exec.getExecOutput("apt-config dump");
+    const config = new Map();
+    const pattern = /(.+)\s"(.*)";/;
+    for (const line of stdout.split(/\r?\n/)) {
+        const match = pattern.exec(line.trim());
+        if (!match) {
+            continue;
+        }
+        config.set(match[1], match[2]);
+    }
+    return config;
 }
 async function getExecStdoutDropWarnings(cmd) {
     const { stdout } = await lib_exec.getExecOutput(cmd);

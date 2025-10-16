@@ -13,6 +13,8 @@ const Input_FailOnCacheMiss = "fail-on-cache-miss";
 const Output_CacheHit = "cache-hit";
 const ActionVersion = "nscloud-action-cache@v1";
 const ModeXcode = "xcode";
+const AptDirCacheKey = "Dir::Cache";
+const AptDirCacheArchivesKey = "Dir::Cache::archives";
 
 void main();
 
@@ -369,6 +371,20 @@ async function resolveCacheMode(
       }]
     }
 
+    case "apt": {
+      // TODO: remove `/etc/apt/apt.conf.d/docker-clean`
+      // - /{Dir::Etc}/{Dir::Etc::parts}/
+
+      const cfg = await getAptConfigDump();
+      const cacheKey = cfg.get(AptDirCacheKey);
+      const archiveKey = cfg.get(AptDirCacheArchivesKey);
+
+      return [{
+        mountTarget: `/${cacheKey}/${archiveKey}/`,
+        framework: cacheMode,
+      }]
+    }
+
     default:
       core.warning(`Unknown cache option: ${cacheMode}.`);
       return [];
@@ -406,6 +422,23 @@ async function pnpmVersion(): Promise<string> {
   const lines = out.split(/\r?\n/);
 
   return lines[lines.length - 1];
+}
+
+async function getAptConfigDump(): Promise<Map<string, string>> {
+  const { stdout } = await exec.getExecOutput("apt-config dump");
+
+  const config = new Map<string, string>();
+  const pattern = /(.+)\s"(.*)";/;
+
+  for (const line of stdout.split(/\r?\n/)) {
+    const match = pattern.exec(line.trim());
+    if (!match) {
+      continue;
+    }
+    config.set(match[1], match[2]);
+  }
+
+  return config;
 }
 
 async function getExecStdoutDropWarnings(cmd: string): Promise<string> {
