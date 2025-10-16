@@ -429,7 +429,9 @@ async function pnpmVersion(): Promise<string> {
 }
 
 async function getAptConfigDump(): Promise<Map<string, string>> {
-  const { stdout } = await exec.getExecOutput("apt-config dump");
+  const { stdout } = await exec.getExecOutput("apt-config dump", [], {
+    silent: true,
+  });
 
   const config = new Map<string, string>();
   const pattern = /(.+)\s"(.*)";/;

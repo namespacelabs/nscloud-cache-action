@@ -29998,7 +29998,9 @@ async function pnpmVersion() {
     return lines[lines.length - 1];
 }
 async function getAptConfigDump() {
-    const { stdout } = await lib_exec.getExecOutput("apt-config dump");
+    const { stdout } = await lib_exec.getExecOutput("apt-config dump", [], {
+        silent: true,
+    });
     const config = new Map();
     const pattern = /(.+)\s"(.*)";/;
     for (const line of stdout.split(/\r?\n/)) {
