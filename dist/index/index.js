@@ -29671,6 +29671,8 @@ const ActionVersion = "nscloud-action-cache@v1";
 const ModeXcode = "xcode";
 const AptDirCacheKey = "Dir::Cache";
 const AptDirCacheArchivesKey = "Dir::Cache::archives";
+const AptDirEtcKey = "Dir::Etc";
+const AptDirEtcPartsKey = "Dir::Etc::parts";
 void main();
 async function main() {
     // nscloud-cache-action should run within seconds. Time out after five minutes as a safety guard.
@@ -29962,9 +29964,10 @@ async function resolveCacheMode(cacheMode, cachesXcode) {
                 }];
         }
         case "apt": {
-            // TODO: remove `/etc/apt/apt.conf.d/docker-clean`
-            // - /{Dir::Etc}/{Dir::Etc::parts}/
             const cfg = await getAptConfigDump();
+            const etcKey = cfg.get(AptDirEtcKey);
+            const partsKey = cfg.get(AptDirEtcPartsKey);
+            await lib_exec.exec("sudo", ["rm", "-f", `/${etcKey}/${partsKey}/docker-clean`]);
             const cacheKey = cfg.get(AptDirCacheKey);
             const archiveKey = cfg.get(AptDirCacheArchivesKey);
             return [{
