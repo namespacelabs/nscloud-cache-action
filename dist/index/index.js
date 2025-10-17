@@ -29764,8 +29764,15 @@ async function restoreLocalCache(cachePaths, useSymlinks) {
         }
         const expandedFilePath = resolveHome(p.mountTarget);
         const st = external_node_fs_namespaceObject.lstatSync(expandedFilePath, { throwIfNoEntry: false });
-        if (p.framework == "custom" && mountTargetExists(expandedFilePath, st)) {
-            core.warning(`Mount target path ${p.mountTarget} already exists, will be overwritten.`);
+        if (p.framework == "custom") {
+            try {
+                if (mountTargetExists(expandedFilePath, st)) {
+                    core.warning(`Mount target will be overwritten as path ${p.mountTarget} already exists.`);
+                }
+            }
+            catch (e) {
+                core.error(`Failed to check mount target path ${p.mountTarget}: ${e.message}`);
+            }
         }
         await io.mkdirP(p.pathInCache);
         if (useSymlinks) {
