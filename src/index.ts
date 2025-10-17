@@ -13,6 +13,10 @@ const Input_FailOnCacheMiss = "fail-on-cache-miss";
 const Output_CacheHit = "cache-hit";
 const ActionVersion = "nscloud-action-cache@v1";
 const ModeXcode = "xcode";
+const AptDirCacheKey = "Dir::Cache";
+const AptDirCacheArchivesKey = "Dir::Cache::archives";
+const AptDirEtcKey = "Dir::Etc";
+const AptDirEtcPartsKey = "Dir::Etc::parts";
 
 void main();
 
@@ -369,6 +373,22 @@ async function resolveCacheMode(
       }]
     }
 
+    case "apt": {
+      const cfg = await getAptConfigDump();
+
+      const etcDir = cfg.get(AptDirEtcKey);
+      const etcPartsDir = cfg.get(AptDirEtcPartsKey);
+      await exec.exec("sudo", ["rm", "-f", `/${etcDir}/${etcPartsDir}/docker-clean`]);
+
+      const cacheDir = cfg.get(AptDirCacheKey);
+      const cacheArchivesDir = cfg.get(AptDirCacheArchivesKey);
+
+      return [{
+        mountTarget: `/${cacheDir}/${cacheArchivesDir}`,
+        framework: cacheMode,
+      }]
+    }
+
     default:
       core.warning(`Unknown cache option: ${cacheMode}.`);
       return [];
@@ -406,6 +426,25 @@ async function pnpmVersion(): Promise<string> {
   const lines = out.split(/\r?\n/);
 
   return lines[lines.length - 1];
+}
+
+async function getAptConfigDump(): Promise<Map<string, string>> {
+  const { stdout } = await exec.getExecOutput("apt-config dump", [], {
+    silent: true,
+  });
+
+  const config = new Map<string, string>();
+  const pattern = /(.+)\s"(.*)";/;
+
+  for (const line of stdout.split(/\r?\n/)) {
+    const match = pattern.exec(line.trim());
+    if (!match) {
+      continue;
+    }
+    config.set(match[1], match[2]);
+  }
+
+  return config;
 }
 
 async function getExecStdoutDropWarnings(cmd: string): Promise<string> {
