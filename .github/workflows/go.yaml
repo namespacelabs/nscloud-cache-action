@@ -21,7 +21,7 @@ jobs:
   go:
     strategy:
       matrix:
-        go-version: [1.23.x]
+        go-version: [1.24.x]
         profile: [namespace-profile-e2e-medium]
     runs-on:
       - ${{ matrix.profile }}
@@ -54,7 +54,7 @@ jobs:
   gonocache:
     strategy:
       matrix:
-        go-version: [1.23.x]
+        go-version: [1.24.x]
         profile: [namespace-profile-default]
     runs-on:
       - ${{ matrix.profile }}
