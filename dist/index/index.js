@@ -29965,13 +29965,13 @@ async function resolveCacheMode(cacheMode, cachesXcode) {
         }
         case "apt": {
             const cfg = await getAptConfigDump();
-            const etcKey = cfg.get(AptDirEtcKey);
-            const partsKey = cfg.get(AptDirEtcPartsKey);
-            await lib_exec.exec("sudo", ["rm", "-f", `/${etcKey}/${partsKey}/docker-clean`]);
-            const cacheKey = cfg.get(AptDirCacheKey);
-            const archiveKey = cfg.get(AptDirCacheArchivesKey);
+            const etcDir = cfg.get(AptDirEtcKey);
+            const etcPartsDir = cfg.get(AptDirEtcPartsKey);
+            await lib_exec.exec("sudo", ["rm", "-f", `/${etcDir}/${etcPartsDir}/docker-clean`]);
+            const cacheDir = cfg.get(AptDirCacheKey);
+            const cacheArchivesDir = cfg.get(AptDirCacheArchivesKey);
             return [{
-                    mountTarget: `/${cacheKey}/${archiveKey}`,
+                    mountTarget: `/${cacheDir}/${cacheArchivesDir}`,
                     framework: cacheMode,
                 }];
         }
