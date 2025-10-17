@@ -30,4 +30,4 @@ jobs:
         with:
           cache: playwright
 
-      - run: npx playwright install
+      - run: npx playwright install --with-deps
