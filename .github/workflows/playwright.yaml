@@ -1,0 +1,33 @@
+name: Test Playwright caching
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - "*"
+  workflow_dispatch:
+
+  # Allow check to run on the merge queue so that it is eligible to be a "required" check.
+  merge_group:
+    types: [checks_requested]
+
+permissions:
+  contents: read
+
+jobs:
+  playwright:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [namespace-profile-macos, namespace-profile-e2e-small]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Playwright browser cache
+        uses: ./ # Uses an action in the root directory
+        with:
+          cache: playwright
+
+      - run: npx playwright install
