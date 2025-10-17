@@ -29505,6 +29505,18 @@ module.exports = __WEBPACK_EXTERNAL_createRequire(import.meta.url)("zlib");
 /******/ }
 /******/ 
 /************************************************************************/
+/******/ /* webpack/runtime/compat get default export */
+/******/ (() => {
+/******/ 	// getDefaultExport function for compatibility with non-harmony modules
+/******/ 	__nccwpck_require__.n = (module) => {
+/******/ 		var getter = module && module.__esModule ?
+/******/ 			() => (module['default']) :
+/******/ 			() => (module);
+/******/ 		__nccwpck_require__.d(getter, { a: getter });
+/******/ 		return getter;
+/******/ 	};
+/******/ })();
+/******/ 
 /******/ /* webpack/runtime/define property getters */
 /******/ (() => {
 /******/ 	// define getter functions for harmony exports
@@ -29538,6 +29550,9 @@ __nccwpck_require__.d(__webpack_exports__, {
 
 ;// CONCATENATED MODULE: external "node:fs"
 const external_node_fs_namespaceObject = __WEBPACK_EXTERNAL_createRequire(import.meta.url)("node:fs");
+// EXTERNAL MODULE: external "os"
+var external_os_ = __nccwpck_require__(2037);
+var external_os_default = /*#__PURE__*/__nccwpck_require__.n(external_os_);
 ;// CONCATENATED MODULE: external "node:path"
 const external_node_path_namespaceObject = __WEBPACK_EXTERNAL_createRequire(import.meta.url)("node:path");
 // EXTERNAL MODULE: ./node_modules/@actions/core/lib/core.js
@@ -29646,6 +29661,7 @@ function shouldUseSymlinks() {
 
 
 
+
 const Input_Key = "key"; // unused
 const Input_Path = "path";
 const Input_Cache = "cache";
@@ -29676,12 +29692,12 @@ async function run() {
     const localCachePath = process.env[Env_CacheRoot];
     if (localCachePath == null) {
         let hint = `Please update your \x1b[1mruns-on\x1b[0m labels. E.g.:
-    
+
 \x1b[32mruns-on\x1b[34m:\x1b[0m
   - \x1b[34mnscloud-ubuntu-22.04-amd64-8x16-\x1b[1mwith-cache\x1b[0m
   - \x1b[34m\x1b[1mnscloud-cache-size-50gb\x1b[0m
   - \x1b[34m\x1b[1mnscloud-cache-tag-my-cache-key\x1b[0m
-  
+
 You can replace \x1b[1mmy-cache-key\x1b[0m with something that represents what you’re storing in the cache.`;
         if (process.env.NSC_RUNNER_PROFILE_INFO) {
             hint = "Please enable \x1b[1mCaching\x1b[0m in your runner profile.";
@@ -29924,6 +29940,21 @@ async function resolveCacheMode(cacheMode, cachesXcode) {
                     framework: cacheMode,
                 },
             ];
+        }
+        case "playwright": {
+            let mountTarget = "~/.cache/ms-playwright";
+            switch (external_os_default().platform()) {
+                case "darwin":
+                    mountTarget = "~/Library/Caches/ms-playwright";
+                    break;
+                case "win32":
+                    mountTarget = "%USERPROFILE%\AppData\Local\ms-playwright";
+                    break;
+            }
+            return [{
+                    mountTarget: mountTarget,
+                    framework: cacheMode,
+                }];
         }
         default:
             core.warning(`Unknown cache option: ${cacheMode}.`);

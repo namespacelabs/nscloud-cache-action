@@ -1,4 +1,5 @@
 import * as fs from "node:fs";
+import os from 'os';
 import * as path from "node:path";
 import * as core from "@actions/core";
 import * as exec from "@actions/exec";
@@ -36,12 +37,12 @@ async function run() {
   const localCachePath = process.env[utils.Env_CacheRoot];
   if (localCachePath == null) {
     let hint = `Please update your \x1b[1mruns-on\x1b[0m labels. E.g.:
-    
+
 \x1b[32mruns-on\x1b[34m:\x1b[0m
   - \x1b[34mnscloud-ubuntu-22.04-amd64-8x16-\x1b[1mwith-cache\x1b[0m
   - \x1b[34m\x1b[1mnscloud-cache-size-50gb\x1b[0m
   - \x1b[34m\x1b[1mnscloud-cache-tag-my-cache-key\x1b[0m
-  
+
 You can replace \x1b[1mmy-cache-key\x1b[0m with something that represents what you’re storing in the cache.`;
 
     if (process.env.NSC_RUNNER_PROFILE_INFO) {
@@ -345,6 +346,23 @@ async function resolveCacheMode(
           framework: cacheMode,
         },
       ];
+    }
+
+    case "playwright": {
+      let mountTarget = "~/.cache/ms-playwright";
+      switch (os.platform()) {
+        case "darwin":
+          mountTarget = "~/Library/Caches/ms-playwright";
+          break;
+        case "win32":
+          mountTarget = "%USERPROFILE%\AppData\Local\ms-playwright";
+          break;
+      }
+
+      return [{
+        mountTarget: mountTarget,
+        framework: cacheMode,
+      }]
     }
 
     default:
