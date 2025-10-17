@@ -359,6 +359,10 @@ async function resolveCacheMode(
           break;
       }
 
+      if (process.env.PLAYWRIGHT_BROWSERS_PATH) {
+        mountTarget = process.env.PLAYWRIGHT_BROWSERS_PATH;
+      }
+
       return [{
         mountTarget: mountTarget,
         framework: cacheMode,

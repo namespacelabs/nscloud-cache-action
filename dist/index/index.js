@@ -29951,6 +29951,9 @@ async function resolveCacheMode(cacheMode, cachesXcode) {
                     mountTarget = "%USERPROFILE%\AppData\Local\ms-playwright";
                     break;
             }
+            if (process.env.PLAYWRIGHT_BROWSERS_PATH) {
+                mountTarget = process.env.PLAYWRIGHT_BROWSERS_PATH;
+            }
             return [{
                     mountTarget: mountTarget,
                     framework: cacheMode,
