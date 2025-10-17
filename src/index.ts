@@ -252,6 +252,11 @@ async function resolveCacheMode(cacheMode: string): Promise<utils.CachePath[]> {
       return [{ mountTarget: uvCache, framework: cacheMode }];
     }
 
+    case "xcode": {
+      core.exportVariable("COMPILATION_CACHE_ENABLE_CACHING_DEFAULT", "YES");
+      return [{ mountTarget: "~/Library/Developer/Xcode/DerivedData", framework: cacheMode }];
+    }
+
     default:
       core.warning(`Unknown cache option: ${cacheMode}.`);
       return [];
