@@ -351,7 +351,7 @@ async function resolveCacheMode(
       ];
     }
 
-    case "cocoa": {
+    case "cocoapods": {
       return [
         {
           mountTarget: "./Pods",
