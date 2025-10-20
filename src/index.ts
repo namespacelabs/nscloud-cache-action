@@ -134,7 +134,7 @@ export async function restoreLocalCache(
         if (mountTargetExists(expandedFilePath, st)) {
           core.warning(`Mount target will be overwritten as path ${p.mountTarget} already exists.`);
         }
-      } catch(e) {
+      } catch (e) {
         core.error(`Failed to check mount target path ${p.mountTarget}: ${e.message}`);
       }
     }
@@ -297,6 +297,7 @@ async function resolveCacheMode(
 
     // Experimental, this can be huge.
     case ModeXcode: {
+      core.exportVariable("COMPILATION_CACHE_ENABLE_CACHING_DEFAULT", "YES");
       return [
         {
           // Consider: `defaults read com.apple.dt.Xcode.plist IDECustomDerivedDataLocation`
@@ -306,7 +307,7 @@ async function resolveCacheMode(
       ];
     }
 
-    case "swift": {
+    case "swiftpm": {
       const res = [
         {
           mountTarget: "./.build",

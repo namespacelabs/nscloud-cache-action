@@ -29896,6 +29896,7 @@ async function resolveCacheMode(cacheMode, cachesXcode) {
         }
         // Experimental, this can be huge.
         case ModeXcode: {
+            core.exportVariable("COMPILATION_CACHE_ENABLE_CACHING_DEFAULT", "YES");
             return [
                 {
                     // Consider: `defaults read com.apple.dt.Xcode.plist IDECustomDerivedDataLocation`
@@ -29904,7 +29905,7 @@ async function resolveCacheMode(cacheMode, cachesXcode) {
                 },
             ];
         }
-        case "swift": {
+        case "swiftpm": {
             const res = [
                 {
                     mountTarget: "./.build",
