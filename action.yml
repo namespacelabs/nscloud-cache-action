@@ -13,7 +13,7 @@ inputs:
     default: "false"
     required: false
   cache:
-    description: "A list of native cache modes. Supported options are 'go,yarn,rust,brew,pnpm,gradle,maven,composer,poetry,uv,python'"
+    description: "A list of native cache modes. Supported options are 'go,yarn,rust,brew,pnpm,gradle,maven,composer,poetry,uv,python,xcode,swiftpm,cocoapods'"
     required: false
 outputs:
   cache-hit:

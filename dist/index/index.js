@@ -29944,7 +29944,7 @@ async function resolveCacheMode(cacheMode, cachesXcode) {
                 },
             ];
         }
-        case "cocoa": {
+        case "cocoapods": {
             return [
                 {
                     mountTarget: "./Pods",
