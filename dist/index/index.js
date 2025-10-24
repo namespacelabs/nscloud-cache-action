@@ -29900,7 +29900,7 @@ async function resolveCacheMode(cacheMode, cachesXcode) {
             return [
                 {
                     // Consider: `defaults read com.apple.dt.Xcode.plist IDECustomDerivedDataLocation`
-                    mountTarget: "~/Library/Developer/Xcode/DerivedData",
+                    mountTarget: "~/Library/Developer/Xcode/DerivedData/CompilationCache.noindex",
                     framework: cacheMode,
                 },
             ];
