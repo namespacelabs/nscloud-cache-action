@@ -11,6 +11,11 @@ test('detects go - work', async () => {
   expect(detected).toContain('go');
 });
 
+test('detects homebrew', async () => {
+  const detected = await detectFrameworks('./src/testdata/homebrew');
+  expect(detected).toContain('brew');
+});
+
 test('detects java', async () => {
   const detected = await detectFrameworks('./src/testdata/java');
   expect(detected).toContain('gradle');

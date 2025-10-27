@@ -4,6 +4,7 @@ import * as path from "node:path";
 export async function detectFrameworks(rootPath = './'): Promise<string[]> {
   const detectors: Array<(rootPath: string) => Promise<string[]>> = [
     detectGo,
+    detectHomebrew,
     detectJava,
     detectNode,
     detectPhp,
@@ -35,8 +36,20 @@ async function detectGo(rootPath: string): Promise<string[]> {
   return detected;
 }
 
+async function detectHomebrew(rootPath: string): Promise<string[]> {
+  let detected: string[] = [];
+
+  if (fs.existsSync(path.join(rootPath, 'Brewfile'))) {
+    detected.push('brew');
+  }
+
+  return detected;
+}
+
 async function detectJava(rootPath: string): Promise<string[]> {
   let detected: string[] = [];
+
+  // TODO: support maven
 
   if (fs.existsSync(path.join(rootPath, 'gradlew'))) {
     detected.push('gradle');

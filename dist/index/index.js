@@ -29660,6 +29660,7 @@ function shouldUseSymlinks() {
 async function detectFrameworks(rootPath = './') {
     const detectors = [
         detectGo,
+        detectHomebrew,
         detectJava,
         detectNode,
         detectPhp,
@@ -29684,8 +29685,16 @@ async function detectGo(rootPath) {
     }
     return detected;
 }
+async function detectHomebrew(rootPath) {
+    let detected = [];
+    if (external_node_fs_namespaceObject.existsSync(external_node_path_namespaceObject.join(rootPath, 'Brewfile'))) {
+        detected.push('brew');
+    }
+    return detected;
+}
 async function detectJava(rootPath) {
     let detected = [];
+    // TODO: support maven
     if (external_node_fs_namespaceObject.existsSync(external_node_path_namespaceObject.join(rootPath, 'gradlew'))) {
         detected.push('gradle');
     }
