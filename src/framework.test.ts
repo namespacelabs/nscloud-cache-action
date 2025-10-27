@@ -1,54 +1,103 @@
-import { expect, test } from 'vitest'
+import { beforeEach, expect, test, vi } from 'vitest';
+import { vol } from 'memfs';
 import { detectFrameworks } from "./framework";
 
+vi.mock('node:fs');
+
+beforeEach(() => {
+  vol.reset(); // reset the state of in-memory fs
+});
+
 test('detects go - mod', async () => {
-  const detected = await detectFrameworks('./src/testdata/go/mod');
+  vol.fromJSON({
+    'mockdata/go.mod': '',
+  });
+
+  const detected = await detectFrameworks('mockdata');
   expect(detected).toContain('go');
 });
 
 test('detects go - work', async () => {
-  const detected = await detectFrameworks('./src/testdata/go/work');
+  vol.fromJSON({
+    'mockdata/go.work': '',
+  });
+
+  const detected = await detectFrameworks('mockdata');
   expect(detected).toContain('go');
 });
 
 test('detects homebrew', async () => {
-  const detected = await detectFrameworks('./src/testdata/homebrew');
+  vol.fromJSON({
+    'mockdata/Brewfile': '',
+  });
+
+  const detected = await detectFrameworks('mockdata');
   expect(detected).toContain('brew');
 });
 
 test('detects java', async () => {
-  const detected = await detectFrameworks('./src/testdata/java');
+  vol.fromJSON({
+    'mockdata/gradlew': '',
+  });
+
+  const detected = await detectFrameworks('mockdata');
   expect(detected).toContain('gradle');
 });
 
 test('detects node', async () => {
-  const detected = await detectFrameworks('./src/testdata/node');
+  vol.fromJSON({
+    'mockdata/pnpm-lock.yaml': '',
+    'mockdata/yarn.lock': '',
+  });
+
+  const detected = await detectFrameworks('mockdata');
   expect(detected).toContain('pnpm');
   expect(detected).toContain('yarn');
 });
 
 test('detects php', async () => {
-  const detected = await detectFrameworks('./src/testdata/php');
+  vol.fromJSON({
+    'mockdata/composer.json': '',
+  });
+
+  const detected = await detectFrameworks('mockdata');
   expect(detected).toContain('composer');
 });
 
 test('detects python', async () => {
-  const detected = await detectFrameworks('./src/testdata/python');
+  vol.fromJSON({
+    'mockdata/poetry.lock': '',
+    'mockdata/uv.lock': '',
+  });
+
+  const detected = await detectFrameworks('mockdata');
   expect(detected).toContain('poetry');
   expect(detected).toContain('uv');
 });
 
 test('detects ruby', async () => {
-  const detected = await detectFrameworks('./src/testdata/ruby');
+  vol.fromJSON({
+    'mockdata/Gemfile': '',
+  });
+
+  const detected = await detectFrameworks('mockdata');
   expect(detected).toContain('ruby');
 });
 
 test('detects rust', async () => {
-  const detected = await detectFrameworks('./src/testdata/rust');
+  vol.fromJSON({
+    'mockdata/Cargo.toml': '',
+  });
+
+  const detected = await detectFrameworks('mockdata');
   expect(detected).toContain('rust');
 });
 
 test('detects xcode', async () => {
-  const detected = await detectFrameworks('./src/testdata/xcode');
+  vol.fromJSON({
+    'mockdata/Podfile': '',
+  });
+
+  const detected = await detectFrameworks('mockdata');
   expect(detected).toContain('cocoapods');
 });
