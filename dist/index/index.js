@@ -29655,27 +29655,41 @@ function shouldUseSymlinks() {
 }
 
 ;// CONCATENATED MODULE: ./src/framework.ts
-// TODO: tests
-async function detectFrameworks() {
+
+
+async function detectFrameworks(rootPath = './') {
     const detectors = [
         detectGo,
         detectNode,
     ];
     const detected = [];
     for (const detector of detectors) {
-        const result = await detector();
+        const result = await detector(rootPath);
         detected.push(...result);
     }
     return detected;
 }
-async function detectGo() {
+async function detectGo(rootPath) {
+    if (external_node_fs_namespaceObject.existsSync(external_node_path_namespaceObject.join(rootPath, 'go.mod'))) {
+        return ['go'];
+    }
+    if (external_node_fs_namespaceObject.existsSync(external_node_path_namespaceObject.join(rootPath, 'go.work'))) {
+        return ['go'];
+    }
     return [];
 }
-async function detectNode() {
-    // TODO:
-    // - presence of package.json
-    // - get package manager (npm, pnpm, bun, yarn)
-    return ["node"];
+async function detectNode(rootPath) {
+    if (!external_node_fs_namespaceObject.existsSync(external_node_path_namespaceObject.join(rootPath, 'package.json'))) {
+        return [];
+    }
+    let detected = [];
+    if (external_node_fs_namespaceObject.existsSync(external_node_path_namespaceObject.join(rootPath, 'pnpm-lock.yaml'))) {
+        detected.push('pnpm');
+    }
+    if (external_node_fs_namespaceObject.existsSync(external_node_path_namespaceObject.join(rootPath, 'yarn.lock'))) {
+        detected.push('yarn');
+    }
+    return detected;
 }
 
 ;// CONCATENATED MODULE: ./src/index.ts
