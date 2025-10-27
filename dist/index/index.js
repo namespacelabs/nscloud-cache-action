@@ -29654,7 +29654,32 @@ function shouldUseSymlinks() {
     return useSymlinks;
 }
 
+;// CONCATENATED MODULE: ./src/framework.ts
+// TODO: tests
+async function detectFrameworks() {
+    const detectors = [
+        detectGo,
+        detectNode,
+    ];
+    const detected = [];
+    for (const detector of detectors) {
+        const result = await detector();
+        detected.push(...result);
+    }
+    return detected;
+}
+async function detectGo() {
+    return null;
+}
+async function detectNode() {
+    // TODO:
+    // - presence of package.json
+    // - get package manager (npm, pnpm, bun, yarn)
+    return ["node"];
+}
+
 ;// CONCATENATED MODULE: ./src/index.ts
+
 
 
 
@@ -29716,7 +29741,12 @@ Are you running in a container? Check out https://namespace.so/docs/reference/gi
     }
     core.info(`Found Namespace cross-invocation cache at ${localCachePath}.`);
     const useSymlinks = shouldUseSymlinks();
-    const cachePaths = await resolveCachePaths(localCachePath);
+    const manualPaths = core.getMultilineInput(Input_Path);
+    let cacheModes = core.getMultilineInput(Input_Cache);
+    if (manualPaths.length === 0 && cacheModes.length === 0) {
+        cacheModes = await resolveFrameworks();
+    }
+    const cachePaths = await resolveCachePaths(localCachePath, manualPaths, cacheModes);
     const cacheMisses = await restoreLocalCache(cachePaths, useSymlinks);
     const fullHit = cacheMisses.length === 0;
     core.setOutput(Output_CacheHit, fullHit.toString());
@@ -29793,11 +29823,17 @@ async function restoreLocalCache(cachePaths, useSymlinks) {
     }
     return cacheMisses;
 }
-async function resolveCachePaths(localCachePath) {
+async function resolveFrameworks() {
+    const detected = await detectFrameworks();
+    if (detected.length > 0) {
+        core.info(`Detected frameworks: ${detected.join(", ")}`);
+    }
+    return detected;
+}
+async function resolveCachePaths(localCachePath, manualPaths, cacheModes) {
     const paths = [];
-    const manual = core.getMultilineInput(Input_Path);
     let cachesNodeModules = false;
-    for (const p of manual) {
+    for (const p of manualPaths) {
         paths.push({ mountTarget: p, framework: "custom" });
         if (p.endsWith("/node_modules")) {
             cachesNodeModules = true;
@@ -29807,7 +29843,6 @@ async function resolveCachePaths(localCachePath) {
         core.warning(`Caching node_modules is not always safe. Prefer using cache modes if possible.
 See also https://namespace.so/docs/reference/github-actions/nscloud-cache-action#cache`);
     }
-    const cacheModes = core.getMultilineInput(Input_Cache);
     let cachesXcode = false;
     for (const mode of cacheModes) {
         if (mode === ModeXcode) {

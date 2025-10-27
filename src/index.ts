@@ -5,6 +5,7 @@ import * as core from "@actions/core";
 import * as exec from "@actions/exec";
 import * as io from "@actions/io";
 import * as utils from "./utils";
+import * as framework from "./framework";
 
 const Input_Key = "key"; // unused
 const Input_Path = "path";
@@ -67,7 +68,13 @@ Are you running in a container? Check out https://namespace.so/docs/reference/gi
 
   const useSymlinks = utils.shouldUseSymlinks();
 
-  const cachePaths = await resolveCachePaths(localCachePath);
+  const manualPaths = core.getMultilineInput(Input_Path);
+  let cacheModes = core.getMultilineInput(Input_Cache);
+  if (manualPaths.length === 0 && cacheModes.length === 0) {
+    cacheModes = await resolveFrameworks();
+  }
+
+  const cachePaths = await resolveCachePaths(localCachePath, manualPaths, cacheModes);
   const cacheMisses = await restoreLocalCache(cachePaths, useSymlinks);
 
   const fullHit = cacheMisses.length === 0;
@@ -160,15 +167,23 @@ export async function restoreLocalCache(
   return cacheMisses;
 }
 
+async function resolveFrameworks(): Promise<string[]> {
+  const detected = await framework.detectFrameworks();
+  if (detected.length > 0) {
+    core.info(`Detected frameworks: ${detected.join(", ")}`);
+  }
+  return detected;
+}
+
 async function resolveCachePaths(
-  localCachePath: string
+  localCachePath: string,
+  manualPaths: string[],
+  cacheModes: string[],
 ): Promise<utils.CachePath[]> {
   const paths: utils.CachePath[] = [];
 
-  const manual: string[] = core.getMultilineInput(Input_Path);
-
   let cachesNodeModules = false;
-  for (const p of manual) {
+  for (const p of manualPaths) {
     paths.push({ mountTarget: p, framework: "custom" });
 
     if (p.endsWith("/node_modules")) {
@@ -183,7 +198,6 @@ See also https://namespace.so/docs/reference/github-actions/nscloud-cache-action
     );
   }
 
-  const cacheModes: string[] = core.getMultilineInput(Input_Cache);
   let cachesXcode = false;
   for (const mode of cacheModes) {
     if (mode === ModeXcode) {
