@@ -29669,7 +29669,7 @@ async function detectFrameworks() {
     return detected;
 }
 async function detectGo() {
-    return null;
+    return [];
 }
 async function detectNode() {
     // TODO:
