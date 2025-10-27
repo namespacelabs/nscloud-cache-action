@@ -7,7 +7,8 @@
   "type": "module",
   "scripts": {
     "build": "ncc build -o dist/index src/index.ts && ncc build -o dist/post src/post.ts",
-    "test": "vitest"
+    "test": "vitest run",
+    "test:watch": "vitest"
   },
   "author": "Namespace Labs",
   "dependencies": {
