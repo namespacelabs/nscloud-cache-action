@@ -29664,6 +29664,7 @@ async function detectFrameworks(rootPath = './') {
         detectJava,
         detectNode,
         detectPhp,
+        detectPlaywright,
         detectPython,
         detectRuby,
         detectRust,
@@ -29717,6 +29718,16 @@ async function detectPhp(rootPath) {
     let detected = [];
     if (external_node_fs_namespaceObject.existsSync(external_node_path_namespaceObject.join(rootPath, 'composer.json'))) {
         detected.push('composer');
+    }
+    return detected;
+}
+async function detectPlaywright(rootPath) {
+    let detected = [];
+    if (external_node_fs_namespaceObject.existsSync(external_node_path_namespaceObject.join(rootPath, 'playwright.config.js'))) {
+        detected.push('playwright');
+    }
+    if (external_node_fs_namespaceObject.existsSync(external_node_path_namespaceObject.join(rootPath, 'playwright.config.ts'))) {
+        detected.push('playwright');
     }
     return detected;
 }

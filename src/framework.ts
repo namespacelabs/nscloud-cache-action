@@ -8,6 +8,7 @@ export async function detectFrameworks(rootPath = './'): Promise<string[]> {
     detectJava,
     detectNode,
     detectPhp,
+    detectPlaywright,
     detectPython,
     detectRuby,
     detectRust,
@@ -80,6 +81,20 @@ async function detectPhp(rootPath: string): Promise<string[]> {
 
   if (fs.existsSync(path.join(rootPath, 'composer.json'))) {
     detected.push('composer');
+  }
+
+  return detected;
+}
+
+async function detectPlaywright(rootPath: string): Promise<string[]> {
+  let detected: string[] = [];
+
+  if (fs.existsSync(path.join(rootPath, 'playwright.config.js'))) {
+    detected.push('playwright');
+  }
+
+  if (fs.existsSync(path.join(rootPath, 'playwright.config.ts'))) {
+    detected.push('playwright');
   }
 
   return detected;

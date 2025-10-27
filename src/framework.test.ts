@@ -8,7 +8,7 @@ beforeEach(() => {
   vol.reset(); // reset the state of in-memory fs
 });
 
-test('detects go - mod', async () => {
+test('detects go mod', async () => {
   vol.fromJSON({
     'mockdata/go.mod': '',
   });
@@ -17,7 +17,7 @@ test('detects go - mod', async () => {
   expect(detected).toContain('go');
 });
 
-test('detects go - work', async () => {
+test('detects go work', async () => {
   vol.fromJSON({
     'mockdata/go.work': '',
   });
@@ -64,6 +64,24 @@ test('detects php', async () => {
 
   const detected = await detectFrameworks('mockdata');
   expect(detected).toContain('composer');
+});
+
+test('detects playwright js', async () => {
+  vol.fromJSON({
+    'mockdata/playwright.config.js': '',
+  });
+
+  const detected = await detectFrameworks('mockdata');
+  expect(detected).toContain('playwright');
+});
+
+test('detects playwright ts', async () => {
+  vol.fromJSON({
+    'mockdata/playwright.config.ts': '',
+  });
+
+  const detected = await detectFrameworks('mockdata');
+  expect(detected).toContain('playwright');
 });
 
 test('detects python', async () => {
