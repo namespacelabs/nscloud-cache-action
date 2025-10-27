@@ -29661,6 +29661,7 @@ async function detectFrameworks(rootPath = './') {
     const detectors = [
         detectGo,
         detectNode,
+        detectPhp,
     ];
     const detected = [];
     for (const detector of detectors) {
@@ -29690,6 +29691,12 @@ async function detectNode(rootPath) {
         detected.push('yarn');
     }
     return detected;
+}
+async function detectPhp(rootPath) {
+    if (external_node_fs_namespaceObject.existsSync(external_node_path_namespaceObject.join(rootPath, 'composer.json'))) {
+        return ['composer'];
+    }
+    return [];
 }
 
 ;// CONCATENATED MODULE: ./src/index.ts

@@ -6,6 +6,7 @@ export async function detectFrameworks(rootPath = './'): Promise<string[]> {
     detectGo,
     detectNode,
     detectPhp,
+    detectPython,
   ];
 
   const detected: string[] = [];
@@ -18,22 +19,20 @@ export async function detectFrameworks(rootPath = './'): Promise<string[]> {
 }
 
 async function detectGo(rootPath: string): Promise<string[]> {
+  let detected: string[] = [];
+
   if (fs.existsSync(path.join(rootPath, 'go.mod'))) {
-    return ['go'];
+    detected.push('go');
   }
 
   if (fs.existsSync(path.join(rootPath, 'go.work'))) {
-    return ['go'];
+    detected.push('go');
   }
 
-  return [];
+  return detected;
 }
 
 async function detectNode(rootPath: string): Promise<string[]> {
-  if (!fs.existsSync(path.join(rootPath, 'package.json'))) {
-    return [];
-  }
-
   let detected: string[] = [];
 
   if (fs.existsSync(path.join(rootPath, 'pnpm-lock.yaml'))) {
@@ -48,9 +47,25 @@ async function detectNode(rootPath: string): Promise<string[]> {
 }
 
 async function detectPhp(rootPath: string): Promise<string[]> {
+  let detected: string[] = [];
+
   if (fs.existsSync(path.join(rootPath, 'composer.json'))) {
-    return ['composer'];
+    detected.push('composer');
   }
 
-  return [];
+  return detected;
+}
+
+async function detectPython(rootPath: string): Promise<string[]> {
+  let detected: string[] = [];
+
+  if (fs.existsSync(path.join(rootPath, 'poetry.lock'))) {
+    detected.push('poetry');
+  }
+
+  if (fs.existsSync(path.join(rootPath, 'uv.lock'))) {
+    detected.push('uv');
+  }
+
+  return detected;
 }
