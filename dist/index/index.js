@@ -29761,6 +29761,7 @@ async function detectXcode(rootPath) {
 
 
 const Input_Key = "key"; // unused
+const Input_Detect = "detect";
 const Input_Path = "path";
 const Input_Cache = "cache";
 const Input_FailOnCacheMiss = "fail-on-cache-miss";
@@ -29814,9 +29815,10 @@ Are you running in a container? Check out https://namespace.so/docs/reference/gi
     }
     core.info(`Found Namespace cross-invocation cache at ${localCachePath}.`);
     const useSymlinks = shouldUseSymlinks();
+    const autoDetect = core.getBooleanInput(Input_Detect);
     const manualPaths = core.getMultilineInput(Input_Path);
     let cacheModes = core.getMultilineInput(Input_Cache);
-    if ((manualPaths.length === 0 && cacheModes.length === 0) || (cacheModes.length === 1 && cacheModes[0] === "auto")) {
+    if (autoDetect || (manualPaths.length === 0 && cacheModes.length === 0)) {
         cacheModes = await resolveFrameworks();
     }
     const cachePaths = await resolveCachePaths(localCachePath, manualPaths, cacheModes);

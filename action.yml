@@ -2,6 +2,9 @@ name: "Cache"
 description: "Cache artifacts like dependencies and build outputs to a Namespace Cloud cache volume to improve workflow execution time."
 author: "Namespace Labs"
 inputs:
+  detect:
+    description: "Automatically detect frameworks to cache based on files in the repository. If 'path' or 'cache' inputs are not provided, this is set to true."
+    required: false
   path:
     description: "A list of files, directories, and wildcard patterns to cache and restore"
     required: false

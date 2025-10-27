@@ -1,4 +1,4 @@
-name: Test auto-framework caching
+name: Test auto-framework detection
 on:
   push:
     branches:
@@ -18,7 +18,7 @@ permissions:
   contents: read
 
 jobs:
-  detection:
+  skipped:
     runs-on:
       - namespace-profile-e2e-small
     steps:
@@ -31,4 +31,39 @@ jobs:
 
       - name: Setup cache
         uses: ./ # Uses an action in the root directory
-        # with intentionally left blank to use framework detection
+        with:
+          path: |
+            ./detect-skipped-tmp
+
+  force:
+    runs-on:
+      - namespace-profile-e2e-small
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Trigger various framework detections
+        run: |
+          touch Cargo.toml go.mod
+
+      - name: Setup cache
+        uses: ./ # Uses an action in the root directory
+        with:
+          detect: true
+          path: |
+            ./detect-force-tmp
+
+  no-config:
+    runs-on:
+      - namespace-profile-e2e-small
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Trigger various framework detections
+        run: |
+          touch Cargo.toml go.mod
+
+      - name: Setup cache
+        uses: ./ # Uses an action in the root directory
+        # `with` intentionally left blank to use framework detection
