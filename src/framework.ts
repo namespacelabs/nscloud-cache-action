@@ -15,7 +15,7 @@ export async function detectFrameworks(): Promise<string[]> {
 }
 
 async function detectGo(): Promise<string[]> {
-  return null;
+  return [];
 }
 
 async function detectNode(): Promise<string[]> {
