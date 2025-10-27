@@ -70,7 +70,7 @@ Are you running in a container? Check out https://namespace.so/docs/reference/gi
 
   const manualPaths = core.getMultilineInput(Input_Path);
   let cacheModes = core.getMultilineInput(Input_Cache);
-  if (manualPaths.length === 0 && cacheModes.length === 0) {
+  if ((manualPaths.length === 0 && cacheModes.length === 0) || (cacheModes.length === 1 && cacheModes[0] === "auto")) {
     cacheModes = await resolveFrameworks();
   }
 
