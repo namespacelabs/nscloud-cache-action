@@ -47,3 +47,8 @@ test('detects rust', async () => {
   const detected = await detectFrameworks('./src/testdata/rust');
   expect(detected).toContain('rust');
 });
+
+test('detects xcode', async () => {
+  const detected = await detectFrameworks('./src/testdata/xcode');
+  expect(detected).toContain('cocoapods');
+});

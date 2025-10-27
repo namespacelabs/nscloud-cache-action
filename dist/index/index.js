@@ -29667,6 +29667,7 @@ async function detectFrameworks(rootPath = './') {
         detectPython,
         detectRuby,
         detectRust,
+        detectXcode,
     ];
     const detected = [];
     for (const detector of detectors) {
@@ -29738,6 +29739,14 @@ async function detectRust(rootPath) {
     let detected = [];
     if (external_node_fs_namespaceObject.existsSync(external_node_path_namespaceObject.join(rootPath, 'Cargo.toml'))) {
         detected.push('rust');
+    }
+    return detected;
+}
+async function detectXcode(rootPath) {
+    let detected = [];
+    // TODO: support xcode & swiftpm
+    if (external_node_fs_namespaceObject.existsSync(external_node_path_namespaceObject.join(rootPath, 'Podfile'))) {
+        detected.push('cocoapods');
     }
     return detected;
 }

@@ -11,6 +11,7 @@ export async function detectFrameworks(rootPath = './'): Promise<string[]> {
     detectPython,
     detectRuby,
     detectRust,
+    detectXcode,
   ];
 
   const detected: string[] = [];
@@ -111,6 +112,18 @@ async function detectRust(rootPath: string): Promise<string[]> {
 
   if (fs.existsSync(path.join(rootPath, 'Cargo.toml'))) {
     detected.push('rust');
+  }
+
+  return detected;
+}
+
+async function detectXcode(rootPath: string): Promise<string[]> {
+  let detected: string[] = [];
+
+  // TODO: support xcode & swiftpm
+
+  if (fs.existsSync(path.join(rootPath, 'Podfile'))) {
+    detected.push('cocoapods');
   }
 
   return detected;
