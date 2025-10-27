@@ -38,10 +38,12 @@ test('detects homebrew', async () => {
 test('detects java', async () => {
   vol.fromJSON({
     'mockdata/gradlew': '',
+    'mockdata/pom.xml': '',
   });
 
   const detected = await detectFrameworks('mockdata');
   expect(detected).toContain('gradle');
+  expect(detected).toContain('maven');
 });
 
 test('detects node', async () => {

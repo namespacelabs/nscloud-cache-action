@@ -50,10 +50,12 @@ async function detectHomebrew(rootPath: string): Promise<string[]> {
 async function detectJava(rootPath: string): Promise<string[]> {
   let detected: string[] = [];
 
-  // TODO: support maven
-
   if (fs.existsSync(path.join(rootPath, 'gradlew'))) {
     detected.push('gradle');
+  }
+
+  if (fs.existsSync(path.join(rootPath, 'pom.xml'))) {
+    detected.push('maven');
   }
 
   return detected;
