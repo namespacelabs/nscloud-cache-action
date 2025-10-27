@@ -29826,6 +29826,38 @@ See also https://namespace.so/docs/reference/github-actions/nscloud-cache-action
 }
 async function resolveCacheMode(cacheMode, cachesXcode) {
     switch (cacheMode) {
+        case "apt": {
+            const cfg = await getAptConfigDump();
+            const etcDir = cfg.get(AptDirEtcKey);
+            const etcPartsDir = cfg.get(AptDirEtcPartsKey);
+            await lib_exec.exec("sudo", ["rm", "-f", `/${etcDir}/${etcPartsDir}/docker-clean`]);
+            const cacheDir = cfg.get(AptDirCacheKey);
+            const cacheArchivesDir = cfg.get(AptDirCacheArchivesKey);
+            return [{
+                    mountTarget: `/${cacheDir}/${cacheArchivesDir}`,
+                    framework: cacheMode,
+                }];
+        }
+        case "brew": {
+            const brewCache = await getExecStdout("brew --cache");
+            return [{ mountTarget: brewCache, framework: cacheMode }];
+        }
+        case "cocoapods": {
+            return [
+                {
+                    mountTarget: "./Pods",
+                    framework: cacheMode,
+                },
+                {
+                    mountTarget: "~/Library/Caches/CocoaPods",
+                    framework: cacheMode,
+                },
+            ];
+        }
+        case "composer": {
+            const composerCache = await getExecStdout("composer config --global cache-files-dir");
+            return [{ mountTarget: composerCache, framework: cacheMode }];
+        }
         case "go": {
             const goCache = await getExecStdout("go env -json GOCACHE GOMODCACHE");
             const goCacheParsed = JSON.parse(goCache);
@@ -29834,16 +29866,32 @@ async function resolveCacheMode(cacheMode, cachesXcode) {
                 { mountTarget: goCacheParsed.GOMODCACHE, framework: cacheMode },
             ];
         }
-        case "yarn": {
-            const yarnVersion = await getExecStdout("yarn --version");
-            const yarnCache = yarnVersion.startsWith("1.")
-                ? await getExecStdout("yarn cache dir")
-                : await getExecStdout("yarn config get cacheFolder");
-            return [{ mountTarget: yarnCache, framework: cacheMode }];
+        case "gradle": {
+            return [
+                { mountTarget: "~/.gradle/caches", framework: cacheMode },
+                { mountTarget: "~/.gradle/wrapper", framework: cacheMode },
+            ];
         }
-        case "python": {
-            const pipCache = await getExecStdout("pip cache dir");
-            return [{ mountTarget: pipCache, framework: cacheMode }];
+        case "maven": {
+            return [{ mountTarget: "~/.m2/repository", framework: cacheMode }];
+        }
+        case "playwright": {
+            let mountTarget = "~/.cache/ms-playwright";
+            switch (external_os_default().platform()) {
+                case "darwin":
+                    mountTarget = "~/Library/Caches/ms-playwright";
+                    break;
+                case "win32":
+                    mountTarget = "%USERPROFILE%\AppData\Local\ms-playwright";
+                    break;
+            }
+            if (process.env.PLAYWRIGHT_BROWSERS_PATH) {
+                mountTarget = process.env.PLAYWRIGHT_BROWSERS_PATH;
+            }
+            return [{
+                    mountTarget: mountTarget,
+                    framework: cacheMode,
+                }];
         }
         case "pnpm": {
             const ver = await pnpmVersion();
@@ -29859,7 +29907,29 @@ async function resolveCacheMode(cacheMode, cachesXcode) {
             core.exportVariable("npm_config_package_import_method", "copy");
             return paths;
         }
-        case "rust":
+        case "poetry": {
+            const poetryCache = await getExecStdout("poetry config cache-dir");
+            return [{ mountTarget: poetryCache, framework: cacheMode }];
+        }
+        case "python": {
+            const pipCache = await getExecStdout("pip cache dir");
+            return [{ mountTarget: pipCache, framework: cacheMode }];
+        }
+        case "ruby": {
+            return [
+                {
+                    // Caches output of `bundle install`.
+                    mountTarget: "./vendor/bundle",
+                    framework: cacheMode,
+                },
+                {
+                    // Caches output of `bundle cache` (less common).
+                    mountTarget: "./vendor/cache",
+                    framework: cacheMode,
+                },
+            ];
+        }
+        case "rust": {
             // Do not cache the whole ~/.cargo dir as it contains ~/.cargo/bin, where the cargo binary lives
             return [
                 { mountTarget: "~/.cargo/registry", framework: cacheMode },
@@ -29867,42 +29937,6 @@ async function resolveCacheMode(cacheMode, cachesXcode) {
                 { mountTarget: "./target", framework: cacheMode },
                 // Cache cleaning feature uses SQLite file https://blog.rust-lang.org/2023/12/11/cargo-cache-cleaning.html
                 { mountTarget: "~/.cargo/.global-cache", framework: cacheMode },
-            ];
-        case "gradle":
-            return [
-                { mountTarget: "~/.gradle/caches", framework: cacheMode },
-                { mountTarget: "~/.gradle/wrapper", framework: cacheMode },
-            ];
-        case "maven":
-            return [{ mountTarget: "~/.m2/repository", framework: cacheMode }];
-        case "composer": {
-            const composerCache = await getExecStdout("composer config --global cache-files-dir");
-            return [{ mountTarget: composerCache, framework: cacheMode }];
-        }
-        case "poetry": {
-            const poetryCache = await getExecStdout("poetry config cache-dir");
-            return [{ mountTarget: poetryCache, framework: cacheMode }];
-        }
-        case "uv": {
-            // Defaults to clone (also known as Copy-on-Write) on macOS, and hardlink on Linux and Windows.
-            // Neither works with cache volumes, and fall back to `copy`. Select `symlink` to avoid copies.
-            core.exportVariable("UV_LINK_MODE", "symlink");
-            const uvCache = await getExecStdout("uv cache dir");
-            return [{ mountTarget: uvCache, framework: cacheMode }];
-        }
-        case "brew": {
-            const brewCache = await getExecStdout("brew --cache");
-            return [{ mountTarget: brewCache, framework: cacheMode }];
-        }
-        // Experimental, this can be huge.
-        case ModeXcode: {
-            core.exportVariable("COMPILATION_CACHE_ENABLE_CACHING_DEFAULT", "YES");
-            return [
-                {
-                    // Consider: `defaults read com.apple.dt.Xcode.plist IDECustomDerivedDataLocation`
-                    mountTarget: "~/Library/Developer/Xcode/DerivedData/CompilationCache.noindex",
-                    framework: cacheMode,
-                },
             ];
         }
         case "swiftpm": {
@@ -29930,61 +29964,30 @@ async function resolveCacheMode(cacheMode, cachesXcode) {
             }
             return res;
         }
-        case "ruby": {
+        case "uv": {
+            // Defaults to clone (also known as Copy-on-Write) on macOS, and hardlink on Linux and Windows.
+            // Neither works with cache volumes, and fall back to `copy`. Select `symlink` to avoid copies.
+            core.exportVariable("UV_LINK_MODE", "symlink");
+            const uvCache = await getExecStdout("uv cache dir");
+            return [{ mountTarget: uvCache, framework: cacheMode }];
+        }
+        // Experimental, this can be huge.
+        case ModeXcode: {
+            core.exportVariable("COMPILATION_CACHE_ENABLE_CACHING_DEFAULT", "YES");
             return [
                 {
-                    // Caches output of `bundle install`.
-                    mountTarget: "./vendor/bundle",
-                    framework: cacheMode,
-                },
-                {
-                    // Caches output of `bundle cache` (less common).
-                    mountTarget: "./vendor/cache",
+                    // Consider: `defaults read com.apple.dt.Xcode.plist IDECustomDerivedDataLocation`
+                    mountTarget: "~/Library/Developer/Xcode/DerivedData/CompilationCache.noindex",
                     framework: cacheMode,
                 },
             ];
         }
-        case "cocoapods": {
-            return [
-                {
-                    mountTarget: "./Pods",
-                    framework: cacheMode,
-                },
-                {
-                    mountTarget: "~/Library/Caches/CocoaPods",
-                    framework: cacheMode,
-                },
-            ];
-        }
-        case "playwright": {
-            let mountTarget = "~/.cache/ms-playwright";
-            switch (external_os_default().platform()) {
-                case "darwin":
-                    mountTarget = "~/Library/Caches/ms-playwright";
-                    break;
-                case "win32":
-                    mountTarget = "%USERPROFILE%\AppData\Local\ms-playwright";
-                    break;
-            }
-            if (process.env.PLAYWRIGHT_BROWSERS_PATH) {
-                mountTarget = process.env.PLAYWRIGHT_BROWSERS_PATH;
-            }
-            return [{
-                    mountTarget: mountTarget,
-                    framework: cacheMode,
-                }];
-        }
-        case "apt": {
-            const cfg = await getAptConfigDump();
-            const etcDir = cfg.get(AptDirEtcKey);
-            const etcPartsDir = cfg.get(AptDirEtcPartsKey);
-            await lib_exec.exec("sudo", ["rm", "-f", `/${etcDir}/${etcPartsDir}/docker-clean`]);
-            const cacheDir = cfg.get(AptDirCacheKey);
-            const cacheArchivesDir = cfg.get(AptDirCacheArchivesKey);
-            return [{
-                    mountTarget: `/${cacheDir}/${cacheArchivesDir}`,
-                    framework: cacheMode,
-                }];
+        case "yarn": {
+            const yarnVersion = await getExecStdout("yarn --version");
+            const yarnCache = yarnVersion.startsWith("1.")
+                ? await getExecStdout("yarn cache dir")
+                : await getExecStdout("yarn config get cacheFolder");
+            return [{ mountTarget: yarnCache, framework: cacheMode }];
         }
         default:
             core.warning(`Unknown cache option: ${cacheMode}.`);
