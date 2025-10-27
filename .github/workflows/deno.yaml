@@ -1,0 +1,35 @@
+name: Test Deno caching
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - "*"
+  workflow_dispatch:
+
+  # Allow check to run on the merge queue so that it is eligible to be a "required" check.
+  merge_group:
+    types: [checks_requested]
+
+permissions:
+  contents: read
+
+jobs:
+  deno:
+    runs-on: namespace-profile-e2e-small
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Deno
+        uses: denoland/setup-deno@v2
+        with:
+          cache: false
+
+      - name: Setup Deno cache
+        uses: ./ # Uses an action in the root directory
+        with:
+          cache: deno
+
+      - run: |
+          deno install
