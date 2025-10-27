@@ -29695,9 +29695,11 @@ async function detectHomebrew(rootPath) {
 }
 async function detectJava(rootPath) {
     let detected = [];
-    // TODO: support maven
     if (external_node_fs_namespaceObject.existsSync(external_node_path_namespaceObject.join(rootPath, 'gradlew'))) {
         detected.push('gradle');
+    }
+    if (external_node_fs_namespaceObject.existsSync(external_node_path_namespaceObject.join(rootPath, 'pom.xml'))) {
+        detected.push('maven');
     }
     return detected;
 }
@@ -29723,6 +29725,9 @@ async function detectPython(rootPath) {
     if (external_node_fs_namespaceObject.existsSync(external_node_path_namespaceObject.join(rootPath, 'poetry.lock'))) {
         detected.push('poetry');
     }
+    if (external_node_fs_namespaceObject.existsSync(external_node_path_namespaceObject.join(rootPath, 'requirements.txt'))) {
+        detected.push('python');
+    }
     if (external_node_fs_namespaceObject.existsSync(external_node_path_namespaceObject.join(rootPath, 'uv.lock'))) {
         detected.push('uv');
     }
@@ -29744,10 +29749,13 @@ async function detectRust(rootPath) {
 }
 async function detectXcode(rootPath) {
     let detected = [];
-    // TODO: support xcode & swiftpm
+    if (external_node_fs_namespaceObject.existsSync(external_node_path_namespaceObject.join(rootPath, 'Package.swift'))) {
+        detected.push('swiftpm');
+    }
     if (external_node_fs_namespaceObject.existsSync(external_node_path_namespaceObject.join(rootPath, 'Podfile'))) {
         detected.push('cocoapods');
     }
+    // - *.xcodeproj
     return detected;
 }
 

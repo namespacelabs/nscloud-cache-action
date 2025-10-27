@@ -69,11 +69,13 @@ test('detects php', async () => {
 test('detects python', async () => {
   vol.fromJSON({
     'mockdata/poetry.lock': '',
+    'mockdata/requirements.txt': '',
     'mockdata/uv.lock': '',
   });
 
   const detected = await detectFrameworks('mockdata');
   expect(detected).toContain('poetry');
+  expect(detected).toContain('python');
   expect(detected).toContain('uv');
 });
 

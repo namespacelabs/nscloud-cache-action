@@ -92,6 +92,10 @@ async function detectPython(rootPath: string): Promise<string[]> {
     detected.push('poetry');
   }
 
+  if (fs.existsSync(path.join(rootPath, 'requirements.txt'))) {
+    detected.push('python');
+  }
+
   if (fs.existsSync(path.join(rootPath, 'uv.lock'))) {
     detected.push('uv');
   }
