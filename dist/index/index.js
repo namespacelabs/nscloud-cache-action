@@ -29842,6 +29842,10 @@ async function resolveCacheMode(cacheMode, cachesXcode) {
             const brewCache = await getExecStdout("brew --cache");
             return [{ mountTarget: brewCache, framework: cacheMode }];
         }
+        case "bun": {
+            const bunCache = await getExecStdout("bun pm cache");
+            return [{ mountTarget: bunCache, framework: cacheMode }];
+        }
         case "cocoapods": {
             return [
                 {

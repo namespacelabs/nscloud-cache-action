@@ -230,6 +230,11 @@ async function resolveCacheMode(
       return [{ mountTarget: brewCache, framework: cacheMode }];
     }
 
+    case "bun": {
+      const bunCache = await getExecStdout("bun pm cache");
+      return [{ mountTarget: bunCache, framework: cacheMode }];
+    }
+
     case "cocoapods": {
       return [
         {
@@ -253,7 +258,6 @@ async function resolveCacheMode(
     case "deno": {
       const deno = await getExecStdout("deno info --json");
       const denoParsed = JSON.parse(deno);
-
       return [
         { mountTarget: denoParsed.denoDir, framework: cacheMode },
       ];
