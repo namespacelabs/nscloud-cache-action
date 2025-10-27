@@ -1,12 +1,17 @@
 import { expect, test } from 'vitest'
 import { detectFrameworks } from "./framework";
 
-test('detects go - mod', async () => {
+test('detects composer', async () => {
+  const detected = await detectFrameworks('./src/testdata/composer');
+  expect(detected).toContain('composer');
+});
+
+test('detects go.mod', async () => {
   const detected = await detectFrameworks('./src/testdata/go/mod');
   expect(detected).toContain('go');
 });
 
-test('detects go - work', async () => {
+test('detects go.work', async () => {
   const detected = await detectFrameworks('./src/testdata/go/work');
   expect(detected).toContain('go');
 });

@@ -5,6 +5,7 @@ export async function detectFrameworks(rootPath = './'): Promise<string[]> {
   const detectors: Array<(rootPath: string) => Promise<string[]>> = [
     detectGo,
     detectNode,
+    detectPhp,
   ];
 
   const detected: string[] = [];
@@ -44,4 +45,12 @@ async function detectNode(rootPath: string): Promise<string[]> {
   }
 
   return detected;
+}
+
+async function detectPhp(rootPath: string): Promise<string[]> {
+  if (fs.existsSync(path.join(rootPath, 'composer.json'))) {
+    return ['composer'];
+  }
+
+  return [];
 }
