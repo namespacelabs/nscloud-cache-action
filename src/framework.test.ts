@@ -97,9 +97,11 @@ test('detects rust', async () => {
 
 test('detects xcode', async () => {
   vol.fromJSON({
+    'mockdata/Package.swift': '',
     'mockdata/Podfile': '',
   });
 
   const detected = await detectFrameworks('mockdata');
   expect(detected).toContain('cocoapods');
+  expect(detected).toContain('swiftpm');
 });

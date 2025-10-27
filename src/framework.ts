@@ -122,7 +122,9 @@ async function detectRust(rootPath: string): Promise<string[]> {
 async function detectXcode(rootPath: string): Promise<string[]> {
   let detected: string[] = [];
 
-  // TODO: support xcode & swiftpm
+  if (fs.existsSync(path.join(rootPath, 'Package.swift'))) {
+    detected.push('swiftpm');
+  }
 
   if (fs.existsSync(path.join(rootPath, 'Podfile'))) {
     detected.push('cocoapods');
