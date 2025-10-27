@@ -29659,6 +29659,8 @@ function shouldUseSymlinks() {
 
 async function detectFrameworks(rootPath = './') {
     const detectors = [
+        detectBun,
+        detectDeno,
         detectGo,
         detectHomebrew,
         detectJava,
@@ -29674,6 +29676,20 @@ async function detectFrameworks(rootPath = './') {
     for (const detector of detectors) {
         const result = await detector(rootPath);
         detected.push(...result);
+    }
+    return detected;
+}
+async function detectBun(rootPath) {
+    let detected = [];
+    if (external_node_fs_namespaceObject.existsSync(external_node_path_namespaceObject.join(rootPath, 'bun.lock'))) {
+        detected.push('bun');
+    }
+    return detected;
+}
+async function detectDeno(rootPath) {
+    let detected = [];
+    if (external_node_fs_namespaceObject.existsSync(external_node_path_namespaceObject.join(rootPath, 'deno.lock'))) {
+        detected.push('deno');
     }
     return detected;
 }

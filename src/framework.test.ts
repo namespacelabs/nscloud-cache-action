@@ -8,6 +8,24 @@ beforeEach(() => {
   vol.reset(); // reset the state of in-memory fs
 });
 
+test('detects bun', async () => {
+  vol.fromJSON({
+    'mockdata/bun.lock': '',
+  });
+
+  const detected = await detectFrameworks('mockdata');
+  expect(detected).toContain('bun');
+});
+
+test('detects deno', async () => {
+  vol.fromJSON({
+    'mockdata/deno.lock': '',
+  });
+
+  const detected = await detectFrameworks('mockdata');
+  expect(detected).toContain('deno');
+});
+
 test('detects go mod', async () => {
   vol.fromJSON({
     'mockdata/go.mod': '',

@@ -3,6 +3,8 @@ import * as path from "node:path";
 
 export async function detectFrameworks(rootPath = './'): Promise<string[]> {
   const detectors: Array<(rootPath: string) => Promise<string[]>> = [
+    detectBun,
+    detectDeno,
     detectGo,
     detectHomebrew,
     detectJava,
@@ -19,6 +21,26 @@ export async function detectFrameworks(rootPath = './'): Promise<string[]> {
   for (const detector of detectors) {
     const result = await detector(rootPath);
     detected.push(...result);
+  }
+
+  return detected;
+}
+
+async function detectBun(rootPath: string): Promise<string[]> {
+  let detected: string[] = [];
+
+  if (fs.existsSync(path.join(rootPath, 'bun.lock'))) {
+    detected.push('bun');
+  }
+
+  return detected;
+}
+
+async function detectDeno(rootPath: string): Promise<string[]> {
+  let detected: string[] = [];
+
+  if (fs.existsSync(path.join(rootPath, 'deno.lock'))) {
+    detected.push('deno');
   }
 
   return detected;
