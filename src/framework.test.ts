@@ -32,3 +32,8 @@ test('detects ruby', async () => {
   const detected = await detectFrameworks('./src/testdata/ruby');
   expect(detected).toContain('ruby');
 });
+
+test('detects rust', async () => {
+  const detected = await detectFrameworks('./src/testdata/rust');
+  expect(detected).toContain('rust');
+});

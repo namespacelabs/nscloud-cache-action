@@ -8,6 +8,7 @@ export async function detectFrameworks(rootPath = './'): Promise<string[]> {
     detectPhp,
     detectPython,
     detectRuby,
+    detectRust,
   ];
 
   const detected: string[] = [];
@@ -76,6 +77,16 @@ async function detectRuby(rootPath: string): Promise<string[]> {
 
   if (fs.existsSync(path.join(rootPath, 'Gemfile'))) {
     detected.push('ruby');
+  }
+
+  return detected;
+}
+
+async function detectRust(rootPath: string): Promise<string[]> {
+  let detected: string[] = [];
+
+  if (fs.existsSync(path.join(rootPath, 'Cargo.toml'))) {
+    detected.push('rust');
   }
 
   return detected;
