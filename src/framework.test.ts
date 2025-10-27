@@ -11,6 +11,11 @@ test('detects go - work', async () => {
   expect(detected).toContain('go');
 });
 
+test('detects java', async () => {
+  const detected = await detectFrameworks('./src/testdata/java');
+  expect(detected).toContain('gradle');
+});
+
 test('detects node', async () => {
   const detected = await detectFrameworks('./src/testdata/node');
   expect(detected).toContain('pnpm');

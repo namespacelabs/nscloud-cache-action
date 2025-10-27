@@ -4,6 +4,7 @@ import * as path from "node:path";
 export async function detectFrameworks(rootPath = './'): Promise<string[]> {
   const detectors: Array<(rootPath: string) => Promise<string[]>> = [
     detectGo,
+    detectJava,
     detectNode,
     detectPhp,
     detectPython,
@@ -29,6 +30,16 @@ async function detectGo(rootPath: string): Promise<string[]> {
 
   if (fs.existsSync(path.join(rootPath, 'go.work'))) {
     detected.push('go');
+  }
+
+  return detected;
+}
+
+async function detectJava(rootPath: string): Promise<string[]> {
+  let detected: string[] = [];
+
+  if (fs.existsSync(path.join(rootPath, 'gradlew'))) {
+    detected.push('gradle');
   }
 
   return detected;

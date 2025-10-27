@@ -29660,10 +29660,12 @@ function shouldUseSymlinks() {
 async function detectFrameworks(rootPath = './') {
     const detectors = [
         detectGo,
+        detectJava,
         detectNode,
         detectPhp,
         detectPython,
         detectRuby,
+        detectRust,
     ];
     const detected = [];
     for (const detector of detectors) {
@@ -29679,6 +29681,13 @@ async function detectGo(rootPath) {
     }
     if (external_node_fs_namespaceObject.existsSync(external_node_path_namespaceObject.join(rootPath, 'go.work'))) {
         detected.push('go');
+    }
+    return detected;
+}
+async function detectJava(rootPath) {
+    let detected = [];
+    if (external_node_fs_namespaceObject.existsSync(external_node_path_namespaceObject.join(rootPath, 'gradlew'))) {
+        detected.push('gradle');
     }
     return detected;
 }
@@ -29713,6 +29722,13 @@ async function detectRuby(rootPath) {
     let detected = [];
     if (external_node_fs_namespaceObject.existsSync(external_node_path_namespaceObject.join(rootPath, 'Gemfile'))) {
         detected.push('ruby');
+    }
+    return detected;
+}
+async function detectRust(rootPath) {
+    let detected = [];
+    if (external_node_fs_namespaceObject.existsSync(external_node_path_namespaceObject.join(rootPath, 'Cargo.toml'))) {
+        detected.push('rust');
     }
     return detected;
 }
