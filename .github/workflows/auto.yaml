@@ -1,0 +1,34 @@
+name: Test auto-framework caching
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - "*"
+  schedule:
+    - cron: "10 */6 * * *"
+  workflow_dispatch:
+
+  # Allow check to run on the merge queue so that it is eligible to be a "required" check.
+  merge_group:
+    types: [checks_requested]
+
+permissions:
+  contents: read
+
+jobs:
+  detection:
+    runs-on:
+      - namespace-profile-e2e-small
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Trigger various framework detections
+        run: |
+          touch Cargo.toml go.mod
+
+      - name: Setup cache
+        uses: ./ # Uses an action in the root directory
+        # with intentionally left blank to use framework detection
