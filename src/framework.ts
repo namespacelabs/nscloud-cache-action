@@ -134,5 +134,12 @@ async function detectXcode(rootPath: string): Promise<string[]> {
     detected.push('cocoapods');
   }
 
+  for (const entry of fs.readdirSync(rootPath)) {
+    if (entry.endsWith('.xcodeproj')) {
+      detected.push('xcode');
+      break;
+    }
+  }
+
   return detected;
 }

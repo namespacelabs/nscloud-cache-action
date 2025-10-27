@@ -29755,7 +29755,12 @@ async function detectXcode(rootPath) {
     if (external_node_fs_namespaceObject.existsSync(external_node_path_namespaceObject.join(rootPath, 'Podfile'))) {
         detected.push('cocoapods');
     }
-    // - *.xcodeproj
+    for (const entry of external_node_fs_namespaceObject.readdirSync(rootPath)) {
+        if (entry.endsWith('.xcodeproj')) {
+            detected.push('xcode');
+            break;
+        }
+    }
     return detected;
 }
 

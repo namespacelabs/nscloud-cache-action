@@ -101,9 +101,11 @@ test('detects xcode', async () => {
   vol.fromJSON({
     'mockdata/Package.swift': '',
     'mockdata/Podfile': '',
+    'mockdata/SomeProject.xcodeproj/project.pbxproj': '',
   });
 
   const detected = await detectFrameworks('mockdata');
   expect(detected).toContain('cocoapods');
   expect(detected).toContain('swiftpm');
+  expect(detected).toContain('xcode');
 });
