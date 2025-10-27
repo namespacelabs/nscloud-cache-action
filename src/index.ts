@@ -250,6 +250,15 @@ async function resolveCacheMode(
       return [{ mountTarget: composerCache, framework: cacheMode }];
     }
 
+    case "deno": {
+      const deno = await getExecStdout("deno info --json");
+      const denoParsed = JSON.parse(deno);
+
+      return [
+        { mountTarget: denoParsed.denoDir, framework: cacheMode },
+      ];
+    }
+
     case "go": {
       const goCache = await getExecStdout("go env -json GOCACHE GOMODCACHE");
       const goCacheParsed = JSON.parse(goCache);

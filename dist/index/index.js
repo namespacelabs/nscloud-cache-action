@@ -29858,6 +29858,13 @@ async function resolveCacheMode(cacheMode, cachesXcode) {
             const composerCache = await getExecStdout("composer config --global cache-files-dir");
             return [{ mountTarget: composerCache, framework: cacheMode }];
         }
+        case "deno": {
+            const deno = await getExecStdout("deno info --json");
+            const denoParsed = JSON.parse(deno);
+            return [
+                { mountTarget: denoParsed.denoDir, framework: cacheMode },
+            ];
+        }
         case "go": {
             const goCache = await getExecStdout("go env -json GOCACHE GOMODCACHE");
             const goCacheParsed = JSON.parse(goCache);
