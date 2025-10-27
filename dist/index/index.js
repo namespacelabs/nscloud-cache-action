@@ -29662,6 +29662,8 @@ async function detectFrameworks(rootPath = './') {
         detectGo,
         detectNode,
         detectPhp,
+        detectPython,
+        detectRuby,
     ];
     const detected = [];
     for (const detector of detectors) {
@@ -29671,18 +29673,16 @@ async function detectFrameworks(rootPath = './') {
     return detected;
 }
 async function detectGo(rootPath) {
+    let detected = [];
     if (external_node_fs_namespaceObject.existsSync(external_node_path_namespaceObject.join(rootPath, 'go.mod'))) {
-        return ['go'];
+        detected.push('go');
     }
     if (external_node_fs_namespaceObject.existsSync(external_node_path_namespaceObject.join(rootPath, 'go.work'))) {
-        return ['go'];
+        detected.push('go');
     }
-    return [];
+    return detected;
 }
 async function detectNode(rootPath) {
-    if (!external_node_fs_namespaceObject.existsSync(external_node_path_namespaceObject.join(rootPath, 'package.json'))) {
-        return [];
-    }
     let detected = [];
     if (external_node_fs_namespaceObject.existsSync(external_node_path_namespaceObject.join(rootPath, 'pnpm-lock.yaml'))) {
         detected.push('pnpm');
@@ -29693,10 +29693,28 @@ async function detectNode(rootPath) {
     return detected;
 }
 async function detectPhp(rootPath) {
+    let detected = [];
     if (external_node_fs_namespaceObject.existsSync(external_node_path_namespaceObject.join(rootPath, 'composer.json'))) {
-        return ['composer'];
+        detected.push('composer');
     }
-    return [];
+    return detected;
+}
+async function detectPython(rootPath) {
+    let detected = [];
+    if (external_node_fs_namespaceObject.existsSync(external_node_path_namespaceObject.join(rootPath, 'poetry.lock'))) {
+        detected.push('poetry');
+    }
+    if (external_node_fs_namespaceObject.existsSync(external_node_path_namespaceObject.join(rootPath, 'uv.lock'))) {
+        detected.push('uv');
+    }
+    return detected;
+}
+async function detectRuby(rootPath) {
+    let detected = [];
+    if (external_node_fs_namespaceObject.existsSync(external_node_path_namespaceObject.join(rootPath, 'Gemfile'))) {
+        detected.push('ruby');
+    }
+    return detected;
 }
 
 ;// CONCATENATED MODULE: ./src/index.ts

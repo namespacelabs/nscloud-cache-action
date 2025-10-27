@@ -14,10 +14,6 @@ test('detects go - work', async () => {
 test('detects node', async () => {
   const detected = await detectFrameworks('./src/testdata/node');
   expect(detected).toContain('pnpm');
-});
-
-test('detects node', async () => {
-  const detected = await detectFrameworks('./src/testdata/node');
   expect(detected).toContain('yarn');
 });
 
@@ -30,4 +26,9 @@ test('detects python', async () => {
   const detected = await detectFrameworks('./src/testdata/python');
   expect(detected).toContain('poetry');
   expect(detected).toContain('uv');
+});
+
+test('detects ruby', async () => {
+  const detected = await detectFrameworks('./src/testdata/ruby');
+  expect(detected).toContain('ruby');
 });
