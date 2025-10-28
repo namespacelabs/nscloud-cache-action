@@ -29877,6 +29877,12 @@ async function resolveCacheMode(cacheMode, cachesXcode) {
                 { mountTarget: goCacheParsed.GOMODCACHE, framework: cacheMode },
             ];
         }
+        case "golangci-lint": {
+            const cacheDir = await getExecStdout("golangci-lint cache status | head -n 1 | cut -b 6-");
+            return [
+                { mountTarget: cacheDir, framework: cacheMode },
+            ];
+        }
         case "gradle": {
             return [
                 { mountTarget: "~/.gradle/caches", framework: cacheMode },
