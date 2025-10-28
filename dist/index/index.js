@@ -29878,7 +29878,14 @@ async function resolveCacheMode(cacheMode, cachesXcode) {
             ];
         }
         case "golangci-lint": {
-            const cacheDir = await getExecStdout("golangci-lint cache status | head -n 1 | cut -b 6-");
+            const cacheDirOutput = await getExecStdout("golangci-lint cache status");
+            let cacheDir = "~/.cache/golangci-lint";
+            for (const line of cacheDirOutput.split("\n")) {
+                if (line.startsWith("Dir:")) {
+                    cacheDir = line.substring("Dir:".length).trim();
+                    break;
+                }
+            }
             return [
                 { mountTarget: cacheDir, framework: cacheMode },
             ];
