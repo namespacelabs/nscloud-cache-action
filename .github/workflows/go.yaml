@@ -74,3 +74,43 @@ jobs:
       - name: Run a Go build
         run: |
           go install namespacelabs.dev/foundation/cmd/ns@latest
+
+  golangci-lint:
+    strategy:
+      matrix:
+        go-version: [1.24.x]
+        golangci-lint-version: [v2.5.0]
+        profile: [namespace-profile-e2e-medium]
+    runs-on:
+      - ${{ matrix.profile }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - uses: actions/checkout@v5
+        with:
+          repository: namespace-integration-demos/go-cache
+          path: demo
+
+      - name: Install Go
+        uses: actions/setup-go@v6
+        with:
+          go-version: ${{ matrix.go-version }}
+          cache: false
+
+      - name: Setup Go cache
+        uses: ./ # Uses an action in the root directory
+        with:
+          cache: go
+
+      - name: Install golangci-lint
+        run: |
+          go install github.com/golangci/golangci-lint/v2/cmd/golangci-lint@${{ matrix.golangci-lint-version }}
+
+      - name: Setup golangci-lint cache
+        uses: ./ # Uses an action in the root directory
+        with:
+          cache: golangci-lint
+
+      - name: Install golangci-lint
+        run: cd ./demo && golangci-lint run
