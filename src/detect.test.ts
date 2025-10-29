@@ -26,13 +26,15 @@ test('detects deno', async () => {
   expect(detected).toContain('deno');
 });
 
-test('detects go mod', async () => {
+test('detects go', async () => {
   vol.fromJSON({
     'mockdata/go.mod': '',
+    'mockdata/.golangci.yml': '',
   });
 
   const detected = await detect.cacheModes('mockdata');
   expect(detected).toContain('go');
+  expect(detected).toContain('golangci-lint');
 });
 
 test('detects go work', async () => {

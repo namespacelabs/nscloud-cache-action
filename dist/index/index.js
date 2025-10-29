@@ -29701,6 +29701,12 @@ async function detectGo(rootPath) {
     if (external_node_fs_namespaceObject.existsSync(external_node_path_namespaceObject.join(rootPath, 'go.work'))) {
         detected.push('go');
     }
+    for (const entry of external_node_fs_namespaceObject.readdirSync(rootPath)) {
+        if (entry.endsWith('.golangci.yml') || entry.endsWith('.golangci.yaml')) {
+            detected.push('golangci-lint');
+            break;
+        }
+    }
     return detected;
 }
 async function detectHomebrew(rootPath) {

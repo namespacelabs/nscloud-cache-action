@@ -57,6 +57,13 @@ async function detectGo(rootPath: string): Promise<string[]> {
     detected.push('go');
   }
 
+  for (const entry of fs.readdirSync(rootPath)) {
+    if (entry.endsWith('.golangci.yml') || entry.endsWith('.golangci.yaml')) {
+      detected.push('golangci-lint');
+      break;
+    }
+  }
+
   return detected;
 }
 
