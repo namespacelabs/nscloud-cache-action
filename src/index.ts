@@ -172,7 +172,9 @@ export async function restoreLocalCache(
 async function resolveFrameworks(): Promise<string[]> {
   const detected = await framework.detectFrameworks();
   if (detected.length > 0) {
-    core.info(`Detected frameworks: ${detected.join(", ")}`);
+    core.info(`Detected cache modes: ${detected.join(", ")}`);
+  } else {
+    core.info("No cache modes automatically detected.");
   }
   return detected;
 }
