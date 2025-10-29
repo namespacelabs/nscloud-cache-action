@@ -1,0 +1,189 @@
+import * as fs from "node:fs";
+import * as path from "node:path";
+
+export async function cacheModes(rootPath = './'): Promise<string[]> {
+  const detectors: Array<(rootPath: string) => Promise<string[]>> = [
+    detectBun,
+    detectDeno,
+    detectGo,
+    detectHomebrew,
+    detectJava,
+    detectNode,
+    detectPhp,
+    detectPlaywright,
+    detectPython,
+    detectRuby,
+    detectRust,
+    detectXcode,
+  ];
+
+  const detected: string[] = [];
+  for (const detector of detectors) {
+    const result = await detector(rootPath);
+    detected.push(...result);
+  }
+
+  return detected;
+}
+
+async function detectBun(rootPath: string): Promise<string[]> {
+  let detected: string[] = [];
+
+  if (fs.existsSync(path.join(rootPath, 'bun.lock'))) {
+    detected.push('bun');
+  }
+
+  return detected;
+}
+
+async function detectDeno(rootPath: string): Promise<string[]> {
+  let detected: string[] = [];
+
+  if (fs.existsSync(path.join(rootPath, 'deno.lock'))) {
+    detected.push('deno');
+  }
+
+  return detected;
+}
+
+async function detectGo(rootPath: string): Promise<string[]> {
+  let detected: string[] = [];
+
+  if (fs.existsSync(path.join(rootPath, 'go.mod'))) {
+    detected.push('go');
+  }
+
+  if (fs.existsSync(path.join(rootPath, 'go.work'))) {
+    detected.push('go');
+  }
+
+  for (const entry of fs.readdirSync(rootPath)) {
+    if (entry.endsWith('.golangci.yml') || entry.endsWith('.golangci.yaml')) {
+      detected.push('golangci-lint');
+      break;
+    }
+  }
+
+  return detected;
+}
+
+async function detectHomebrew(rootPath: string): Promise<string[]> {
+  let detected: string[] = [];
+
+  if (fs.existsSync(path.join(rootPath, 'Brewfile'))) {
+    detected.push('brew');
+  }
+
+  return detected;
+}
+
+async function detectJava(rootPath: string): Promise<string[]> {
+  let detected: string[] = [];
+
+  if (fs.existsSync(path.join(rootPath, 'gradlew'))) {
+    detected.push('gradle');
+  }
+
+  if (fs.existsSync(path.join(rootPath, 'pom.xml'))) {
+    detected.push('maven');
+  }
+
+  return detected;
+}
+
+async function detectNode(rootPath: string): Promise<string[]> {
+  let detected: string[] = [];
+
+  if (fs.existsSync(path.join(rootPath, 'pnpm-lock.yaml'))) {
+    detected.push('pnpm');
+  }
+
+  if (fs.existsSync(path.join(rootPath, 'yarn.lock'))) {
+    detected.push('yarn');
+  }
+
+  return detected;
+}
+
+async function detectPhp(rootPath: string): Promise<string[]> {
+  let detected: string[] = [];
+
+  if (fs.existsSync(path.join(rootPath, 'composer.json'))) {
+    detected.push('composer');
+  }
+
+  return detected;
+}
+
+async function detectPlaywright(rootPath: string): Promise<string[]> {
+  let detected: string[] = [];
+
+  if (fs.existsSync(path.join(rootPath, 'playwright.config.js'))) {
+    detected.push('playwright');
+  }
+
+  if (fs.existsSync(path.join(rootPath, 'playwright.config.ts'))) {
+    detected.push('playwright');
+  }
+
+  return detected;
+}
+
+async function detectPython(rootPath: string): Promise<string[]> {
+  let detected: string[] = [];
+
+  if (fs.existsSync(path.join(rootPath, 'poetry.lock'))) {
+    detected.push('poetry');
+  }
+
+  if (fs.existsSync(path.join(rootPath, 'requirements.txt'))) {
+    detected.push('python');
+  }
+
+  if (fs.existsSync(path.join(rootPath, 'uv.lock'))) {
+    detected.push('uv');
+  }
+
+  return detected;
+}
+
+async function detectRuby(rootPath: string): Promise<string[]> {
+  let detected: string[] = [];
+
+  if (fs.existsSync(path.join(rootPath, 'Gemfile'))) {
+    detected.push('ruby');
+  }
+
+  return detected;
+}
+
+async function detectRust(rootPath: string): Promise<string[]> {
+  let detected: string[] = [];
+
+  if (fs.existsSync(path.join(rootPath, 'Cargo.toml'))) {
+    detected.push('rust');
+  }
+
+  return detected;
+}
+
+async function detectXcode(rootPath: string): Promise<string[]> {
+  let detected: string[] = [];
+
+  if (fs.existsSync(path.join(rootPath, 'Package.swift'))) {
+    detected.push('swiftpm');
+  }
+
+  if (fs.existsSync(path.join(rootPath, 'Podfile'))) {
+    detected.push('cocoapods');
+  }
+
+  for (const entry of fs.readdirSync(rootPath)) {
+    if (entry.endsWith('.xcodeproj')) {
+      detected.push('xcode');
+      break;
+    }
+  }
+
+  return detected;
+}

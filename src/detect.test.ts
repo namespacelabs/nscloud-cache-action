@@ -1,0 +1,149 @@
+import { beforeEach, expect, test, vi } from 'vitest';
+import { vol } from 'memfs';
+import * as detect from "./detect";
+
+vi.mock('node:fs');
+
+beforeEach(() => {
+  vol.reset(); // reset the state of in-memory fs
+});
+
+test('detects bun', async () => {
+  vol.fromJSON({
+    'mockdata/bun.lock': '',
+  });
+
+  const detected = await detect.cacheModes('mockdata');
+  expect(detected).toContain('bun');
+});
+
+test('detects deno', async () => {
+  vol.fromJSON({
+    'mockdata/deno.lock': '',
+  });
+
+  const detected = await detect.cacheModes('mockdata');
+  expect(detected).toContain('deno');
+});
+
+test('detects go', async () => {
+  vol.fromJSON({
+    'mockdata/go.mod': '',
+    'mockdata/.golangci.yml': '',
+  });
+
+  const detected = await detect.cacheModes('mockdata');
+  expect(detected).toContain('go');
+  expect(detected).toContain('golangci-lint');
+});
+
+test('detects go work', async () => {
+  vol.fromJSON({
+    'mockdata/go.work': '',
+  });
+
+  const detected = await detect.cacheModes('mockdata');
+  expect(detected).toContain('go');
+});
+
+test('detects homebrew', async () => {
+  vol.fromJSON({
+    'mockdata/Brewfile': '',
+  });
+
+  const detected = await detect.cacheModes('mockdata');
+  expect(detected).toContain('brew');
+});
+
+test('detects java', async () => {
+  vol.fromJSON({
+    'mockdata/gradlew': '',
+    'mockdata/pom.xml': '',
+  });
+
+  const detected = await detect.cacheModes('mockdata');
+  expect(detected).toContain('gradle');
+  expect(detected).toContain('maven');
+});
+
+test('detects node', async () => {
+  vol.fromJSON({
+    'mockdata/pnpm-lock.yaml': '',
+    'mockdata/yarn.lock': '',
+  });
+
+  const detected = await detect.cacheModes('mockdata');
+  expect(detected).toContain('pnpm');
+  expect(detected).toContain('yarn');
+});
+
+test('detects php', async () => {
+  vol.fromJSON({
+    'mockdata/composer.json': '',
+  });
+
+  const detected = await detect.cacheModes('mockdata');
+  expect(detected).toContain('composer');
+});
+
+test('detects playwright js', async () => {
+  vol.fromJSON({
+    'mockdata/playwright.config.js': '',
+  });
+
+  const detected = await detect.cacheModes('mockdata');
+  expect(detected).toContain('playwright');
+});
+
+test('detects playwright ts', async () => {
+  vol.fromJSON({
+    'mockdata/playwright.config.ts': '',
+  });
+
+  const detected = await detect.cacheModes('mockdata');
+  expect(detected).toContain('playwright');
+});
+
+test('detects python', async () => {
+  vol.fromJSON({
+    'mockdata/poetry.lock': '',
+    'mockdata/requirements.txt': '',
+    'mockdata/uv.lock': '',
+  });
+
+  const detected = await detect.cacheModes('mockdata');
+  expect(detected).toContain('poetry');
+  expect(detected).toContain('python');
+  expect(detected).toContain('uv');
+});
+
+test('detects ruby', async () => {
+  vol.fromJSON({
+    'mockdata/Gemfile': '',
+  });
+
+  const detected = await detect.cacheModes('mockdata');
+  expect(detected).toContain('ruby');
+});
+
+test('detects rust', async () => {
+  vol.fromJSON({
+    'mockdata/Cargo.toml': '',
+  });
+
+  const detected = await detect.cacheModes('mockdata');
+  expect(detected).toContain('rust');
+});
+
+test('detects xcode', async () => {
+  vol.fromJSON({
+    'mockdata/Package.swift': '',
+    'mockdata/Podfile': '',
+    'mockdata/SomeProject.xcodeproj/project.pbxproj': '',
+  });
+
+  const detected = await detect.cacheModes('mockdata');
+  expect(detected).toContain('cocoapods');
+  expect(detected).toContain('swiftpm');
+  expect(detected).toContain('xcode');
+});
