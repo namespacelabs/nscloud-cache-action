@@ -1,6 +1,6 @@
 import { beforeEach, expect, test, vi } from 'vitest';
 import { vol } from 'memfs';
-import { detectFrameworks } from "./framework";
+import * as detect from "./detect";
 
 vi.mock('node:fs');
 
@@ -13,7 +13,7 @@ test('detects bun', async () => {
     'mockdata/bun.lock': '',
   });
 
-  const detected = await detectFrameworks('mockdata');
+  const detected = await detect.cacheModes('mockdata');
   expect(detected).toContain('bun');
 });
 
@@ -22,7 +22,7 @@ test('detects deno', async () => {
     'mockdata/deno.lock': '',
   });
 
-  const detected = await detectFrameworks('mockdata');
+  const detected = await detect.cacheModes('mockdata');
   expect(detected).toContain('deno');
 });
 
@@ -31,7 +31,7 @@ test('detects go mod', async () => {
     'mockdata/go.mod': '',
   });
 
-  const detected = await detectFrameworks('mockdata');
+  const detected = await detect.cacheModes('mockdata');
   expect(detected).toContain('go');
 });
 
@@ -40,7 +40,7 @@ test('detects go work', async () => {
     'mockdata/go.work': '',
   });
 
-  const detected = await detectFrameworks('mockdata');
+  const detected = await detect.cacheModes('mockdata');
   expect(detected).toContain('go');
 });
 
@@ -49,7 +49,7 @@ test('detects homebrew', async () => {
     'mockdata/Brewfile': '',
   });
 
-  const detected = await detectFrameworks('mockdata');
+  const detected = await detect.cacheModes('mockdata');
   expect(detected).toContain('brew');
 });
 
@@ -59,7 +59,7 @@ test('detects java', async () => {
     'mockdata/pom.xml': '',
   });
 
-  const detected = await detectFrameworks('mockdata');
+  const detected = await detect.cacheModes('mockdata');
   expect(detected).toContain('gradle');
   expect(detected).toContain('maven');
 });
@@ -70,7 +70,7 @@ test('detects node', async () => {
     'mockdata/yarn.lock': '',
   });
 
-  const detected = await detectFrameworks('mockdata');
+  const detected = await detect.cacheModes('mockdata');
   expect(detected).toContain('pnpm');
   expect(detected).toContain('yarn');
 });
@@ -80,7 +80,7 @@ test('detects php', async () => {
     'mockdata/composer.json': '',
   });
 
-  const detected = await detectFrameworks('mockdata');
+  const detected = await detect.cacheModes('mockdata');
   expect(detected).toContain('composer');
 });
 
@@ -89,7 +89,7 @@ test('detects playwright js', async () => {
     'mockdata/playwright.config.js': '',
   });
 
-  const detected = await detectFrameworks('mockdata');
+  const detected = await detect.cacheModes('mockdata');
   expect(detected).toContain('playwright');
 });
 
@@ -98,7 +98,7 @@ test('detects playwright ts', async () => {
     'mockdata/playwright.config.ts': '',
   });
 
-  const detected = await detectFrameworks('mockdata');
+  const detected = await detect.cacheModes('mockdata');
   expect(detected).toContain('playwright');
 });
 
@@ -109,7 +109,7 @@ test('detects python', async () => {
     'mockdata/uv.lock': '',
   });
 
-  const detected = await detectFrameworks('mockdata');
+  const detected = await detect.cacheModes('mockdata');
   expect(detected).toContain('poetry');
   expect(detected).toContain('python');
   expect(detected).toContain('uv');
@@ -120,7 +120,7 @@ test('detects ruby', async () => {
     'mockdata/Gemfile': '',
   });
 
-  const detected = await detectFrameworks('mockdata');
+  const detected = await detect.cacheModes('mockdata');
   expect(detected).toContain('ruby');
 });
 
@@ -129,7 +129,7 @@ test('detects rust', async () => {
     'mockdata/Cargo.toml': '',
   });
 
-  const detected = await detectFrameworks('mockdata');
+  const detected = await detect.cacheModes('mockdata');
   expect(detected).toContain('rust');
 });
 
@@ -140,7 +140,7 @@ test('detects xcode', async () => {
     'mockdata/SomeProject.xcodeproj/project.pbxproj': '',
   });
 
-  const detected = await detectFrameworks('mockdata');
+  const detected = await detect.cacheModes('mockdata');
   expect(detected).toContain('cocoapods');
   expect(detected).toContain('swiftpm');
   expect(detected).toContain('xcode');

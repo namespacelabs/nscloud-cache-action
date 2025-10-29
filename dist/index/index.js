@@ -29654,10 +29654,10 @@ function shouldUseSymlinks() {
     return useSymlinks;
 }
 
-;// CONCATENATED MODULE: ./src/framework.ts
+;// CONCATENATED MODULE: ./src/detect.ts
 
 
-async function detectFrameworks(rootPath = './') {
+async function cacheModes(rootPath = './') {
     const detectors = [
         detectBun,
         detectDeno,
@@ -29859,7 +29859,7 @@ Are you running in a container? Check out https://namespace.so/docs/reference/gi
     const manualPaths = core.getMultilineInput(Input_Path);
     let cacheModes = core.getMultilineInput(Input_Cache);
     if (autoDetect || (manualPaths.length === 0 && cacheModes.length === 0)) {
-        cacheModes = await resolveFrameworks();
+        cacheModes = await resolveDetectedCacheModes();
     }
     const cachePaths = await resolveCachePaths(localCachePath, manualPaths, cacheModes);
     const cacheMisses = await restoreLocalCache(cachePaths, useSymlinks);
@@ -29938,10 +29938,13 @@ async function restoreLocalCache(cachePaths, useSymlinks) {
     }
     return cacheMisses;
 }
-async function resolveFrameworks() {
-    const detected = await detectFrameworks();
+async function resolveDetectedCacheModes() {
+    const detected = await cacheModes();
     if (detected.length > 0) {
-        core.info(`Detected frameworks: ${detected.join(", ")}`);
+        core.info(`Detected cache modes: ${detected.join(", ")}`);
+    }
+    else {
+        core.info("No cache modes automatically detected.");
     }
     return detected;
 }

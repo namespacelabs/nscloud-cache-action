@@ -5,7 +5,7 @@ import * as core from "@actions/core";
 import * as exec from "@actions/exec";
 import * as io from "@actions/io";
 import * as utils from "./utils";
-import * as framework from "./framework";
+import * as detect from "./detect";
 
 const Input_Key = "key"; // unused
 const Input_Detect = "detect";
@@ -73,7 +73,7 @@ Are you running in a container? Check out https://namespace.so/docs/reference/gi
   const manualPaths = core.getMultilineInput(Input_Path);
   let cacheModes = core.getMultilineInput(Input_Cache);
   if (autoDetect || (manualPaths.length === 0 && cacheModes.length === 0)) {
-    cacheModes = await resolveFrameworks();
+    cacheModes = await resolveDetectedCacheModes();
   }
 
   const cachePaths = await resolveCachePaths(localCachePath, manualPaths, cacheModes);
@@ -169,8 +169,8 @@ export async function restoreLocalCache(
   return cacheMisses;
 }
 
-async function resolveFrameworks(): Promise<string[]> {
-  const detected = await framework.detectFrameworks();
+async function resolveDetectedCacheModes(): Promise<string[]> {
+  const detected = await detect.cacheModes();
   if (detected.length > 0) {
     core.info(`Detected cache modes: ${detected.join(", ")}`);
   } else {

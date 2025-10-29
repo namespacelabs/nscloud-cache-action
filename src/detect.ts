@@ -1,7 +1,7 @@
 import * as fs from "node:fs";
 import * as path from "node:path";
 
-export async function detectFrameworks(rootPath = './'): Promise<string[]> {
+export async function cacheModes(rootPath = './'): Promise<string[]> {
   const detectors: Array<(rootPath: string) => Promise<string[]>> = [
     detectBun,
     detectDeno,
