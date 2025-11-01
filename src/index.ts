@@ -299,6 +299,22 @@ async function resolveCacheMode(
       return [{ mountTarget: "~/.m2/repository", framework: cacheMode }];
     }
 
+    case "mise": {
+      let mountTarget = path.join(os.homedir(), '.local', 'share', 'mise');
+      if (process.env.MISE_DATA_DIR) {
+        mountTarget = process.env.MISE_DATA_DIR;
+      } else if (process.env.XDG_DATA_HOME) {
+        mountTarget = path.join(process.env.XDG_DATA_HOME, 'mise');
+      } else if (process.platform === 'win32' && process.env.LOCALAPPDATA) {
+        mountTarget = path.join(process.env.LOCALAPPDATA, 'mise');
+      }
+
+      return [{
+        mountTarget: mountTarget,
+        framework: cacheMode,
+      }]
+    }
+
     case "playwright": {
       let mountTarget = "~/.cache/ms-playwright";
       switch (os.platform()) {
