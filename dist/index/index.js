@@ -29899,6 +29899,22 @@ async function resolveCacheMode(cacheMode, cachesXcode) {
         case "maven": {
             return [{ mountTarget: "~/.m2/repository", framework: cacheMode }];
         }
+        case "mise": {
+            let mountTarget = external_node_path_namespaceObject.join(external_os_default().homedir(), '.local', 'share', 'mise');
+            if (process.env.MISE_DATA_DIR) {
+                mountTarget = process.env.MISE_DATA_DIR;
+            }
+            else if (process.env.XDG_DATA_HOME) {
+                mountTarget = external_node_path_namespaceObject.join(process.env.XDG_DATA_HOME, 'mise');
+            }
+            else if (process.platform === 'win32' && process.env.LOCALAPPDATA) {
+                mountTarget = external_node_path_namespaceObject.join(process.env.LOCALAPPDATA, 'mise');
+            }
+            return [{
+                    mountTarget: mountTarget,
+                    framework: cacheMode,
+                }];
+        }
         case "playwright": {
             let mountTarget = "~/.cache/ms-playwright";
             switch (external_os_default().platform()) {
