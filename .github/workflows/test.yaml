@@ -1,0 +1,29 @@
+on:
+  push:
+    branches:
+      - main
+
+  pull_request:
+    branches:
+      - "*"
+
+  merge_group:
+    types: [checks_requested]
+
+name: CI
+jobs:
+  test:
+    runs-on:
+      - namespace-profile-e2e-small
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup cache
+        uses: ./ # Uses an action in the root directory
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Run tests
+        run: npm test

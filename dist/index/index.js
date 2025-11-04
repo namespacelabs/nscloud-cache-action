@@ -29654,6 +29654,149 @@ function shouldUseSymlinks() {
     return useSymlinks;
 }
 
+;// CONCATENATED MODULE: ./src/detect.ts
+
+
+async function cacheModes(rootPath = './') {
+    const detectors = [
+        detectBun,
+        detectDeno,
+        detectGo,
+        detectHomebrew,
+        detectJava,
+        detectNode,
+        detectPhp,
+        detectPlaywright,
+        detectPython,
+        detectRuby,
+        detectRust,
+        detectXcode,
+    ];
+    const detected = [];
+    for (const detector of detectors) {
+        const result = await detector(rootPath);
+        detected.push(...result);
+    }
+    return detected;
+}
+async function detectBun(rootPath) {
+    let detected = [];
+    if (external_node_fs_namespaceObject.existsSync(external_node_path_namespaceObject.join(rootPath, 'bun.lock'))) {
+        detected.push('bun');
+    }
+    return detected;
+}
+async function detectDeno(rootPath) {
+    let detected = [];
+    if (external_node_fs_namespaceObject.existsSync(external_node_path_namespaceObject.join(rootPath, 'deno.lock'))) {
+        detected.push('deno');
+    }
+    return detected;
+}
+async function detectGo(rootPath) {
+    let detected = [];
+    if (external_node_fs_namespaceObject.existsSync(external_node_path_namespaceObject.join(rootPath, 'go.mod'))) {
+        detected.push('go');
+    }
+    if (external_node_fs_namespaceObject.existsSync(external_node_path_namespaceObject.join(rootPath, 'go.work'))) {
+        detected.push('go');
+    }
+    for (const entry of external_node_fs_namespaceObject.readdirSync(rootPath)) {
+        if (entry.endsWith('.golangci.yml') || entry.endsWith('.golangci.yaml')) {
+            detected.push('golangci-lint');
+            break;
+        }
+    }
+    return detected;
+}
+async function detectHomebrew(rootPath) {
+    let detected = [];
+    if (external_node_fs_namespaceObject.existsSync(external_node_path_namespaceObject.join(rootPath, 'Brewfile'))) {
+        detected.push('brew');
+    }
+    return detected;
+}
+async function detectJava(rootPath) {
+    let detected = [];
+    if (external_node_fs_namespaceObject.existsSync(external_node_path_namespaceObject.join(rootPath, 'gradlew'))) {
+        detected.push('gradle');
+    }
+    if (external_node_fs_namespaceObject.existsSync(external_node_path_namespaceObject.join(rootPath, 'pom.xml'))) {
+        detected.push('maven');
+    }
+    return detected;
+}
+async function detectNode(rootPath) {
+    let detected = [];
+    if (external_node_fs_namespaceObject.existsSync(external_node_path_namespaceObject.join(rootPath, 'pnpm-lock.yaml'))) {
+        detected.push('pnpm');
+    }
+    if (external_node_fs_namespaceObject.existsSync(external_node_path_namespaceObject.join(rootPath, 'yarn.lock'))) {
+        detected.push('yarn');
+    }
+    return detected;
+}
+async function detectPhp(rootPath) {
+    let detected = [];
+    if (external_node_fs_namespaceObject.existsSync(external_node_path_namespaceObject.join(rootPath, 'composer.json'))) {
+        detected.push('composer');
+    }
+    return detected;
+}
+async function detectPlaywright(rootPath) {
+    let detected = [];
+    if (external_node_fs_namespaceObject.existsSync(external_node_path_namespaceObject.join(rootPath, 'playwright.config.js'))) {
+        detected.push('playwright');
+    }
+    if (external_node_fs_namespaceObject.existsSync(external_node_path_namespaceObject.join(rootPath, 'playwright.config.ts'))) {
+        detected.push('playwright');
+    }
+    return detected;
+}
+async function detectPython(rootPath) {
+    let detected = [];
+    if (external_node_fs_namespaceObject.existsSync(external_node_path_namespaceObject.join(rootPath, 'poetry.lock'))) {
+        detected.push('poetry');
+    }
+    if (external_node_fs_namespaceObject.existsSync(external_node_path_namespaceObject.join(rootPath, 'requirements.txt'))) {
+        detected.push('python');
+    }
+    if (external_node_fs_namespaceObject.existsSync(external_node_path_namespaceObject.join(rootPath, 'uv.lock'))) {
+        detected.push('uv');
+    }
+    return detected;
+}
+async function detectRuby(rootPath) {
+    let detected = [];
+    if (external_node_fs_namespaceObject.existsSync(external_node_path_namespaceObject.join(rootPath, 'Gemfile'))) {
+        detected.push('ruby');
+    }
+    return detected;
+}
+async function detectRust(rootPath) {
+    let detected = [];
+    if (external_node_fs_namespaceObject.existsSync(external_node_path_namespaceObject.join(rootPath, 'Cargo.toml'))) {
+        detected.push('rust');
+    }
+    return detected;
+}
+async function detectXcode(rootPath) {
+    let detected = [];
+    if (external_node_fs_namespaceObject.existsSync(external_node_path_namespaceObject.join(rootPath, 'Package.swift'))) {
+        detected.push('swiftpm');
+    }
+    if (external_node_fs_namespaceObject.existsSync(external_node_path_namespaceObject.join(rootPath, 'Podfile'))) {
+        detected.push('cocoapods');
+    }
+    for (const entry of external_node_fs_namespaceObject.readdirSync(rootPath)) {
+        if (entry.endsWith('.xcodeproj')) {
+            detected.push('xcode');
+            break;
+        }
+    }
+    return detected;
+}
+
 ;// CONCATENATED MODULE: ./src/index.ts
 
 
@@ -29662,7 +29805,9 @@ function shouldUseSymlinks() {
 
 
 
+
 const Input_Key = "key"; // unused
+const Input_Detect = "detect";
 const Input_Path = "path";
 const Input_Cache = "cache";
 const Input_FailOnCacheMiss = "fail-on-cache-miss";
@@ -29716,7 +29861,13 @@ Are you running in a container? Check out https://namespace.so/docs/reference/gi
     }
     core.info(`Found Namespace cross-invocation cache at ${localCachePath}.`);
     const useSymlinks = shouldUseSymlinks();
-    const cachePaths = await resolveCachePaths(localCachePath);
+    const autoDetect = core.getBooleanInput(Input_Detect);
+    const manualPaths = core.getMultilineInput(Input_Path);
+    let cacheModes = core.getMultilineInput(Input_Cache);
+    if (autoDetect || (manualPaths.length === 0 && cacheModes.length === 0)) {
+        cacheModes = await resolveDetectedCacheModes();
+    }
+    const cachePaths = await resolveCachePaths(localCachePath, manualPaths, cacheModes);
     const cacheMisses = await restoreLocalCache(cachePaths, useSymlinks);
     const fullHit = cacheMisses.length === 0;
     core.setOutput(Output_CacheHit, fullHit.toString());
@@ -29793,11 +29944,20 @@ async function restoreLocalCache(cachePaths, useSymlinks) {
     }
     return cacheMisses;
 }
-async function resolveCachePaths(localCachePath) {
+async function resolveDetectedCacheModes() {
+    const detected = await cacheModes();
+    if (detected.length > 0) {
+        core.info(`Detected cache modes: ${detected.join(", ")}`);
+    }
+    else {
+        core.info("No cache modes automatically detected.");
+    }
+    return detected;
+}
+async function resolveCachePaths(localCachePath, manualPaths, cacheModes) {
     const paths = [];
-    const manual = core.getMultilineInput(Input_Path);
     let cachesNodeModules = false;
-    for (const p of manual) {
+    for (const p of manualPaths) {
         paths.push({ mountTarget: p, framework: "custom" });
         if (p.endsWith("/node_modules")) {
             cachesNodeModules = true;
@@ -29807,7 +29967,6 @@ async function resolveCachePaths(localCachePath) {
         core.warning(`Caching node_modules is not always safe. Prefer using cache modes if possible.
 See also https://namespace.so/docs/reference/github-actions/nscloud-cache-action#cache`);
     }
-    const cacheModes = core.getMultilineInput(Input_Cache);
     let cachesXcode = false;
     for (const mode of cacheModes) {
         if (mode === ModeXcode) {
