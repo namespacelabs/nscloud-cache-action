@@ -1,17 +1,14 @@
 import * as fs from "node:fs";
-import os from 'os';
+import * as os from 'os';
 import * as path from "node:path";
 import * as core from "@actions/core";
 import * as exec from "@actions/exec";
 import * as io from "@actions/io";
+import * as action from "./action";
 import * as utils from "./utils";
 
-const Input_Key = "key"; // unused
-const Input_Path = "path";
-const Input_Cache = "cache";
-const Input_FailOnCacheMiss = "fail-on-cache-miss";
-const Output_CacheHit = "cache-hit";
 const ActionVersion = "nscloud-action-cache@v1";
+
 const ModeXcode = "xcode";
 const AptDirCacheKey = "Dir::Cache";
 const AptDirCacheArchivesKey = "Dir::Cache::archives";
@@ -28,7 +25,11 @@ async function main() {
   }, 5 * 60 * 1000);
 
   try {
-    await run();
+    if (action.isSpaceEnabled()) {
+      await spaceRun();
+    } else {
+      await legacyRun();
+    }
   } catch (error) {
     // Fail the workflow run if an error occurs
     if (error instanceof Error) core.setFailed(error.message);
@@ -37,7 +38,86 @@ async function main() {
   }
 }
 
-async function run() {
+async function spaceRun() {
+  verifyCacheVolume();
+  await spaceVersion();
+  await mount();
+}
+
+function verifyCacheVolume(): void {
+  const localCachePath = process.env[utils.Env_CacheRoot];
+  if (localCachePath) {
+    core.info(`Found Namespace cross-invocation cache at ${localCachePath}.`);
+    return;
+  }
+
+  let hint = `Please update your \x1b[1mruns-on\x1b[0m labels. E.g.:
+
+\x1b[32mruns-on\x1b[34m:\x1b[0m
+  - \x1b[34mnscloud-ubuntu-22.04-amd64-8x16-\x1b[1mwith-cache\x1b[0m
+  - \x1b[34m\x1b[1mnscloud-cache-size-50gb\x1b[0m
+  - \x1b[34m\x1b[1mnscloud-cache-tag-my-cache-key\x1b[0m
+
+You can replace \x1b[1mmy-cache-key\x1b[0m with something that represents what you're storing in the cache.`;
+
+  if (process.env.NSC_RUNNER_PROFILE_INFO) {
+    hint = "Please enable \x1b[1mCaching\x1b[0m in your runner profile.";
+  }
+
+  throw new Error(
+    `nscloud-cache-action requires a cache volume to be configured.
+
+${hint}
+
+See also https://namespace.so/docs/solutions/github-actions/caching
+
+Are you running in a container? Check out https://namespace.so/docs/reference/github-actions/runner-configuration#jobs-in-containers`
+  );
+}
+
+async function spaceVersion() {
+  const { stdout } = await action.space(["version"]);
+  const resp = JSON.parse(stdout.trim()) as { version: string };
+  core.info(`Running space v${resp.version}.`);
+}
+
+async function mount() {
+  const mount = await action.mount();
+
+  if (mount.input.modes.length > 0) {
+    core.info(`Cache modes used: ${mount.input.modes.join(", ")}.`);
+  }
+
+  const fullHit = mount.output.mounts.every((m) => m.cache_hit);
+  core.setOutput(action.Output_CacheHit, fullHit.toString());
+
+  const pathLabel = mount.output.mounts.length === 1 ? "path" : "paths";
+  core.info(`Mounted ${mount.output.mounts.length} cache ${pathLabel}.`);
+
+  if (fullHit) {
+    core.info("All cache paths found and restored.");
+  } else {
+    const cacheMisses = mount.output.mounts
+      .filter((m) => !m.cache_hit)
+      .map((m) => m.mount_path);
+
+    core.info(`Some cache paths missing: ${cacheMisses.join(", ")}`);
+
+    if (core.getBooleanInput(action.Input_FailOnCacheMiss)) {
+      throw new Error(`Some cache paths missing: ${cacheMisses.join(", ")}`);
+    }
+  }
+
+  action.exportAddEnvs(mount.output.add_envs);
+
+  core.info(
+    `Total available cache space is ${mount.output.disk_usage.total}, and ${mount.output.disk_usage.used} have been used.`
+  );
+
+  core.saveState(utils.StateMountKey, JSON.stringify(mount));
+}
+
+async function legacyRun() {
   const localCachePath = process.env[utils.Env_CacheRoot];
   if (localCachePath == null) {
     let hint = `Please update your \x1b[1mruns-on\x1b[0m labels. E.g.:
@@ -71,12 +151,12 @@ Are you running in a container? Check out https://namespace.so/docs/reference/gi
   const cacheMisses = await restoreLocalCache(cachePaths, useSymlinks);
 
   const fullHit = cacheMisses.length === 0;
-  core.setOutput(Output_CacheHit, fullHit.toString());
+  core.setOutput(action.Output_CacheHit, fullHit.toString());
 
   if (!fullHit) {
     core.info(`Some cache paths missing: ${cacheMisses}.`);
 
-    const failOnCacheMiss = core.getBooleanInput(Input_FailOnCacheMiss);
+    const failOnCacheMiss = core.getBooleanInput(action.Input_FailOnCacheMiss);
     if (failOnCacheMiss) {
       throw new Error(`Some cache paths missing: ${cacheMisses}.`);
     }
@@ -165,7 +245,7 @@ async function resolveCachePaths(
 ): Promise<utils.CachePath[]> {
   const paths: utils.CachePath[] = [];
 
-  const manual: string[] = core.getMultilineInput(Input_Path);
+  const manual: string[] = core.getMultilineInput(action.Input_Path);
 
   let cachesNodeModules = false;
   for (const p of manual) {
@@ -183,7 +263,7 @@ See also https://namespace.so/docs/reference/github-actions/nscloud-cache-action
     );
   }
 
-  const cacheModes: string[] = core.getMultilineInput(Input_Cache);
+  const cacheModes: string[] = action.getManualModesInput();
   let cachesXcode = false;
   for (const mode of cacheModes) {
     if (mode === ModeXcode) {
