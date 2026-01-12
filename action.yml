@@ -23,7 +23,7 @@ inputs:
   cache:
     description: "A list of native cache modes. Supported options are 'go,yarn,rust,brew,pnpm,gradle,maven,composer,poetry,uv,python,xcode,swiftpm,cocoapods'"
     required: false
-    deprecationMessage: "Use `mode` instead, input name is changing to distinguish between detecting a mode and explicitly enabling a mode."
+    deprecationMessage: "`cache` has been renamed to `mode`. This change is to distinguish between detecting a mode and explicitly enabling a mode."
 outputs:
   cache-hit:
     description: "A boolean value to indicate an exact match was found for the primary key"
