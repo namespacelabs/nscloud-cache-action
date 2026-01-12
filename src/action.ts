@@ -1,8 +1,6 @@
 import * as core from "@actions/core";
 import * as exec from "@actions/exec";
 
-export const Env_SpaceBin = "NSC_SPACE_BIN";
-
 export const Input_Use_Space = "use-space";
 export const Input_FailOnCacheMiss = "fail-on-cache-miss";
 export const Input_Detect_Mode = "detect";
@@ -16,14 +14,9 @@ export function isSpaceEnabled(): boolean {
 }
 
 export async function space(args?: string[], options?: exec.ExecOptions): Promise<exec.ExecOutput> {
-  const spaceBin = process.env[Env_SpaceBin];
-  if (!spaceBin) {
-    throw new Error(`${Env_SpaceBin} environment variable is not set`);
-  }
-
   args.push("--output=json")
 
-  const result = await exec.getExecOutput(spaceBin, args, {
+  const result = await exec.getExecOutput("space", args, {
     silent: true,
     ignoreReturnCode: true,
     ...options,
@@ -31,7 +24,7 @@ export async function space(args?: string[], options?: exec.ExecOptions): Promis
 
   if (result.exitCode !== 0) {
     core.error(result.stderr || result.stdout);
-    throw new Error(`'${spaceBin} ${args.join(" ")}' failed with exit code ${result.exitCode}`);
+    throw new Error(`'space ${args.join(" ")}' failed with exit code ${result.exitCode}`);
   }
 
   return result;

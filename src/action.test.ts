@@ -150,12 +150,7 @@ describe('getMountCommand', async () => {
 
 describe('mount', async () => {
   beforeEach(() => {
-    process.env[action.Env_SpaceBin] = '/usr/bin/nsc';
     getMultilineInput.mockReturnValue([]);
-  });
-
-  afterEach(() => {
-    delete process.env[action.Env_SpaceBin];
   });
 
   test('parses minimal response', async () => {

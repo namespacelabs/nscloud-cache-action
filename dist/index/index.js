@@ -30310,7 +30310,6 @@ var io = __nccwpck_require__(4994);
 ;// CONCATENATED MODULE: ./src/action.ts
 
 
-const Env_SpaceBin = "NSC_SPACE_BIN";
 const Input_Use_Space = "use-space";
 const Input_FailOnCacheMiss = "fail-on-cache-miss";
 const Input_Detect_Mode = "detect";
@@ -30322,19 +30321,15 @@ function isSpaceEnabled() {
     return core.getBooleanInput(Input_Use_Space);
 }
 async function space(args, options) {
-    const spaceBin = process.env[Env_SpaceBin];
-    if (!spaceBin) {
-        throw new Error(`${Env_SpaceBin} environment variable is not set`);
-    }
     args.push("--output=json");
-    const result = await lib_exec.getExecOutput(spaceBin, args, {
+    const result = await lib_exec.getExecOutput("space", args, {
         silent: true,
         ignoreReturnCode: true,
         ...options,
     });
     if (result.exitCode !== 0) {
         core.error(result.stderr || result.stdout);
-        throw new Error(`'${spaceBin} ${args.join(" ")}' failed with exit code ${result.exitCode}`);
+        throw new Error(`'space ${args.join(" ")}' failed with exit code ${result.exitCode}`);
     }
     return result;
 }
