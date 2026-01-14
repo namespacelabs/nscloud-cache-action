@@ -27731,7 +27731,7 @@ var lib_exec = __nccwpck_require__(5236);
 ;// CONCATENATED MODULE: ./src/action.ts
 
 
-const Input_Use_Space = "use-space";
+const Input_Space_Enabled = "space-enabled";
 const Input_FailOnCacheMiss = "fail-on-cache-miss";
 const Input_Detect_Mode = "detect";
 const Input_Mode = "mode";
@@ -27739,7 +27739,7 @@ const Input_Cache = "cache"; // deprecated, use Input_Mode
 const Input_Path = "path";
 const Output_CacheHit = "cache-hit";
 function isSpaceEnabled() {
-    return lib_core.getBooleanInput(Input_Use_Space);
+    return lib_core.getBooleanInput(Input_Space_Enabled);
 }
 async function space(args, options) {
     args.push("--output=json");

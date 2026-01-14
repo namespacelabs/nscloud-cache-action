@@ -6,6 +6,13 @@ inputs:
     description: "Opt-in to the Space CLI experiment"
     required: false
     default: "false"
+  space-version:
+    description: "Version of space CLI to use (e.g., '0.1.0' or 'latest'). If not specified, uses existing binary or fetches latest."
+    required: false
+  github-token:
+    description: "GitHub token for API requests to fetch space releases"
+    required: false
+    default: "${{ github.token }}"
   fail-on-cache-miss:
     description: "Fail the workflow if cache entry is not found"
     default: "false"

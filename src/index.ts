@@ -5,6 +5,7 @@ import * as core from "@actions/core";
 import * as exec from "@actions/exec";
 import * as io from "@actions/io";
 import * as action from "./action";
+import * as installer from "./installer";
 import * as utils from "./utils";
 
 const ActionVersion = "nscloud-action-cache@v1";
@@ -40,7 +41,7 @@ async function main() {
 
 async function spaceRun() {
   verifyCacheVolume();
-  await spaceVersion();
+  await installer.getSpace();
   await mount();
 }
 
@@ -73,12 +74,6 @@ See also https://namespace.so/docs/solutions/github-actions/caching
 
 Are you running in a container? Check out https://namespace.so/docs/reference/github-actions/runner-configuration#jobs-in-containers`
   );
-}
-
-async function spaceVersion() {
-  const { stdout } = await action.space(["version"]);
-  const resp = JSON.parse(stdout.trim()) as { version: string };
-  core.info(`Running space v${resp.version}.`);
 }
 
 async function mount() {
