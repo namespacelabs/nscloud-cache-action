@@ -1,7 +1,7 @@
 import * as core from "@actions/core";
 import * as exec from "@actions/exec";
 
-export const Input_Use_Space = "use-space";
+export const Input_Space_Enabled = "space-enabled";
 export const Input_FailOnCacheMiss = "fail-on-cache-miss";
 export const Input_Detect_Mode = "detect";
 export const Input_Mode = "mode";
@@ -10,7 +10,7 @@ export const Input_Path = "path";
 export const Output_CacheHit = "cache-hit";
 
 export function isSpaceEnabled(): boolean {
-  return core.getBooleanInput(Input_Use_Space);
+  return core.getBooleanInput(Input_Space_Enabled);
 }
 
 export async function space(args?: string[], options?: exec.ExecOptions): Promise<exec.ExecOutput> {

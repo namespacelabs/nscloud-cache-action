@@ -2,7 +2,7 @@ name: "Cache"
 description: "Cache artifacts like dependencies and build outputs to a Namespace Cloud cache volume to improve workflow execution time."
 author: "Namespace Labs"
 inputs:
-  use-space:
+  space-enabled:
     description: "Opt-in to the Space CLI experiment"
     required: false
     default: "false"
