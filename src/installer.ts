@@ -4,6 +4,7 @@ import * as io from "@actions/io";
 import * as tc from "@actions/tool-cache";
 import * as github from "@actions/github";
 import * as path from "path";
+import * as fs from "fs";
 
 const Input_SpaceVersion = "space-version";
 const Input_GithubToken = "github-token";
@@ -17,12 +18,7 @@ export async function getSpace(): Promise<string> {
   const token = core.getInput(Input_GithubToken);
   const arch = getArch();
 
-  let existingPath: string;
-  try {
-    existingPath = await io.which(TOOL_NAME, false);
-  } catch {
-    existingPath = "";
-  }
+  const existingPath = await getSpaceBinaryPath();
 
   // Case 1: No space binary exists - download required version or latest
   if (!existingPath) {
@@ -100,6 +96,23 @@ function getArch(): string {
 
 function normalizeVersion(version: string): string {
   return version.replace(/^v/, "");
+}
+
+async function getSpaceBinaryPath(): Promise<string> {
+  const powertoysDir = process.env.NSC_POWERTOYS_DIR;
+  if (powertoysDir) {
+    const spacePath = path.join(powertoysDir, TOOL_NAME);
+    if (fs.existsSync(spacePath)) {
+      return spacePath;
+    }
+    return "";
+  }
+
+  try {
+    return await io.which(TOOL_NAME, false);
+  } catch {
+    return "";
+  }
 }
 
 function getDownloadUrl(version: string, platform: string, arch: string): string {

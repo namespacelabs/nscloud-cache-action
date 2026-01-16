@@ -11,6 +11,7 @@ const extractTar = vi.hoisted(() => vi.fn());
 const cacheDir = vi.hoisted(() => vi.fn());
 const getExecOutput = vi.hoisted(() => vi.fn());
 const getOctokit = vi.hoisted(() => vi.fn());
+const existsSync = vi.hoisted(() => vi.fn());
 
 beforeEach(() => {
   vi.clearAllMocks();
@@ -39,6 +40,12 @@ beforeEach(() => {
   vi.mock("@actions/github", () => ({
     getOctokit,
   }));
+
+  vi.mock("fs", () => ({
+    existsSync,
+  }));
+
+  delete process.env.NSC_POWERTOYS_DIR;
 });
 
 describe("getSpace", () => {
@@ -119,6 +126,37 @@ describe("getSpace", () => {
         undefined,
         "token"
       );
+    });
+  });
+
+  describe("NSC_POWERTOYS_DIR", () => {
+    test("uses space from powertoys dir when set and exists", async () => {
+      process.env.NSC_POWERTOYS_DIR = "/opt/powertoys";
+      existsSync.mockReturnValue(true);
+      mockInputs({ "github-token": "token" });
+      getExecOutput.mockResolvedValue({
+        exitCode: 0,
+        stdout: JSON.stringify({ version: "0.1.0", commit: "abc", date: "2026-01-01" }),
+        stderr: "",
+      });
+
+      const result = await installer.getSpace();
+
+      expect(result).toBe("/opt/powertoys");
+      expect(existsSync).toHaveBeenCalledWith("/opt/powertoys/space");
+      expect(which).not.toHaveBeenCalled();
+    });
+
+    test("downloads when powertoys dir set but space does not exist", async () => {
+      process.env.NSC_POWERTOYS_DIR = "/opt/powertoys";
+      existsSync.mockReturnValue(false);
+      mockInputs({ "space-version": "0.1.0", "github-token": "token" });
+      find.mockReturnValue("/cache/space/0.1.0");
+
+      const result = await installer.getSpace();
+
+      expect(result).toBe("/cache/space/0.1.0");
+      expect(which).not.toHaveBeenCalled();
     });
   });
 
@@ -266,3 +304,5 @@ describe("getSpace", () => {
     });
   });
 });
+
+

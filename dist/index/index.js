@@ -41527,7 +41527,10 @@ var tool_cache = __nccwpck_require__(3472);
 var github = __nccwpck_require__(3228);
 // EXTERNAL MODULE: external "path"
 var external_path_ = __nccwpck_require__(6928);
+// EXTERNAL MODULE: external "fs"
+var external_fs_ = __nccwpck_require__(9896);
 ;// CONCATENATED MODULE: ./src/installer.ts
+
 
 
 
@@ -41543,13 +41546,7 @@ async function getSpace() {
     const versionSpec = core.getInput(Input_SpaceVersion);
     const token = core.getInput(Input_GithubToken);
     const arch = getArch();
-    let existingPath;
-    try {
-        existingPath = await io.which(TOOL_NAME, false);
-    }
-    catch {
-        existingPath = "";
-    }
+    const existingPath = await getSpaceBinaryPath();
     // Case 1: No space binary exists - download required version or latest
     if (!existingPath) {
         const version = !versionSpec || versionSpec === "latest"
@@ -41610,6 +41607,22 @@ function getArch() {
 }
 function normalizeVersion(version) {
     return version.replace(/^v/, "");
+}
+async function getSpaceBinaryPath() {
+    const powertoysDir = process.env.NSC_POWERTOYS_DIR;
+    if (powertoysDir) {
+        const spacePath = external_path_.join(powertoysDir, TOOL_NAME);
+        if (external_fs_.existsSync(spacePath)) {
+            return spacePath;
+        }
+        return "";
+    }
+    try {
+        return await io.which(TOOL_NAME, false);
+    }
+    catch {
+        return "";
+    }
 }
 function getDownloadUrl(version, platform, arch) {
     const cleanVersion = version.replace(/^v/, "");
