@@ -5,6 +5,7 @@ import * as fs from "node:fs";
 
 export const Env_CacheRoot = "NSC_CACHE_PATH";
 export const StatePathsKey = "paths";
+export const StateMountKey = "mount";
 
 const privateNamespaceDir = ".ns";
 const metadataFileName = "cache-metadata.json";

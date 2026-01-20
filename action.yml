@@ -2,24 +2,40 @@ name: "Cache"
 description: "Cache artifacts like dependencies and build outputs to a Namespace Cloud cache volume to improve workflow execution time."
 author: "Namespace Labs"
 inputs:
-  path:
-    description: "A list of files, directories, and wildcard patterns to cache and restore"
+  space-enabled:
+    description: "Opt-in to the Space CLI experiment"
     required: false
-  # key:
-  #   description: "An explicit key for restoring and saving the cache"
-  #   required: false
+    default: "false"
+  space-version:
+    description: "Version of space CLI to use (e.g., '0.1.0' or 'latest'). If not specified, uses existing binary or fetches latest."
+    required: false
+  github-token:
+    description: "GitHub token for API requests to fetch space releases"
+    required: false
+    default: "${{ github.token }}"
   fail-on-cache-miss:
     description: "Fail the workflow if cache entry is not found"
     default: "false"
     required: false
+  detect:
+    description: "A list of cache modes you want to enable, only if detected. Set to 'true' to detect all available cache modes based on the environment. See `mode` for a list of available cache modes."
+    required: false
+  mode:
+    description: "A list of cache modes to enable. Supported options are 'apt,go,golangci-lint'"
+    required: false
+  path:
+    description: "A list of files, directories, and wildcard patterns to cache and restore"
+    required: false
+  # Deprecated
   cache:
     description: "A list of native cache modes. Supported options are 'go,yarn,rust,brew,pnpm,gradle,maven,composer,poetry,uv,python,xcode,swiftpm,cocoapods'"
     required: false
+    deprecationMessage: "`cache` has been renamed to `mode`. This change is to distinguish between detecting a mode and explicitly enabling a mode."
 outputs:
   cache-hit:
     description: "A boolean value to indicate an exact match was found for the primary key"
 runs:
-  using: "node20"
+  using: "node24"
   main: "dist/index/index.js"
   post: "dist/post/index.js"
   post-if: success()
