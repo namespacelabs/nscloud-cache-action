@@ -22,8 +22,11 @@ export async function space(args?: string[], options?: exec.ExecOptions): Promis
     ...options,
   });
 
+  if (result.stderr) {
+    process.stderr.write(result.stderr);
+  }
+
   if (result.exitCode !== 0) {
-    core.error(result.stderr || result.stdout);
     throw new Error(`'space ${args.join(" ")}' failed with exit code ${result.exitCode}`);
   }
 
