@@ -41468,17 +41468,32 @@ function isSpaceEnabled() {
     return core.getBooleanInput(Input_Space_Enabled);
 }
 async function space(args, options) {
+    // Request JSON output so we can parse the response
+    // This causes the space binary to write logs to stderr and JSON to stdout
     args.push("--output=json");
-    const result = await lib_exec.getExecOutput("space", args, {
-        silent: true,
+    let stdout = "";
+    let stderr = "";
+    const exitCode = await lib_exec.exec("space", args, {
         ignoreReturnCode: true,
+        silent: true,
+        listeners: {
+            stdout: (data) => {
+                stdout += data.toString();
+            },
+            stderr: (data) => {
+                stderr += data.toString();
+                // Forward stderr to stdout so GitHub Actions can process workflow
+                // commands like ::debug::. The space binary outputs these to stderr
+                // when --output=json is used to keep stdout clean for JSON.
+                process.stdout.write(data);
+            },
+        },
         ...options,
     });
-    if (result.exitCode !== 0) {
-        core.error(result.stderr || result.stdout);
-        throw new Error(`'space ${args.join(" ")}' failed with exit code ${result.exitCode}`);
+    if (exitCode !== 0) {
+        throw new Error(`'space ${args.join(" ")}' failed with exit code ${exitCode}`);
     }
-    return result;
+    return { exitCode, stdout, stderr };
 }
 async function action_mount() {
     const { stdout: mount } = await space(getMountCommand());

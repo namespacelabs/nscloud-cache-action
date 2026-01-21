@@ -14,20 +14,36 @@ export function isSpaceEnabled(): boolean {
 }
 
 export async function space(args?: string[], options?: exec.ExecOptions): Promise<exec.ExecOutput> {
-  args.push("--output=json")
+  // Request JSON output so we can parse the response
+  // This causes the space binary to write logs to stderr and JSON to stdout
+  args.push("--output=json");
 
-  const result = await exec.getExecOutput("space", args, {
-    silent: true,
+  let stdout = "";
+  let stderr = "";
+
+  const exitCode = await exec.exec("space", args, {
     ignoreReturnCode: true,
+    silent: true,
+    listeners: {
+      stdout: (data: Buffer) => {
+        stdout += data.toString();
+      },
+      stderr: (data: Buffer) => {
+        stderr += data.toString();
+        // Forward stderr to stdout so GitHub Actions can process workflow
+        // commands like ::debug::. The space binary outputs these to stderr
+        // when --output=json is used to keep stdout clean for JSON.
+        process.stdout.write(data);
+      },
+    },
     ...options,
   });
 
-  if (result.exitCode !== 0) {
-    core.error(result.stderr || result.stdout);
-    throw new Error(`'space ${args.join(" ")}' failed with exit code ${result.exitCode}`);
+  if (exitCode !== 0) {
+    throw new Error(`'space ${args.join(" ")}' failed with exit code ${exitCode}`);
   }
 
-  return result;
+  return { exitCode, stdout, stderr };
 }
 
 export interface MountResponse {
