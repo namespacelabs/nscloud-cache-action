@@ -14,7 +14,9 @@ export function isSpaceEnabled(): boolean {
 }
 
 export async function space(args?: string[], options?: exec.ExecOptions): Promise<exec.ExecOutput> {
-  args.push("--output=json")
+  // Request JSON output so we can parse the response
+  // This causes the space binary to write logs to stderr and JSON to stdout
+  args.push("--output=json");
 
   let stdout = "";
   let stderr = "";
@@ -27,9 +29,11 @@ export async function space(args?: string[], options?: exec.ExecOptions): Promis
         stdout += data.toString();
       },
       stderr: (data: Buffer) => {
-        const str = data.toString();
-        stderr += str;
-        process.stderr.write(data);
+        stderr += data.toString();
+        // Forward stderr to stdout so GitHub Actions can process workflow
+        // commands like ::debug::. The space binary outputs these to stderr
+        // when --output=json is used to keep stdout clean for JSON.
+        process.stdout.write(data);
       },
     },
     ...options,
