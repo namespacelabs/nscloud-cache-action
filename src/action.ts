@@ -16,21 +16,30 @@ export function isSpaceEnabled(): boolean {
 export async function space(args?: string[], options?: exec.ExecOptions): Promise<exec.ExecOutput> {
   args.push("--output=json")
 
-  const result = await exec.getExecOutput("space", args, {
-    silent: true,
+  let stdout = "";
+  let stderr = "";
+
+  const exitCode = await exec.exec("space", args, {
     ignoreReturnCode: true,
+    silent: true,
+    listeners: {
+      stdout: (data: Buffer) => {
+        stdout += data.toString();
+      },
+      stderr: (data: Buffer) => {
+        const str = data.toString();
+        stderr += str;
+        process.stderr.write(data);
+      },
+    },
     ...options,
   });
 
-  if (result.stderr) {
-    process.stderr.write(result.stderr);
+  if (exitCode !== 0) {
+    throw new Error(`'space ${args.join(" ")}' failed with exit code ${exitCode}`);
   }
 
-  if (result.exitCode !== 0) {
-    throw new Error(`'space ${args.join(" ")}' failed with exit code ${result.exitCode}`);
-  }
-
-  return result;
+  return { exitCode, stdout, stderr };
 }
 
 export interface MountResponse {
