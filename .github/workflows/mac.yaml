@@ -23,7 +23,7 @@ jobs:
       - nscloud-cache-tag-xcode-swift-ruby
     steps:
       - name: Checkout ios-demo
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
         with:
           repository: nscloud-demo/ios-demo
 
@@ -32,7 +32,7 @@ jobs:
           ruby-version: '3.2.7'
           bundler-cache: false
 
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
         with:
           path: cache-action
 

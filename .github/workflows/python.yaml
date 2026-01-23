@@ -22,14 +22,14 @@ jobs:
     runs-on:
       - namespace-profile-e2e-small
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
 
       - name: Setup Python Pip cache
         uses: ./ # Uses an action in the root directory
         with:
           cache: python
 
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
         with:
           repository: namespace-integration-demos/python-cache
           path: demo

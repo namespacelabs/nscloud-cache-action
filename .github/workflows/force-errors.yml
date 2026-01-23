@@ -10,7 +10,7 @@ jobs:
 
     steps:
       - name: Github Checkout current
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
 
       - name: Setup Go cache
         continue-on-error: true
@@ -24,7 +24,7 @@ jobs:
 
     steps:
       - name: Github Checkout current
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
 
       - name: Setup Go cache
         continue-on-error: true

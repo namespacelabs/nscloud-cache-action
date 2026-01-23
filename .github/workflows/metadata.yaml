@@ -23,7 +23,7 @@ jobs:
       - namespace-profile-default
 
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
 
       - run: |
           sudo mkdir -p /cache/.ns
@@ -46,7 +46,7 @@ jobs:
       - namespace-profile-default
 
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
 
       - run: |
           sudo mkdir -p /cache/.ns

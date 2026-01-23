@@ -25,7 +25,7 @@ jobs:
         os: [namespace-profile-macos, namespace-profile-e2e-small]
     runs-on: ${{ matrix.os }}
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
         with:
           path: nscloud-cache-action
 
@@ -34,7 +34,7 @@ jobs:
         with:
           version: '10.3.0'
 
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
         with:
           repository: namespace-integration-demos/cache-pnpm-workspace
           path: demo
@@ -64,7 +64,7 @@ jobs:
     runs-on:
       - namespace-profile-e2e-small
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
         with:
           path: nscloud-cache-action
 
