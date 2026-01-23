@@ -27,7 +27,7 @@ jobs:
       - ${{ matrix.profile }}
     steps:
       - name: Checkout
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
 
       - name: Install Go
         uses: actions/setup-go@v6
@@ -60,7 +60,7 @@ jobs:
       - ${{ matrix.profile }}
     steps:
       - name: Checkout
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
 
       - name: Install Go
         uses: actions/setup-go@v6
@@ -85,9 +85,9 @@ jobs:
       - ${{ matrix.profile }}
     steps:
       - name: Checkout
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
 
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
         with:
           repository: namespace-integration-demos/go-cache
           path: demo

@@ -19,7 +19,7 @@ jobs:
   deno:
     runs-on: namespace-profile-e2e-small
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
       - name: Setup Deno
         uses: denoland/setup-deno@v2
