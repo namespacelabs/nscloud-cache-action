@@ -12,11 +12,11 @@
     "build": "ncc build -o dist/index src/index.ts && ncc build -o dist/post src/post.ts",
     "format": "prettier --no-error-on-unmatched-pattern --config ./.prettierrc.js --write \"**/*.{ts,yml,yaml}\"",
     "format:check": "prettier --no-error-on-unmatched-pattern --config ./.prettierrc.js --check \"**/*.{ts,yml,yaml}\"",
-    "lint": "eslint --config ./.eslintrc.js \"**/*.ts\"",
-    "lint:fix": "eslint --config ./.eslintrc.js \"**/*.ts\" --fix",
+    "lint": "eslint \"**/*.ts\"",
+    "lint:fix": "eslint \"**/*.ts\" --fix",
     "test": "vitest",
     "typecheck": "tsc --noEmit",
-    "pre-checkin": "npm run format && npm run lint:fix && npm run build && npm test run"
+    "pre-checkin": "npm run format && npm run lint:fix && tsc --noEmit && npm run build && npm test run"
   },
   "author": "Namespace Labs",
   "dependencies": {
@@ -29,6 +29,7 @@
     "semver": "^7.6.3"
   },
   "devDependencies": {
+    "@eslint/js": "^9.39.2",
     "@types/node": "^25.0.10",
     "@types/semver": "^7.7.1",
     "@typescript-eslint/eslint-plugin": "^8.31.1",
@@ -40,6 +41,7 @@
     "prettier": "^3.8.1",
     "ts-node": "^10.9.2",
     "typescript": "^5.9.3",
+    "typescript-eslint": "^8.53.1",
     "vitest": "^4.0.18"
   }
 }
