@@ -4,6 +4,7 @@ import * as path from 'node:path';
 import * as core from '@actions/core';
 import * as exec from '@actions/exec';
 import * as io from '@actions/io';
+import * as semver from 'semver';
 import * as action from './action';
 import * as installer from './installer';
 import * as utils from './utils';
@@ -423,7 +424,6 @@ async function resolveCacheMode(
 
     case 'pnpm': {
       const ver = await pnpmVersion();
-      const semver = require('semver');
 
       const execFn = semver.lt(ver, '9.7.0')
         ? getExecStdoutDropWarnings // pnpm prints warnings to stdout pre 9.7.

@@ -27818,23 +27818,23 @@ var lib_exec = __nccwpck_require__(5236);
 ;// CONCATENATED MODULE: ./src/action.ts
 
 
-const Input_Space_Enabled = "space-enabled";
-const Input_FailOnCacheMiss = "fail-on-cache-miss";
-const Input_Detect_Mode = "detect";
-const Input_Mode = "mode";
-const Input_Cache = "cache"; // deprecated, use Input_Mode
-const Input_Path = "path";
-const Output_CacheHit = "cache-hit";
+const Input_Space_Enabled = 'space-enabled';
+const Input_FailOnCacheMiss = 'fail-on-cache-miss';
+const Input_Detect_Mode = 'detect';
+const Input_Mode = 'mode';
+const Input_Cache = 'cache'; // deprecated, use Input_Mode
+const Input_Path = 'path';
+const Output_CacheHit = 'cache-hit';
 function isSpaceEnabled() {
     return lib_core.getBooleanInput(Input_Space_Enabled);
 }
 async function space(args, options) {
     // Request JSON output so we can parse the response
     // This causes the space binary to write logs to stderr and JSON to stdout
-    args.push("--output=json");
-    let stdout = "";
-    let stderr = "";
-    const exitCode = await exec.exec("space", args, {
+    args.push('--output=json');
+    let stdout = '';
+    let stderr = '';
+    const exitCode = await exec.exec('space', args, {
         ignoreReturnCode: true,
         silent: true,
         listeners: {
@@ -27847,12 +27847,12 @@ async function space(args, options) {
                 // commands like ::debug::. The space binary outputs these to stderr
                 // when --output=json is used to keep stdout clean for JSON.
                 process.stdout.write(data);
-            },
+            }
         },
-        ...options,
+        ...options
     });
     if (exitCode !== 0) {
-        throw new Error(`'space ${args.join(" ")}' failed with exit code ${exitCode}`);
+        throw new Error(`'space ${args.join(' ')}' failed with exit code ${exitCode}`);
     }
     return { exitCode, stdout, stderr };
 }
@@ -27870,30 +27870,33 @@ function exportAddEnvs(addEnvs) {
 }
 // getManualModesInput combines modes, handling deprecated inputs
 function getManualModesInput() {
-    return core.getMultilineInput(Input_Mode).concat(core.getMultilineInput(Input_Cache)).sort();
+    return core
+        .getMultilineInput(Input_Mode)
+        .concat(core.getMultilineInput(Input_Cache))
+        .sort();
 }
 function getMountCommand() {
     const args = [];
     let detectModes = core.getMultilineInput(Input_Detect_Mode).sort();
     if (detectModes.length > 0) {
         if (detectModes.length === 1 && detectModes[0].toLowerCase() === 'true') {
-            detectModes = ["*"];
+            detectModes = ['*'];
         }
-        args.push("--detect=" + detectModes.join(","));
+        args.push('--detect=' + detectModes.join(','));
     }
     const manualModes = getManualModesInput();
     if (manualModes.length > 0) {
-        args.push("--mode=" + manualModes.join(","));
+        args.push('--mode=' + manualModes.join(','));
     }
     const manualPaths = core.getMultilineInput(Input_Path);
     if (manualPaths.length > 0) {
-        args.push("--path=" + manualPaths.join(","));
+        args.push('--path=' + manualPaths.join(','));
     }
     // if nothing has been enabled, default to detecting all
     if (args.length === 0) {
-        args.push("--detect=*");
+        args.push('--detect=*');
     }
-    args.unshift("cache", "mount");
+    args.unshift('cache', 'mount');
     return args;
 }
 
@@ -27906,16 +27909,16 @@ const external_node_fs_namespaceObject = require("node:fs");
 
 
 
-const Env_CacheRoot = "NSC_CACHE_PATH";
-const StatePathsKey = "paths";
-const StateMountKey = "mount";
-const privateNamespaceDir = ".ns";
-const metadataFileName = "cache-metadata.json";
+const Env_CacheRoot = 'NSC_CACHE_PATH';
+const StatePathsKey = 'paths';
+const StateMountKey = 'mount';
+const privateNamespaceDir = '.ns';
+const metadataFileName = 'cache-metadata.json';
 function resolveHome(filepath) {
     // Ugly, but should work
-    const home = process.env.HOME || "~";
+    const home = process.env.HOME || '~';
     const pathParts = filepath.split(external_node_path_namespaceObject.sep);
-    if (pathParts.length > 1 && pathParts[0] === "~") {
+    if (pathParts.length > 1 && pathParts[0] === '~') {
         return external_node_path_namespaceObject.join(home, ...pathParts.slice(1));
     }
     return filepath;
@@ -27929,9 +27932,9 @@ async function sudoMkdirP(path) {
             core.debug(`${p} already exists`);
             continue;
         }
-        const { exitCode, stderr } = await exec.getExecOutput("sudo", ["mkdir", p], {
+        const { exitCode, stderr } = await exec.getExecOutput('sudo', ['mkdir', p], {
             silent: true,
-            ignoreReturnCode: true,
+            ignoreReturnCode: true
         });
         if (exitCode > 0) {
             // Sadly, the exit code is 1 and we cannot match for EEXIST in case of concurrent directory creation.
@@ -27949,12 +27952,12 @@ async function chownSelf(path) {
     const uid = process.getuid();
     const gid = process.getgid();
     const userColonGroup = `${uid}:${gid}`;
-    await exec.exec("sudo", ["chown", userColonGroup, path]);
+    await exec.exec('sudo', ['chown', userColonGroup, path]);
 }
 function ancestors(filepath) {
     const res = [];
     let norm = path.normalize(filepath);
-    while (norm !== "." && norm !== "/") {
+    while (norm !== '.' && norm !== '/') {
         res.unshift(norm);
         const next = path.dirname(norm);
         if (next === norm)
@@ -27966,7 +27969,7 @@ function ancestors(filepath) {
 async function getCacheUtil(cachePath) {
     const { stdout } = await exec.getExecOutput(`/bin/sh -c "du -sb ${cachePath} | cut -f1"`, [], {
         silent: true,
-        ignoreReturnCode: true,
+        ignoreReturnCode: true
     });
     const cacheUtil = Number.parseInt(stdout.trim());
     return cacheUtil;
@@ -27978,7 +27981,7 @@ function ensureCacheMetadata(cachePath) {
     if (!fs.existsSync(metadataFilePath)) {
         return {};
     }
-    const rawData = fs.readFileSync(metadataFilePath, "utf8");
+    const rawData = fs.readFileSync(metadataFilePath, 'utf8');
     const metadata = JSON.parse(rawData);
     return metadata;
 }
@@ -27990,7 +27993,7 @@ function writeCacheMetadata(cachePath, metadata) {
     fs.writeFileSync(metadataFilePath, rawData, { mode: 0o666 });
 }
 function shouldUseSymlinks() {
-    const useSymlinks = process.env.RUNNER_OS === "macOS";
+    const useSymlinks = process.env.RUNNER_OS === 'macOS';
     lib_core.debug(`Using symlinks: ${useSymlinks} on ${process.env.RUNNER_OS}.`);
     return useSymlinks;
 }
@@ -28012,13 +28015,13 @@ async function main() {
 async function spacePost() {
     const rawMount = lib_core.getState(StateMountKey);
     if (!rawMount) {
-        lib_core.warning("No mount state found. Was the cache mounted?");
+        lib_core.warning('No mount state found. Was the cache mounted?');
         return;
     }
     const mount = JSON.parse(rawMount);
     const useSymlinks = shouldUseSymlinks();
     if (!useSymlinks) {
-        lib_core.debug("Using bind mounts: no risk of finding them deleted.");
+        lib_core.debug('Using bind mounts: no risk of finding them deleted.');
     }
     let foundProblems = false;
     for (const m of mount.output.mounts) {
@@ -28047,7 +28050,7 @@ async function legacyPost() {
     const cachePaths = JSON.parse(rawPaths);
     const useSymlinks = shouldUseSymlinks();
     if (!useSymlinks) {
-        lib_core.debug("Using bind mounts: no risk of finding them deleted.");
+        lib_core.debug('Using bind mounts: no risk of finding them deleted.');
     }
     let foundProblems = false;
     for (const p of cachePaths) {

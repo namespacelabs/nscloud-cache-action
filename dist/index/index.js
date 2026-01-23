@@ -37463,26 +37463,28 @@ var core = __nccwpck_require__(7484);
 var lib_exec = __nccwpck_require__(5236);
 // EXTERNAL MODULE: ./node_modules/@actions/io/lib/io.js
 var io = __nccwpck_require__(4994);
+// EXTERNAL MODULE: ./node_modules/semver/index.js
+var semver = __nccwpck_require__(2088);
 ;// CONCATENATED MODULE: ./src/action.ts
 
 
-const Input_Space_Enabled = "space-enabled";
-const Input_FailOnCacheMiss = "fail-on-cache-miss";
-const Input_Detect_Mode = "detect";
-const Input_Mode = "mode";
-const Input_Cache = "cache"; // deprecated, use Input_Mode
-const Input_Path = "path";
-const Output_CacheHit = "cache-hit";
+const Input_Space_Enabled = 'space-enabled';
+const Input_FailOnCacheMiss = 'fail-on-cache-miss';
+const Input_Detect_Mode = 'detect';
+const Input_Mode = 'mode';
+const Input_Cache = 'cache'; // deprecated, use Input_Mode
+const Input_Path = 'path';
+const Output_CacheHit = 'cache-hit';
 function isSpaceEnabled() {
     return core.getBooleanInput(Input_Space_Enabled);
 }
 async function space(args, options) {
     // Request JSON output so we can parse the response
     // This causes the space binary to write logs to stderr and JSON to stdout
-    args.push("--output=json");
-    let stdout = "";
-    let stderr = "";
-    const exitCode = await lib_exec.exec("space", args, {
+    args.push('--output=json');
+    let stdout = '';
+    let stderr = '';
+    const exitCode = await lib_exec.exec('space', args, {
         ignoreReturnCode: true,
         silent: true,
         listeners: {
@@ -37495,12 +37497,12 @@ async function space(args, options) {
                 // commands like ::debug::. The space binary outputs these to stderr
                 // when --output=json is used to keep stdout clean for JSON.
                 process.stdout.write(data);
-            },
+            }
         },
-        ...options,
+        ...options
     });
     if (exitCode !== 0) {
-        throw new Error(`'space ${args.join(" ")}' failed with exit code ${exitCode}`);
+        throw new Error(`'space ${args.join(' ')}' failed with exit code ${exitCode}`);
     }
     return { exitCode, stdout, stderr };
 }
@@ -37518,30 +37520,32 @@ function exportAddEnvs(addEnvs) {
 }
 // getManualModesInput combines modes, handling deprecated inputs
 function getManualModesInput() {
-    return core.getMultilineInput(Input_Mode).concat(core.getMultilineInput(Input_Cache)).sort();
+    return core.getMultilineInput(Input_Mode)
+        .concat(core.getMultilineInput(Input_Cache))
+        .sort();
 }
 function getMountCommand() {
     const args = [];
     let detectModes = core.getMultilineInput(Input_Detect_Mode).sort();
     if (detectModes.length > 0) {
         if (detectModes.length === 1 && detectModes[0].toLowerCase() === 'true') {
-            detectModes = ["*"];
+            detectModes = ['*'];
         }
-        args.push("--detect=" + detectModes.join(","));
+        args.push('--detect=' + detectModes.join(','));
     }
     const manualModes = getManualModesInput();
     if (manualModes.length > 0) {
-        args.push("--mode=" + manualModes.join(","));
+        args.push('--mode=' + manualModes.join(','));
     }
     const manualPaths = core.getMultilineInput(Input_Path);
     if (manualPaths.length > 0) {
-        args.push("--path=" + manualPaths.join(","));
+        args.push('--path=' + manualPaths.join(','));
     }
     // if nothing has been enabled, default to detecting all
     if (args.length === 0) {
-        args.push("--detect=*");
+        args.push('--detect=*');
     }
-    args.unshift("cache", "mount");
+    args.unshift('cache', 'mount');
     return args;
 }
 
@@ -37561,11 +37565,11 @@ var external_fs_ = __nccwpck_require__(9896);
 
 
 
-const Input_SpaceVersion = "space-version";
-const Input_GithubToken = "github-token";
-const TOOL_NAME = "space";
-const REPO_OWNER = "namespacelabs";
-const REPO_NAME = "space";
+const Input_SpaceVersion = 'space-version';
+const Input_GithubToken = 'github-token';
+const TOOL_NAME = 'space';
+const REPO_OWNER = 'namespacelabs';
+const REPO_NAME = 'space';
 async function getSpace() {
     const versionSpec = core.getInput(Input_SpaceVersion);
     const token = core.getInput(Input_GithubToken);
@@ -37585,10 +37589,10 @@ async function getSpace() {
         return existingDir;
     }
     // Case 3: Space exists, "latest" or "pre-release" specified - ensure we have target version
-    if (versionSpec === "latest" || versionSpec === "pre-release") {
+    if (versionSpec === 'latest' || versionSpec === 'pre-release') {
         const installedVersion = await getInstalledVersion(existingPath);
         const targetVersion = await resolveVersion(versionSpec, token);
-        const label = versionSpec === "pre-release" ? "latest pre-release" : "latest";
+        const label = versionSpec === 'pre-release' ? 'latest pre-release' : 'latest';
         if (installedVersion === targetVersion) {
             core.info(`Existing space v${installedVersion} is already ${label}`);
             const existingDir = external_path_.dirname(existingPath);
@@ -37612,30 +37616,30 @@ async function getSpace() {
 }
 function getPlatform() {
     switch (process.platform) {
-        case "darwin":
-            return "darwin";
-        case "win32":
-            return "windows";
+        case 'darwin':
+            return 'darwin';
+        case 'win32':
+            return 'windows';
         default:
-            return "linux";
+            return 'linux';
     }
 }
 function getArch() {
     switch (process.arch) {
-        case "arm64":
-            return "arm64";
+        case 'arm64':
+            return 'arm64';
         default:
-            return "amd64";
+            return 'amd64';
     }
 }
 function normalizeVersion(version) {
-    return version.replace(/^v/, "");
+    return version.replace(/^v/, '');
 }
 async function resolveVersion(versionSpec, token) {
-    if (!versionSpec || versionSpec === "latest") {
+    if (!versionSpec || versionSpec === 'latest') {
         return await getLatestVersion(token);
     }
-    if (versionSpec === "pre-release") {
+    if (versionSpec === 'pre-release') {
         return await getLatestPreReleaseVersion(token);
     }
     return normalizeVersion(versionSpec);
@@ -37647,41 +37651,41 @@ async function getSpaceBinaryPath() {
         if (external_fs_.existsSync(spacePath)) {
             return spacePath;
         }
-        return "";
+        return '';
     }
     try {
         return await io.which(TOOL_NAME, false);
     }
     catch {
-        return "";
+        return '';
     }
 }
 function getDownloadUrl(version, platform, arch) {
-    const cleanVersion = version.replace(/^v/, "");
+    const cleanVersion = version.replace(/^v/, '');
     return `https://github.com/${REPO_OWNER}/${REPO_NAME}/releases/download/v${cleanVersion}/space_${cleanVersion}_${platform}_${arch}.tar.gz`;
 }
 async function getLatestVersion(token) {
     const octokit = github.getOctokit(token);
     const { data } = await octokit.rest.repos.getLatestRelease({
         owner: REPO_OWNER,
-        repo: REPO_NAME,
+        repo: REPO_NAME
     });
-    return data.tag_name.replace(/^v/, "");
+    return data.tag_name.replace(/^v/, '');
 }
 async function getLatestPreReleaseVersion(token) {
     const octokit = github.getOctokit(token);
     for await (const response of octokit.paginate.iterator(octokit.rest.repos.listReleases, { owner: REPO_OWNER, repo: REPO_NAME, per_page: 100 })) {
-        const preRelease = response.data.find((release) => release.prerelease);
+        const preRelease = response.data.find(release => release.prerelease);
         if (preRelease) {
-            return preRelease.tag_name.replace(/^v/, "");
+            return preRelease.tag_name.replace(/^v/, '');
         }
     }
-    throw new Error("No pre-release version found");
+    throw new Error('No pre-release version found');
 }
 async function getInstalledVersion(spacePath) {
-    const result = await lib_exec.getExecOutput(spacePath, ["version", "-o=json"], {
+    const result = await lib_exec.getExecOutput(spacePath, ['version', '-o=json'], {
         silent: true,
-        ignoreReturnCode: true,
+        ignoreReturnCode: true
     });
     if (result.exitCode !== 0) {
         throw new Error(`Failed to get space version: ${result.stderr || result.stdout}`);
@@ -37712,9 +37716,9 @@ async function downloadAndCache(version, token) {
     catch (error) {
         throw new Error(`Failed to download space v${version}: ${error instanceof Error ? error.message : error}`);
     }
-    core.info("Extracting space...");
+    core.info('Extracting space...');
     const extractedPath = await tool_cache.extractTar(downloadPath);
-    core.info("Adding to tool cache...");
+    core.info('Adding to tool cache...');
     const cachedPath = await tool_cache.cacheDir(extractedPath, TOOL_NAME, version, arch);
     core.info(`Cached space v${version} to ${cachedPath}`);
     return cachedPath;
@@ -37725,16 +37729,16 @@ async function downloadAndCache(version, token) {
 
 
 
-const Env_CacheRoot = "NSC_CACHE_PATH";
-const StatePathsKey = "paths";
-const StateMountKey = "mount";
-const privateNamespaceDir = ".ns";
-const metadataFileName = "cache-metadata.json";
+const Env_CacheRoot = 'NSC_CACHE_PATH';
+const StatePathsKey = 'paths';
+const StateMountKey = 'mount';
+const privateNamespaceDir = '.ns';
+const metadataFileName = 'cache-metadata.json';
 function resolveHome(filepath) {
     // Ugly, but should work
-    const home = process.env.HOME || "~";
+    const home = process.env.HOME || '~';
     const pathParts = filepath.split(external_node_path_namespaceObject.sep);
-    if (pathParts.length > 1 && pathParts[0] === "~") {
+    if (pathParts.length > 1 && pathParts[0] === '~') {
         return external_node_path_namespaceObject.join(home, ...pathParts.slice(1));
     }
     return filepath;
@@ -37748,9 +37752,9 @@ async function sudoMkdirP(path) {
             core.debug(`${p} already exists`);
             continue;
         }
-        const { exitCode, stderr } = await lib_exec.getExecOutput("sudo", ["mkdir", p], {
+        const { exitCode, stderr } = await lib_exec.getExecOutput('sudo', ['mkdir', p], {
             silent: true,
-            ignoreReturnCode: true,
+            ignoreReturnCode: true
         });
         if (exitCode > 0) {
             // Sadly, the exit code is 1 and we cannot match for EEXIST in case of concurrent directory creation.
@@ -37768,12 +37772,12 @@ async function chownSelf(path) {
     const uid = process.getuid();
     const gid = process.getgid();
     const userColonGroup = `${uid}:${gid}`;
-    await lib_exec.exec("sudo", ["chown", userColonGroup, path]);
+    await lib_exec.exec('sudo', ['chown', userColonGroup, path]);
 }
 function ancestors(filepath) {
     const res = [];
     let norm = external_node_path_namespaceObject.normalize(filepath);
-    while (norm !== "." && norm !== "/") {
+    while (norm !== '.' && norm !== '/') {
         res.unshift(norm);
         const next = external_node_path_namespaceObject.dirname(norm);
         if (next === norm)
@@ -37785,7 +37789,7 @@ function ancestors(filepath) {
 async function getCacheUtil(cachePath) {
     const { stdout } = await exec.getExecOutput(`/bin/sh -c "du -sb ${cachePath} | cut -f1"`, [], {
         silent: true,
-        ignoreReturnCode: true,
+        ignoreReturnCode: true
     });
     const cacheUtil = Number.parseInt(stdout.trim());
     return cacheUtil;
@@ -37797,7 +37801,7 @@ function ensureCacheMetadata(cachePath) {
     if (!external_node_fs_namespaceObject.existsSync(metadataFilePath)) {
         return {};
     }
-    const rawData = external_node_fs_namespaceObject.readFileSync(metadataFilePath, "utf8");
+    const rawData = external_node_fs_namespaceObject.readFileSync(metadataFilePath, 'utf8');
     const metadata = JSON.parse(rawData);
     return metadata;
 }
@@ -37809,7 +37813,7 @@ function writeCacheMetadata(cachePath, metadata) {
     external_node_fs_namespaceObject.writeFileSync(metadataFilePath, rawData, { mode: 0o666 });
 }
 function shouldUseSymlinks() {
-    const useSymlinks = process.env.RUNNER_OS === "macOS";
+    const useSymlinks = process.env.RUNNER_OS === 'macOS';
     core.debug(`Using symlinks: ${useSymlinks} on ${process.env.RUNNER_OS}.`);
     return useSymlinks;
 }
@@ -37824,17 +37828,18 @@ function shouldUseSymlinks() {
 
 
 
-const ActionVersion = "nscloud-action-cache@v1";
-const ModeXcode = "xcode";
-const AptDirCacheKey = "Dir::Cache";
-const AptDirCacheArchivesKey = "Dir::Cache::archives";
-const AptDirEtcKey = "Dir::Etc";
-const AptDirEtcPartsKey = "Dir::Etc::parts";
+
+const ActionVersion = 'nscloud-action-cache@v1';
+const ModeXcode = 'xcode';
+const AptDirCacheKey = 'Dir::Cache';
+const AptDirCacheArchivesKey = 'Dir::Cache::archives';
+const AptDirEtcKey = 'Dir::Etc';
+const AptDirEtcPartsKey = 'Dir::Etc::parts';
 void main();
 async function main() {
     // nscloud-cache-action should run within seconds. Time out after five minutes as a safety guard.
     const timeoutId = setTimeout(() => {
-        core.setFailed("nscloud-cache-action timed out");
+        core.setFailed('nscloud-cache-action timed out');
         process.exit(1);
     }, 5 * 60 * 1000);
     try {
@@ -37874,7 +37879,7 @@ function verifyCacheVolume() {
 
 You can replace \x1b[1mmy-cache-key\x1b[0m with something that represents what you're storing in the cache.`;
     if (process.env.NSC_RUNNER_PROFILE_INFO) {
-        hint = "Please enable \x1b[1mCaching\x1b[0m in your runner profile.";
+        hint = 'Please enable \x1b[1mCaching\x1b[0m in your runner profile.';
     }
     throw new Error(`nscloud-cache-action requires a cache volume to be configured.
 
@@ -37887,22 +37892,22 @@ Are you running in a container? Check out https://namespace.so/docs/reference/gi
 async function mount() {
     const mount = await action_mount();
     if (mount.input.modes.length > 0) {
-        core.info(`Cache modes used: ${mount.input.modes.join(", ")}.`);
+        core.info(`Cache modes used: ${mount.input.modes.join(', ')}.`);
     }
-    const fullHit = mount.output.mounts.every((m) => m.cache_hit);
+    const fullHit = mount.output.mounts.every(m => m.cache_hit);
     core.setOutput(Output_CacheHit, fullHit.toString());
-    const pathLabel = mount.output.mounts.length === 1 ? "path" : "paths";
+    const pathLabel = mount.output.mounts.length === 1 ? 'path' : 'paths';
     core.info(`Mounted ${mount.output.mounts.length} cache ${pathLabel}.`);
     if (fullHit) {
-        core.info("All cache paths found and restored.");
+        core.info('All cache paths found and restored.');
     }
     else {
         const cacheMisses = mount.output.mounts
-            .filter((m) => !m.cache_hit)
-            .map((m) => m.mount_path);
-        core.info(`Some cache paths missing: ${cacheMisses.join(", ")}`);
+            .filter(m => !m.cache_hit)
+            .map(m => m.mount_path);
+        core.info(`Some cache paths missing: ${cacheMisses.join(', ')}`);
         if (core.getBooleanInput(Input_FailOnCacheMiss)) {
-            throw new Error(`Some cache paths missing: ${cacheMisses.join(", ")}`);
+            throw new Error(`Some cache paths missing: ${cacheMisses.join(', ')}`);
         }
     }
     exportAddEnvs(mount.output.add_envs);
@@ -37921,7 +37926,7 @@ async function legacyRun() {
 
 You can replace \x1b[1mmy-cache-key\x1b[0m with something that represents what you’re storing in the cache.`;
         if (process.env.NSC_RUNNER_PROFILE_INFO) {
-            hint = "Please enable \x1b[1mCaching\x1b[0m in your runner profile.";
+            hint = 'Please enable \x1b[1mCaching\x1b[0m in your runner profile.';
         }
         throw new Error(`nscloud-cache-action requires a cache volume to be configured.
 
@@ -37945,7 +37950,7 @@ Are you running in a container? Check out https://namespace.so/docs/reference/gi
         }
     }
     else {
-        core.info("All cache paths found and restored.");
+        core.info('All cache paths found and restored.');
     }
     try {
         // Write/update cache volume metadata file
@@ -37959,13 +37964,13 @@ Are you running in a container? Check out https://namespace.so/docs/reference/gi
             metadata.userRequest[p.pathInCache] = {
                 cacheFramework: p.framework,
                 mountTarget: [p.mountTarget],
-                source: ActionVersion,
+                source: ActionVersion
             };
         }
         writeCacheMetadata(localCachePath, metadata);
     }
     catch (e) {
-        core.warning("Failed to record cache metadata.");
+        core.warning('Failed to record cache metadata.');
         core.info(e.message);
     }
     // Save the list of cache paths to actions state for the post-cache action
@@ -37981,7 +37986,7 @@ async function restoreLocalCache(cachePaths, useSymlinks) {
         }
         const expandedFilePath = resolveHome(p.mountTarget);
         const st = external_node_fs_namespaceObject.lstatSync(expandedFilePath, { throwIfNoEntry: false });
-        if (p.framework == "custom") {
+        if (p.framework == 'custom') {
             try {
                 if (mountTargetExists(expandedFilePath, st)) {
                     core.warning(`Mount target will be overwritten as path ${p.mountTarget} already exists.`);
@@ -37994,14 +37999,14 @@ async function restoreLocalCache(cachePaths, useSymlinks) {
         await io.mkdirP(p.pathInCache);
         if (useSymlinks) {
             await sudoMkdirP(external_node_path_namespaceObject.dirname(expandedFilePath));
-            await lib_exec.exec("sudo", ["rm", "-rf", expandedFilePath]);
-            await lib_exec.exec("sudo", ["ln", "-sfn", p.pathInCache, expandedFilePath]);
+            await lib_exec.exec('sudo', ['rm', '-rf', expandedFilePath]);
+            await lib_exec.exec('sudo', ['ln', '-sfn', p.pathInCache, expandedFilePath]);
             await chownSelf(expandedFilePath);
         }
         else {
             if (st && !st.isDirectory()) {
                 // If path exists and is not a directory, we can't mount over it
-                await lib_exec.exec("sudo", ["rm", "-rf", expandedFilePath]);
+                await lib_exec.exec('sudo', ['rm', '-rf', expandedFilePath]);
             }
             // Sudo to be able to create dirs in root (e.g. /nix), but set the runner as owner.
             await sudoMkdirP(expandedFilePath);
@@ -38015,8 +38020,8 @@ async function resolveCachePaths(localCachePath) {
     const manual = core.getMultilineInput(Input_Path);
     let cachesNodeModules = false;
     for (const p of manual) {
-        paths.push({ mountTarget: p, framework: "custom" });
-        if (p.endsWith("/node_modules")) {
+        paths.push({ mountTarget: p, framework: 'custom' });
+        if (p.endsWith('/node_modules')) {
             cachesNodeModules = true;
         }
     }
@@ -38043,80 +38048,82 @@ See also https://namespace.so/docs/reference/github-actions/nscloud-cache-action
 }
 async function resolveCacheMode(cacheMode, cachesXcode) {
     switch (cacheMode) {
-        case "apt": {
+        case 'apt': {
             const cfg = await getAptConfigDump();
             const etcDir = cfg.get(AptDirEtcKey);
             const etcPartsDir = cfg.get(AptDirEtcPartsKey);
-            await lib_exec.exec("sudo", ["rm", "-f", `/${etcDir}/${etcPartsDir}/docker-clean`]);
+            await lib_exec.exec('sudo', [
+                'rm',
+                '-f',
+                `/${etcDir}/${etcPartsDir}/docker-clean`
+            ]);
             const cacheDir = cfg.get(AptDirCacheKey);
             const cacheArchivesDir = cfg.get(AptDirCacheArchivesKey);
-            return [{
+            return [
+                {
                     mountTarget: `/${cacheDir}/${cacheArchivesDir}`,
-                    framework: cacheMode,
-                }];
+                    framework: cacheMode
+                }
+            ];
         }
-        case "brew": {
-            const brewCache = await getExecStdout("brew --cache");
+        case 'brew': {
+            const brewCache = await getExecStdout('brew --cache');
             return [{ mountTarget: brewCache, framework: cacheMode }];
         }
-        case "bun": {
-            const bunCache = await getExecStdout("bun pm cache");
+        case 'bun': {
+            const bunCache = await getExecStdout('bun pm cache');
             return [{ mountTarget: bunCache, framework: cacheMode }];
         }
-        case "cocoapods": {
+        case 'cocoapods': {
             return [
                 {
-                    mountTarget: "./Pods",
-                    framework: cacheMode,
+                    mountTarget: './Pods',
+                    framework: cacheMode
                 },
                 {
-                    mountTarget: "~/Library/Caches/CocoaPods",
-                    framework: cacheMode,
-                },
+                    mountTarget: '~/Library/Caches/CocoaPods',
+                    framework: cacheMode
+                }
             ];
         }
-        case "composer": {
-            const composerCache = await getExecStdout("composer config --global cache-files-dir");
+        case 'composer': {
+            const composerCache = await getExecStdout('composer config --global cache-files-dir');
             return [{ mountTarget: composerCache, framework: cacheMode }];
         }
-        case "deno": {
-            const deno = await getExecStdout("deno info --json");
+        case 'deno': {
+            const deno = await getExecStdout('deno info --json');
             const denoParsed = JSON.parse(deno);
-            return [
-                { mountTarget: denoParsed.denoDir, framework: cacheMode },
-            ];
+            return [{ mountTarget: denoParsed.denoDir, framework: cacheMode }];
         }
-        case "go": {
-            const goCache = await getExecStdout("go env -json GOCACHE GOMODCACHE");
+        case 'go': {
+            const goCache = await getExecStdout('go env -json GOCACHE GOMODCACHE');
             const goCacheParsed = JSON.parse(goCache);
             return [
                 { mountTarget: goCacheParsed.GOCACHE, framework: cacheMode },
-                { mountTarget: goCacheParsed.GOMODCACHE, framework: cacheMode },
+                { mountTarget: goCacheParsed.GOMODCACHE, framework: cacheMode }
             ];
         }
-        case "golangci-lint": {
-            const cacheDirOutput = await getExecStdout("golangci-lint cache status");
-            let cacheDir = "~/.cache/golangci-lint";
-            for (const line of cacheDirOutput.split("\n")) {
-                if (line.startsWith("Dir:")) {
-                    cacheDir = line.substring("Dir:".length).trim();
+        case 'golangci-lint': {
+            const cacheDirOutput = await getExecStdout('golangci-lint cache status');
+            let cacheDir = '~/.cache/golangci-lint';
+            for (const line of cacheDirOutput.split('\n')) {
+                if (line.startsWith('Dir:')) {
+                    cacheDir = line.substring('Dir:'.length).trim();
                     break;
                 }
             }
+            return [{ mountTarget: cacheDir, framework: cacheMode }];
+        }
+        case 'gradle': {
             return [
-                { mountTarget: cacheDir, framework: cacheMode },
+                { mountTarget: '~/.gradle/caches', framework: cacheMode },
+                { mountTarget: '~/.gradle/wrapper', framework: cacheMode }
             ];
         }
-        case "gradle": {
-            return [
-                { mountTarget: "~/.gradle/caches", framework: cacheMode },
-                { mountTarget: "~/.gradle/wrapper", framework: cacheMode },
-            ];
+        case 'maven': {
+            return [{ mountTarget: '~/.m2/repository', framework: cacheMode }];
         }
-        case "maven": {
-            return [{ mountTarget: "~/.m2/repository", framework: cacheMode }];
-        }
-        case "mise": {
+        case 'mise': {
             let mountTarget = external_node_path_namespaceObject.join(external_os_.homedir(), '.local', 'share', 'mise');
             if (process.env.MISE_DATA_DIR) {
                 mountTarget = process.env.MISE_DATA_DIR;
@@ -38127,123 +38134,126 @@ async function resolveCacheMode(cacheMode, cachesXcode) {
             else if (process.platform === 'win32' && process.env.LOCALAPPDATA) {
                 mountTarget = external_node_path_namespaceObject.join(process.env.LOCALAPPDATA, 'mise');
             }
-            return [{
+            return [
+                {
                     mountTarget: mountTarget,
-                    framework: cacheMode,
-                }];
+                    framework: cacheMode
+                }
+            ];
         }
-        case "playwright": {
-            let mountTarget = "~/.cache/ms-playwright";
+        case 'playwright': {
+            let mountTarget = '~/.cache/ms-playwright';
             switch (external_os_.platform()) {
-                case "darwin":
-                    mountTarget = "~/Library/Caches/ms-playwright";
+                case 'darwin':
+                    mountTarget = '~/Library/Caches/ms-playwright';
                     break;
-                case "win32":
-                    mountTarget = "%USERPROFILE%\AppData\Local\ms-playwright";
+                case 'win32':
+                    mountTarget = '%USERPROFILE%AppDataLocalms-playwright';
                     break;
             }
             if (process.env.PLAYWRIGHT_BROWSERS_PATH) {
                 mountTarget = process.env.PLAYWRIGHT_BROWSERS_PATH;
             }
-            return [{
+            return [
+                {
                     mountTarget: mountTarget,
-                    framework: cacheMode,
-                }];
+                    framework: cacheMode
+                }
+            ];
         }
-        case "pnpm": {
+        case 'pnpm': {
             const ver = await pnpmVersion();
-            const semver = __nccwpck_require__(2088);
-            const execFn = semver.lt(ver, "9.7.0")
+            const execFn = semver.lt(ver, '9.7.0')
                 ? getExecStdoutDropWarnings // pnpm prints warnings to stdout pre 9.7.
                 : getExecStdout;
-            const pnpmCache = await execFn("pnpm store path --loglevel error");
+            const pnpmCache = await execFn('pnpm store path --loglevel error');
             const paths = [
-                { mountTarget: pnpmCache, framework: cacheMode },
+                { mountTarget: pnpmCache, framework: cacheMode }
             ];
             // Hard-linking and clone do not work. Select copy mode to avoid spurious warnings.
-            core.exportVariable("npm_config_package_import_method", "copy");
+            core.exportVariable('npm_config_package_import_method', 'copy');
             return paths;
         }
-        case "poetry": {
-            const poetryCache = await getExecStdout("poetry config cache-dir");
+        case 'poetry': {
+            const poetryCache = await getExecStdout('poetry config cache-dir');
             return [{ mountTarget: poetryCache, framework: cacheMode }];
         }
-        case "python": {
-            const pipCache = await getExecStdout("pip cache dir");
+        case 'python': {
+            const pipCache = await getExecStdout('pip cache dir');
             return [{ mountTarget: pipCache, framework: cacheMode }];
         }
-        case "ruby": {
+        case 'ruby': {
             return [
                 {
                     // Caches output of `bundle install`.
-                    mountTarget: "./vendor/bundle",
-                    framework: cacheMode,
+                    mountTarget: './vendor/bundle',
+                    framework: cacheMode
                 },
                 {
                     // Caches output of `bundle cache` (less common).
-                    mountTarget: "./vendor/cache",
-                    framework: cacheMode,
-                },
+                    mountTarget: './vendor/cache',
+                    framework: cacheMode
+                }
             ];
         }
-        case "rust": {
+        case 'rust': {
             // Do not cache the whole ~/.cargo dir as it contains ~/.cargo/bin, where the cargo binary lives
             return [
-                { mountTarget: "~/.cargo/registry", framework: cacheMode },
-                { mountTarget: "~/.cargo/git", framework: cacheMode },
-                { mountTarget: "./target", framework: cacheMode },
+                { mountTarget: '~/.cargo/registry', framework: cacheMode },
+                { mountTarget: '~/.cargo/git', framework: cacheMode },
+                { mountTarget: './target', framework: cacheMode },
                 // Cache cleaning feature uses SQLite file https://blog.rust-lang.org/2023/12/11/cargo-cache-cleaning.html
-                { mountTarget: "~/.cargo/.global-cache", framework: cacheMode },
+                { mountTarget: '~/.cargo/.global-cache', framework: cacheMode }
             ];
         }
-        case "swiftpm": {
+        case 'swiftpm': {
             const res = [
                 {
-                    mountTarget: "./.build",
-                    framework: cacheMode,
+                    mountTarget: './.build',
+                    framework: cacheMode
                 },
                 {
-                    mountTarget: "~/Library/Caches/org.swift.swiftpm",
-                    framework: cacheMode,
+                    mountTarget: '~/Library/Caches/org.swift.swiftpm',
+                    framework: cacheMode
                 },
                 {
-                    mountTarget: "~/Library/org.swift.swiftpm",
-                    framework: cacheMode,
-                },
+                    mountTarget: '~/Library/org.swift.swiftpm',
+                    framework: cacheMode
+                }
             ];
             if (!cachesXcode) {
                 // Xcode caching already caches all derived data.
                 // Cached data lands in the same location, so also restoring with `swift` mode will work.
                 res.push({
-                    mountTarget: "~/Library/Developer/Xcode/DerivedData/ModuleCache.noindex",
-                    framework: cacheMode,
+                    mountTarget: '~/Library/Developer/Xcode/DerivedData/ModuleCache.noindex',
+                    framework: cacheMode
                 });
             }
             return res;
         }
-        case "uv": {
+        case 'uv': {
             // Defaults to clone (also known as Copy-on-Write) on macOS, and hardlink on Linux and Windows.
             // Neither works with cache volumes, and fall back to `copy`. Select `symlink` to avoid copies.
-            core.exportVariable("UV_LINK_MODE", "symlink");
-            const uvCache = await getExecStdout("uv cache dir");
+            core.exportVariable('UV_LINK_MODE', 'symlink');
+            const uvCache = await getExecStdout('uv cache dir');
             return [{ mountTarget: uvCache, framework: cacheMode }];
         }
         // Experimental, this can be huge.
         case ModeXcode: {
-            core.exportVariable("COMPILATION_CACHE_ENABLE_CACHING_DEFAULT", "YES");
+            core.exportVariable('COMPILATION_CACHE_ENABLE_CACHING_DEFAULT', 'YES');
             return [
                 {
                     // Consider: `defaults read com.apple.dt.Xcode.plist IDECustomDerivedDataLocation`
-                    mountTarget: "~/Library/Developer/Xcode/DerivedData/CompilationCache.noindex",
-                    framework: cacheMode,
-                },
+                    mountTarget: '~/Library/Developer/Xcode/DerivedData/CompilationCache.noindex',
+                    framework: cacheMode
+                }
             ];
         }
-        case "yarn": {
-            const yarnVersion = await getExecStdout("yarn --version");
-            const yarnCache = yarnVersion.startsWith("1.")
-                ? await getExecStdout("yarn cache dir")
-                : await getExecStdout("yarn config get cacheFolder");
+        case 'yarn': {
+            const yarnVersion = await getExecStdout('yarn --version');
+            const yarnCache = yarnVersion.startsWith('1.')
+                ? await getExecStdout('yarn cache dir')
+                : await getExecStdout('yarn config get cacheFolder');
             return [{ mountTarget: yarnCache, framework: cacheMode }];
         }
         default:
@@ -38254,23 +38264,23 @@ async function resolveCacheMode(cacheMode, cachesXcode) {
 async function getCacheSummaryUtil(cachePath) {
     const { stdout } = await lib_exec.getExecOutput(`/bin/sh -c "df -h ${cachePath} | awk 'FNR == 2 {print $2,$3}'"`, [], {
         silent: !core.isDebug(),
-        ignoreReturnCode: true,
+        ignoreReturnCode: true
     });
-    const cacheUtilData = stdout.trim().split(" ");
+    const cacheUtilData = stdout.trim().split(' ');
     return {
         size: cacheUtilData[0],
-        used: cacheUtilData[1],
+        used: cacheUtilData[1]
     };
 }
 async function pnpmVersion() {
-    const out = await getExecStdout("pnpm --version");
+    const out = await getExecStdout('pnpm --version');
     // pnpm prints warnings to stdout pre 9.7, so only the last line contains the version.
     const lines = out.split(/\r?\n/);
     return lines[lines.length - 1];
 }
 async function getAptConfigDump() {
-    const { stdout } = await lib_exec.getExecOutput("apt-config dump", [], {
-        silent: true,
+    const { stdout } = await lib_exec.getExecOutput('apt-config dump', [], {
+        silent: true
     });
     const config = new Map();
     const pattern = /(.+)\s"(.*)";/;
@@ -38287,8 +38297,8 @@ async function getExecStdoutDropWarnings(cmd) {
     const { stdout } = await lib_exec.getExecOutput(cmd);
     return stdout
         .split(/\r?\n/)
-        .filter((line) => !line.startsWith("\u2009WARN\u2009"))
-        .join("\r\n")
+        .filter(line => !line.startsWith('\u2009WARN\u2009'))
+        .join('\r\n')
         .trim();
 }
 async function getExecStdout(cmd) {
