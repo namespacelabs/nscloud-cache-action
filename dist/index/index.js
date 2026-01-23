@@ -37588,11 +37588,11 @@ async function getSpace() {
         core.addPath(existingDir);
         return existingDir;
     }
-    // Case 3: Space exists, "latest" or "pre-release" specified - ensure we have target version
-    if (versionSpec === 'latest' || versionSpec === 'pre-release') {
+    // Case 3: Space exists, "latest" or "dev" specified - ensure we have target version
+    if (versionSpec === 'latest' || versionSpec === 'dev') {
         const installedVersion = await getInstalledVersion(existingPath);
         const targetVersion = await resolveVersion(versionSpec, token);
-        const label = versionSpec === 'pre-release' ? 'latest pre-release' : 'latest';
+        const label = versionSpec === 'dev' ? 'latest dev' : 'latest';
         if (installedVersion === targetVersion) {
             core.info(`Existing space v${installedVersion} is already ${label}`);
             const existingDir = external_path_.dirname(existingPath);
@@ -37639,8 +37639,8 @@ async function resolveVersion(versionSpec, token) {
     if (!versionSpec || versionSpec === 'latest') {
         return await getLatestVersion(token);
     }
-    if (versionSpec === 'pre-release') {
-        return await getLatestPreReleaseVersion(token);
+    if (versionSpec === 'dev') {
+        return await getLatestDevVersion(token);
     }
     return normalizeVersion(versionSpec);
 }
@@ -37672,15 +37672,15 @@ async function getLatestVersion(token) {
     });
     return data.tag_name.replace(/^v/, '');
 }
-async function getLatestPreReleaseVersion(token) {
+async function getLatestDevVersion(token) {
     const octokit = github.getOctokit(token);
     for await (const response of octokit.paginate.iterator(octokit.rest.repos.listReleases, { owner: REPO_OWNER, repo: REPO_NAME, per_page: 100 })) {
-        const preRelease = response.data.find(release => release.prerelease);
-        if (preRelease) {
-            return preRelease.tag_name.replace(/^v/, '');
+        const devRelease = response.data.find(release => release.tag_name.includes('-dev'));
+        if (devRelease) {
+            return devRelease.tag_name.replace(/^v/, '');
         }
     }
-    throw new Error('No pre-release version found');
+    throw new Error('No dev version found');
 }
 async function getInstalledVersion(spacePath) {
     const result = await lib_exec.getExecOutput(spacePath, ['version', '-o=json'], {
