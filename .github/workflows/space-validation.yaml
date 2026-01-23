@@ -1,0 +1,32 @@
+name: Space validation
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - '*'
+  merge_group:
+    types: [checks_requested]
+
+jobs:
+  apt:
+    runs-on: namespace-profile-e2e-small
+    strategy:
+      matrix:
+        space-enabled: [false, true] # temp. while we migrate
+        space-version: ['', 'dev', 'latest']
+    steps:
+      - uses: actions/checkout@v6
+      - name: Setup Apt cache
+        uses: ./
+        with:
+          space-enabled: ${{ matrix.space-enabled }}
+          space-version: ${{ matrix.space-version }}
+          mode: apt
+      - run: |
+          sudo apt-get update
+          sudo apt-get install -y lcov
+          lcov -h
