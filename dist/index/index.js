@@ -37364,9 +37364,7 @@ async function getSpace() {
     const existingPath = await getSpaceBinaryPath();
     // Case 1: No space binary exists - download required version or latest
     if (!existingPath) {
-        const version = !versionSpec || versionSpec === "latest"
-            ? await getLatestVersion(token)
-            : normalizeVersion(versionSpec);
+        const version = await resolveVersion(versionSpec, token);
         return await findOrDownload(version, token, arch);
     }
     // Case 2: Space exists, no version specified - use existing as-is
@@ -37377,18 +37375,19 @@ async function getSpace() {
         core.addPath(existingDir);
         return existingDir;
     }
-    // Case 3: Space exists, "latest" specified - ensure we have latest
-    if (versionSpec === "latest") {
+    // Case 3: Space exists, "latest" or "pre-release" specified - ensure we have target version
+    if (versionSpec === "latest" || versionSpec === "pre-release") {
         const installedVersion = await getInstalledVersion(existingPath);
-        const latestVersion = await getLatestVersion(token);
-        if (installedVersion === latestVersion) {
-            core.info(`Existing space v${installedVersion} is already latest`);
+        const targetVersion = await resolveVersion(versionSpec, token);
+        const label = versionSpec === "pre-release" ? "latest pre-release" : "latest";
+        if (installedVersion === targetVersion) {
+            core.info(`Existing space v${installedVersion} is already ${label}`);
             const existingDir = external_path_.dirname(existingPath);
             core.addPath(existingDir);
             return existingDir;
         }
-        core.info(`Existing space v${installedVersion} is not latest (v${latestVersion})`);
-        return await findOrDownload(latestVersion, token, arch);
+        core.info(`Existing space v${installedVersion} is not ${label} (v${targetVersion})`);
+        return await findOrDownload(targetVersion, token, arch);
     }
     // Case 4: Space exists, specific version requested - check if matches
     const installedVersion = await getInstalledVersion(existingPath);
@@ -37423,6 +37422,15 @@ function getArch() {
 function normalizeVersion(version) {
     return version.replace(/^v/, "");
 }
+async function resolveVersion(versionSpec, token) {
+    if (!versionSpec || versionSpec === "latest") {
+        return await getLatestVersion(token);
+    }
+    if (versionSpec === "pre-release") {
+        return await getLatestPreReleaseVersion(token);
+    }
+    return normalizeVersion(versionSpec);
+}
 async function getSpaceBinaryPath() {
     const powertoysDir = process.env.NSC_POWERTOYS_DIR;
     if (powertoysDir) {
@@ -37450,6 +37458,16 @@ async function getLatestVersion(token) {
         repo: REPO_NAME,
     });
     return data.tag_name.replace(/^v/, "");
+}
+async function getLatestPreReleaseVersion(token) {
+    const octokit = github.getOctokit(token);
+    for await (const response of octokit.paginate.iterator(octokit.rest.repos.listReleases, { owner: REPO_OWNER, repo: REPO_NAME, per_page: 100 })) {
+        const preRelease = response.data.find((release) => release.prerelease);
+        if (preRelease) {
+            return preRelease.tag_name.replace(/^v/, "");
+        }
+    }
+    throw new Error("No pre-release version found");
 }
 async function getInstalledVersion(spacePath) {
     const result = await lib_exec.getExecOutput(spacePath, ["version", "-o=json"], {
