@@ -1,17 +1,17 @@
-import * as core from "@actions/core";
-import * as exec from "@actions/exec";
-import * as io from "@actions/io";
-import * as tc from "@actions/tool-cache";
-import * as github from "@actions/github";
-import * as path from "path";
-import * as fs from "fs";
+import * as core from '@actions/core';
+import * as exec from '@actions/exec';
+import * as io from '@actions/io';
+import * as tc from '@actions/tool-cache';
+import * as github from '@actions/github';
+import * as path from 'path';
+import * as fs from 'fs';
 
-const Input_SpaceVersion = "space-version";
-const Input_GithubToken = "github-token";
+const Input_SpaceVersion = 'space-version';
+const Input_GithubToken = 'github-token';
 
-const TOOL_NAME = "space";
-const REPO_OWNER = "namespacelabs";
-const REPO_NAME = "space";
+const TOOL_NAME = 'space';
+const REPO_OWNER = 'namespacelabs';
+const REPO_NAME = 'space';
 
 export async function getSpace(): Promise<string> {
   const versionSpec = core.getInput(Input_SpaceVersion);
@@ -36,10 +36,11 @@ export async function getSpace(): Promise<string> {
   }
 
   // Case 3: Space exists, "latest" or "pre-release" specified - ensure we have target version
-  if (versionSpec === "latest" || versionSpec === "pre-release") {
+  if (versionSpec === 'latest' || versionSpec === 'pre-release') {
     const installedVersion = await getInstalledVersion(existingPath);
     const targetVersion = await resolveVersion(versionSpec, token);
-    const label = versionSpec === "pre-release" ? "latest pre-release" : "latest";
+    const label =
+      versionSpec === 'pre-release' ? 'latest pre-release' : 'latest';
 
     if (installedVersion === targetVersion) {
       core.info(`Existing space v${installedVersion} is already ${label}`);
@@ -73,33 +74,36 @@ export async function getSpace(): Promise<string> {
 
 function getPlatform(): string {
   switch (process.platform) {
-    case "darwin":
-      return "darwin";
-    case "win32":
-      return "windows";
+    case 'darwin':
+      return 'darwin';
+    case 'win32':
+      return 'windows';
     default:
-      return "linux";
+      return 'linux';
   }
 }
 
 function getArch(): string {
   switch (process.arch) {
-    case "arm64":
-      return "arm64";
+    case 'arm64':
+      return 'arm64';
     default:
-      return "amd64";
+      return 'amd64';
   }
 }
 
 function normalizeVersion(version: string): string {
-  return version.replace(/^v/, "");
+  return version.replace(/^v/, '');
 }
 
-async function resolveVersion(versionSpec: string, token: string): Promise<string> {
-  if (!versionSpec || versionSpec === "latest") {
+async function resolveVersion(
+  versionSpec: string,
+  token: string
+): Promise<string> {
+  if (!versionSpec || versionSpec === 'latest') {
     return await getLatestVersion(token);
   }
-  if (versionSpec === "pre-release") {
+  if (versionSpec === 'pre-release') {
     return await getLatestPreReleaseVersion(token);
   }
   return normalizeVersion(versionSpec);
@@ -112,28 +116,32 @@ async function getSpaceBinaryPath(): Promise<string> {
     if (fs.existsSync(spacePath)) {
       return spacePath;
     }
-    return "";
+    return '';
   }
 
   try {
     return await io.which(TOOL_NAME, false);
   } catch {
-    return "";
+    return '';
   }
 }
 
-function getDownloadUrl(version: string, platform: string, arch: string): string {
-  const cleanVersion = version.replace(/^v/, "");
+function getDownloadUrl(
+  version: string,
+  platform: string,
+  arch: string
+): string {
+  const cleanVersion = version.replace(/^v/, '');
   return `https://github.com/${REPO_OWNER}/${REPO_NAME}/releases/download/v${cleanVersion}/space_${cleanVersion}_${platform}_${arch}.tar.gz`;
 }
 
 async function getLatestVersion(token: string): Promise<string> {
   const octokit = github.getOctokit(token);
-  const { data } = await octokit.rest.repos.getLatestRelease({
+  const {data} = await octokit.rest.repos.getLatestRelease({
     owner: REPO_OWNER,
-    repo: REPO_NAME,
+    repo: REPO_NAME
   });
-  return data.tag_name.replace(/^v/, "");
+  return data.tag_name.replace(/^v/, '');
 }
 
 async function getLatestPreReleaseVersion(token: string): Promise<string> {
@@ -141,15 +149,15 @@ async function getLatestPreReleaseVersion(token: string): Promise<string> {
 
   for await (const response of octokit.paginate.iterator(
     octokit.rest.repos.listReleases,
-    { owner: REPO_OWNER, repo: REPO_NAME, per_page: 100 }
+    {owner: REPO_OWNER, repo: REPO_NAME, per_page: 100}
   )) {
-    const preRelease = response.data.find((release) => release.prerelease);
+    const preRelease = response.data.find(release => release.prerelease);
     if (preRelease) {
-      return preRelease.tag_name.replace(/^v/, "");
+      return preRelease.tag_name.replace(/^v/, '');
     }
   }
 
-  throw new Error("No pre-release version found");
+  throw new Error('No pre-release version found');
 }
 
 interface SpaceVersionInfo {
@@ -159,9 +167,9 @@ interface SpaceVersionInfo {
 }
 
 async function getInstalledVersion(spacePath: string): Promise<string> {
-  const result = await exec.getExecOutput(spacePath, ["version", "-o=json"], {
+  const result = await exec.getExecOutput(spacePath, ['version', '-o=json'], {
     silent: true,
-    ignoreReturnCode: true,
+    ignoreReturnCode: true
   });
 
   if (result.exitCode !== 0) {
@@ -191,7 +199,10 @@ async function findOrDownload(
   return toolPath;
 }
 
-async function downloadAndCache(version: string, token: string): Promise<string> {
+async function downloadAndCache(
+  version: string,
+  token: string
+): Promise<string> {
   const platform = getPlatform();
   const arch = getArch();
 
@@ -203,14 +214,16 @@ async function downloadAndCache(version: string, token: string): Promise<string>
     downloadPath = await tc.downloadTool(downloadUrl, undefined, token);
   } catch (error) {
     throw new Error(
-      `Failed to download space v${version}: ${error instanceof Error ? error.message : error}`
+      `Failed to download space v${version}: ${
+        error instanceof Error ? error.message : error
+      }`
     );
   }
 
-  core.info("Extracting space...");
+  core.info('Extracting space...');
   const extractedPath = await tc.extractTar(downloadPath);
 
-  core.info("Adding to tool cache...");
+  core.info('Adding to tool cache...');
   const cachedPath = await tc.cacheDir(extractedPath, TOOL_NAME, version, arch);
   core.info(`Cached space v${version} to ${cachedPath}`);
 

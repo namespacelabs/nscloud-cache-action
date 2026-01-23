@@ -1,7 +1,7 @@
-import * as core from "@actions/core";
-import * as action from "./action";
-import * as utils from "./utils";
-import * as fs from "node:fs";
+import * as core from '@actions/core';
+import * as action from './action';
+import * as utils from './utils';
+import * as fs from 'node:fs';
 
 void main();
 
@@ -16,7 +16,7 @@ async function main() {
 async function spacePost() {
   const rawMount = core.getState(utils.StateMountKey);
   if (!rawMount) {
-    core.warning("No mount state found. Was the cache mounted?");
+    core.warning('No mount state found. Was the cache mounted?');
     return;
   }
 
@@ -24,7 +24,7 @@ async function spacePost() {
 
   const useSymlinks = utils.shouldUseSymlinks();
   if (!useSymlinks) {
-    core.debug("Using bind mounts: no risk of finding them deleted.");
+    core.debug('Using bind mounts: no risk of finding them deleted.');
   }
 
   let foundProblems = false;
@@ -32,7 +32,7 @@ async function spacePost() {
   for (const m of mount.output.mounts) {
     if (useSymlinks) {
       const expandedPath = utils.resolveHome(m.mount_path);
-      const st = fs.lstatSync(expandedPath, { throwIfNoEntry: false });
+      const st = fs.lstatSync(expandedPath, {throwIfNoEntry: false});
 
       if (st == null) {
         core.warning(
@@ -69,7 +69,7 @@ async function legacyPost() {
   const useSymlinks = utils.shouldUseSymlinks();
 
   if (!useSymlinks) {
-    core.debug("Using bind mounts: no risk of finding them deleted.");
+    core.debug('Using bind mounts: no risk of finding them deleted.');
   }
 
   let foundProblems = false;
@@ -77,7 +77,7 @@ async function legacyPost() {
   for (const p of cachePaths) {
     if (useSymlinks) {
       const expandedFilePath = utils.resolveHome(p.mountTarget);
-      const st = fs.lstatSync(expandedFilePath, { throwIfNoEntry: false });
+      const st = fs.lstatSync(expandedFilePath, {throwIfNoEntry: false});
 
       if (st == null) {
         core.warning(

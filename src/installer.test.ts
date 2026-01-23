@@ -1,5 +1,5 @@
-import { beforeEach, describe, expect, test, vi } from "vitest";
-import * as installer from "./installer";
+import {beforeEach, describe, expect, test, vi} from 'vitest';
+import * as installer from './installer';
 
 const getInput = vi.hoisted(() => vi.fn());
 const addPath = vi.hoisted(() => vi.fn());
@@ -16,371 +16,415 @@ const existsSync = vi.hoisted(() => vi.fn());
 beforeEach(() => {
   vi.clearAllMocks();
 
-  vi.mock("@actions/core", () => ({
+  vi.mock('@actions/core', () => ({
     getInput,
     addPath,
-    info,
+    info
   }));
 
-  vi.mock("@actions/io", () => ({
-    which,
+  vi.mock('@actions/io', () => ({
+    which
   }));
 
-  vi.mock("@actions/tool-cache", () => ({
+  vi.mock('@actions/tool-cache', () => ({
     find,
     downloadTool,
     extractTar,
-    cacheDir,
+    cacheDir
   }));
 
-  vi.mock("@actions/exec", () => ({
-    getExecOutput,
+  vi.mock('@actions/exec', () => ({
+    getExecOutput
   }));
 
-  vi.mock("@actions/github", () => ({
-    getOctokit,
+  vi.mock('@actions/github', () => ({
+    getOctokit
   }));
 
-  vi.mock("fs", () => ({
-    existsSync,
+  vi.mock('fs', () => ({
+    existsSync
   }));
 
   delete process.env.NSC_POWERTOYS_DIR;
 });
 
-describe("getSpace", () => {
+describe('getSpace', () => {
   function mockInputs(inputs: Record<string, string>) {
-    getInput.mockImplementation((name: string) => inputs[name] || "");
+    getInput.mockImplementation((name: string) => inputs[name] || '');
   }
 
-  describe("no existing space binary", () => {
+  describe('no existing space binary', () => {
     beforeEach(() => {
-      which.mockResolvedValue("");
+      which.mockResolvedValue('');
     });
 
-    test("downloads latest when no version specified", async () => {
-      mockInputs({ "github-token": "token" });
+    test('downloads latest when no version specified', async () => {
+      mockInputs({'github-token': 'token'});
 
       const mockOctokit = {
         rest: {
           repos: {
             getLatestRelease: vi.fn().mockResolvedValue({
-              data: { tag_name: "v0.1.0" },
-            }),
-          },
-        },
+              data: {tag_name: 'v0.1.0'}
+            })
+          }
+        }
       };
       getOctokit.mockReturnValue(mockOctokit);
-      find.mockReturnValue("");
-      downloadTool.mockResolvedValue("/tmp/download.tar.gz");
-      extractTar.mockResolvedValue("/tmp/extracted");
-      cacheDir.mockResolvedValue("/cache/space/0.1.0");
+      find.mockReturnValue('');
+      downloadTool.mockResolvedValue('/tmp/download.tar.gz');
+      extractTar.mockResolvedValue('/tmp/extracted');
+      cacheDir.mockResolvedValue('/cache/space/0.1.0');
 
       const result = await installer.getSpace();
 
-      expect(result).toBe("/cache/space/0.1.0");
+      expect(result).toBe('/cache/space/0.1.0');
       expect(downloadTool).toHaveBeenCalled();
       expect(cacheDir).toHaveBeenCalled();
-      expect(addPath).toHaveBeenCalledWith("/cache/space/0.1.0");
+      expect(addPath).toHaveBeenCalledWith('/cache/space/0.1.0');
     });
 
-    test("uses cache when version is cached", async () => {
-      mockInputs({ "space-version": "0.1.0", "github-token": "token" });
-      find.mockReturnValue("/cache/space/0.1.0");
+    test('uses cache when version is cached', async () => {
+      mockInputs({'space-version': '0.1.0', 'github-token': 'token'});
+      find.mockReturnValue('/cache/space/0.1.0');
 
       const result = await installer.getSpace();
 
-      expect(result).toBe("/cache/space/0.1.0");
+      expect(result).toBe('/cache/space/0.1.0');
       expect(downloadTool).not.toHaveBeenCalled();
-      expect(addPath).toHaveBeenCalledWith("/cache/space/0.1.0");
+      expect(addPath).toHaveBeenCalledWith('/cache/space/0.1.0');
     });
 
-    test("downloads specified version when not cached", async () => {
-      mockInputs({ "space-version": "0.2.0", "github-token": "token" });
-      find.mockReturnValue("");
-      downloadTool.mockResolvedValue("/tmp/download.tar.gz");
-      extractTar.mockResolvedValue("/tmp/extracted");
-      cacheDir.mockResolvedValue("/cache/space/0.2.0");
+    test('downloads specified version when not cached', async () => {
+      mockInputs({'space-version': '0.2.0', 'github-token': 'token'});
+      find.mockReturnValue('');
+      downloadTool.mockResolvedValue('/tmp/download.tar.gz');
+      extractTar.mockResolvedValue('/tmp/extracted');
+      cacheDir.mockResolvedValue('/cache/space/0.2.0');
 
       const result = await installer.getSpace();
 
-      expect(result).toBe("/cache/space/0.2.0");
+      expect(result).toBe('/cache/space/0.2.0');
       expect(downloadTool).toHaveBeenCalledWith(
-        expect.stringContaining("v0.2.0"),
+        expect.stringContaining('v0.2.0'),
         undefined,
-        "token"
+        'token'
       );
     });
 
-    test("handles version with v prefix", async () => {
-      mockInputs({ "space-version": "v0.3.0", "github-token": "token" });
-      find.mockReturnValue("");
-      downloadTool.mockResolvedValue("/tmp/download.tar.gz");
-      extractTar.mockResolvedValue("/tmp/extracted");
-      cacheDir.mockResolvedValue("/cache/space/0.3.0");
+    test('handles version with v prefix', async () => {
+      mockInputs({'space-version': 'v0.3.0', 'github-token': 'token'});
+      find.mockReturnValue('');
+      downloadTool.mockResolvedValue('/tmp/download.tar.gz');
+      extractTar.mockResolvedValue('/tmp/extracted');
+      cacheDir.mockResolvedValue('/cache/space/0.3.0');
 
       await installer.getSpace();
 
       expect(downloadTool).toHaveBeenCalledWith(
-        expect.stringContaining("space_0.3.0"),
+        expect.stringContaining('space_0.3.0'),
         undefined,
-        "token"
+        'token'
       );
     });
   });
 
-  describe("NSC_POWERTOYS_DIR", () => {
-    test("uses space from powertoys dir when set and exists", async () => {
-      process.env.NSC_POWERTOYS_DIR = "/opt/powertoys";
+  describe('NSC_POWERTOYS_DIR', () => {
+    test('uses space from powertoys dir when set and exists', async () => {
+      process.env.NSC_POWERTOYS_DIR = '/opt/powertoys';
       existsSync.mockReturnValue(true);
-      mockInputs({ "github-token": "token" });
+      mockInputs({'github-token': 'token'});
       getExecOutput.mockResolvedValue({
         exitCode: 0,
-        stdout: JSON.stringify({ version: "0.1.0", commit: "abc", date: "2026-01-01" }),
-        stderr: "",
+        stdout: JSON.stringify({
+          version: '0.1.0',
+          commit: 'abc',
+          date: '2026-01-01'
+        }),
+        stderr: ''
       });
 
       const result = await installer.getSpace();
 
-      expect(result).toBe("/opt/powertoys");
-      expect(existsSync).toHaveBeenCalledWith("/opt/powertoys/space");
+      expect(result).toBe('/opt/powertoys');
+      expect(existsSync).toHaveBeenCalledWith('/opt/powertoys/space');
       expect(which).not.toHaveBeenCalled();
     });
 
-    test("downloads when powertoys dir set but space does not exist", async () => {
-      process.env.NSC_POWERTOYS_DIR = "/opt/powertoys";
+    test('downloads when powertoys dir set but space does not exist', async () => {
+      process.env.NSC_POWERTOYS_DIR = '/opt/powertoys';
       existsSync.mockReturnValue(false);
-      mockInputs({ "space-version": "0.1.0", "github-token": "token" });
-      find.mockReturnValue("/cache/space/0.1.0");
+      mockInputs({'space-version': '0.1.0', 'github-token': 'token'});
+      find.mockReturnValue('/cache/space/0.1.0');
 
       const result = await installer.getSpace();
 
-      expect(result).toBe("/cache/space/0.1.0");
+      expect(result).toBe('/cache/space/0.1.0');
       expect(which).not.toHaveBeenCalled();
     });
   });
 
-  describe("existing space binary", () => {
-    test("uses existing when no version specified", async () => {
-      mockInputs({ "github-token": "token" });
-      which.mockResolvedValue("/usr/local/bin/space");
+  describe('existing space binary', () => {
+    test('uses existing when no version specified', async () => {
+      mockInputs({'github-token': 'token'});
+      which.mockResolvedValue('/usr/local/bin/space');
       getExecOutput.mockResolvedValue({
         exitCode: 0,
-        stdout: JSON.stringify({ version: "0.1.0", commit: "abc", date: "2026-01-01" }),
-        stderr: "",
+        stdout: JSON.stringify({
+          version: '0.1.0',
+          commit: 'abc',
+          date: '2026-01-01'
+        }),
+        stderr: ''
       });
 
       const result = await installer.getSpace();
 
-      expect(result).toBe("/usr/local/bin");
+      expect(result).toBe('/usr/local/bin');
       expect(downloadTool).not.toHaveBeenCalled();
-      expect(addPath).toHaveBeenCalledWith("/usr/local/bin");
+      expect(addPath).toHaveBeenCalledWith('/usr/local/bin');
     });
 
-    test("uses existing when version matches", async () => {
-      mockInputs({ "space-version": "0.1.0", "github-token": "token" });
-      which.mockResolvedValue("/usr/local/bin/space");
+    test('uses existing when version matches', async () => {
+      mockInputs({'space-version': '0.1.0', 'github-token': 'token'});
+      which.mockResolvedValue('/usr/local/bin/space');
       getExecOutput.mockResolvedValue({
         exitCode: 0,
-        stdout: JSON.stringify({ version: "0.1.0", commit: "abc", date: "2026-01-01" }),
-        stderr: "",
+        stdout: JSON.stringify({
+          version: '0.1.0',
+          commit: 'abc',
+          date: '2026-01-01'
+        }),
+        stderr: ''
       });
 
       const result = await installer.getSpace();
 
-      expect(result).toBe("/usr/local/bin");
+      expect(result).toBe('/usr/local/bin');
       expect(downloadTool).not.toHaveBeenCalled();
-      expect(addPath).toHaveBeenCalledWith("/usr/local/bin");
+      expect(addPath).toHaveBeenCalledWith('/usr/local/bin');
     });
 
-    test("downloads when version mismatches", async () => {
-      mockInputs({ "space-version": "0.2.0", "github-token": "token" });
-      which.mockResolvedValue("/usr/local/bin/space");
+    test('downloads when version mismatches', async () => {
+      mockInputs({'space-version': '0.2.0', 'github-token': 'token'});
+      which.mockResolvedValue('/usr/local/bin/space');
       getExecOutput.mockResolvedValue({
         exitCode: 0,
-        stdout: JSON.stringify({ version: "0.1.0", commit: "abc", date: "2026-01-01" }),
-        stderr: "",
+        stdout: JSON.stringify({
+          version: '0.1.0',
+          commit: 'abc',
+          date: '2026-01-01'
+        }),
+        stderr: ''
       });
-      find.mockReturnValue("");
-      downloadTool.mockResolvedValue("/tmp/download.tar.gz");
-      extractTar.mockResolvedValue("/tmp/extracted");
-      cacheDir.mockResolvedValue("/cache/space/0.2.0");
+      find.mockReturnValue('');
+      downloadTool.mockResolvedValue('/tmp/download.tar.gz');
+      extractTar.mockResolvedValue('/tmp/extracted');
+      cacheDir.mockResolvedValue('/cache/space/0.2.0');
 
       const result = await installer.getSpace();
 
-      expect(result).toBe("/cache/space/0.2.0");
+      expect(result).toBe('/cache/space/0.2.0');
       expect(downloadTool).toHaveBeenCalled();
-      expect(addPath).toHaveBeenCalledWith("/cache/space/0.2.0");
+      expect(addPath).toHaveBeenCalledWith('/cache/space/0.2.0');
     });
 
-    test("uses cache when version mismatches but cached", async () => {
-      mockInputs({ "space-version": "0.2.0", "github-token": "token" });
-      which.mockResolvedValue("/usr/local/bin/space");
+    test('uses cache when version mismatches but cached', async () => {
+      mockInputs({'space-version': '0.2.0', 'github-token': 'token'});
+      which.mockResolvedValue('/usr/local/bin/space');
       getExecOutput.mockResolvedValue({
         exitCode: 0,
-        stdout: JSON.stringify({ version: "0.1.0", commit: "abc", date: "2026-01-01" }),
-        stderr: "",
+        stdout: JSON.stringify({
+          version: '0.1.0',
+          commit: 'abc',
+          date: '2026-01-01'
+        }),
+        stderr: ''
       });
-      find.mockReturnValue("/cache/space/0.2.0");
+      find.mockReturnValue('/cache/space/0.2.0');
 
       const result = await installer.getSpace();
 
-      expect(result).toBe("/cache/space/0.2.0");
+      expect(result).toBe('/cache/space/0.2.0');
       expect(downloadTool).not.toHaveBeenCalled();
-      expect(addPath).toHaveBeenCalledWith("/cache/space/0.2.0");
+      expect(addPath).toHaveBeenCalledWith('/cache/space/0.2.0');
     });
 
-    test("handles v prefix in requested version", async () => {
-      mockInputs({ "space-version": "v0.1.0", "github-token": "token" });
-      which.mockResolvedValue("/usr/local/bin/space");
+    test('handles v prefix in requested version', async () => {
+      mockInputs({'space-version': 'v0.1.0', 'github-token': 'token'});
+      which.mockResolvedValue('/usr/local/bin/space');
       getExecOutput.mockResolvedValue({
         exitCode: 0,
-        stdout: JSON.stringify({ version: "0.1.0", commit: "abc", date: "2026-01-01" }),
-        stderr: "",
+        stdout: JSON.stringify({
+          version: '0.1.0',
+          commit: 'abc',
+          date: '2026-01-01'
+        }),
+        stderr: ''
       });
 
       const result = await installer.getSpace();
 
-      expect(result).toBe("/usr/local/bin");
+      expect(result).toBe('/usr/local/bin');
       expect(downloadTool).not.toHaveBeenCalled();
     });
   });
 
-  describe("explicit latest version", () => {
-    test("uses existing when already latest", async () => {
-      mockInputs({ "space-version": "latest", "github-token": "token" });
-      which.mockResolvedValue("/usr/local/bin/space");
+  describe('explicit latest version', () => {
+    test('uses existing when already latest', async () => {
+      mockInputs({'space-version': 'latest', 'github-token': 'token'});
+      which.mockResolvedValue('/usr/local/bin/space');
       getExecOutput.mockResolvedValue({
         exitCode: 0,
-        stdout: JSON.stringify({ version: "0.1.0", commit: "abc", date: "2026-01-01" }),
-        stderr: "",
+        stdout: JSON.stringify({
+          version: '0.1.0',
+          commit: 'abc',
+          date: '2026-01-01'
+        }),
+        stderr: ''
       });
       const mockOctokit = {
         rest: {
           repos: {
             getLatestRelease: vi.fn().mockResolvedValue({
-              data: { tag_name: "v0.1.0" },
-            }),
-          },
-        },
+              data: {tag_name: 'v0.1.0'}
+            })
+          }
+        }
       };
       getOctokit.mockReturnValue(mockOctokit);
 
       const result = await installer.getSpace();
 
-      expect(result).toBe("/usr/local/bin");
+      expect(result).toBe('/usr/local/bin');
       expect(downloadTool).not.toHaveBeenCalled();
-      expect(addPath).toHaveBeenCalledWith("/usr/local/bin");
+      expect(addPath).toHaveBeenCalledWith('/usr/local/bin');
     });
 
-    test("downloads when existing is not latest", async () => {
-      mockInputs({ "space-version": "latest", "github-token": "token" });
-      which.mockResolvedValue("/usr/local/bin/space");
+    test('downloads when existing is not latest', async () => {
+      mockInputs({'space-version': 'latest', 'github-token': 'token'});
+      which.mockResolvedValue('/usr/local/bin/space');
       getExecOutput.mockResolvedValue({
         exitCode: 0,
-        stdout: JSON.stringify({ version: "0.0.9", commit: "abc", date: "2026-01-01" }),
-        stderr: "",
+        stdout: JSON.stringify({
+          version: '0.0.9',
+          commit: 'abc',
+          date: '2026-01-01'
+        }),
+        stderr: ''
       });
       const mockOctokit = {
         rest: {
           repos: {
             getLatestRelease: vi.fn().mockResolvedValue({
-              data: { tag_name: "v0.1.0" },
-            }),
-          },
-        },
+              data: {tag_name: 'v0.1.0'}
+            })
+          }
+        }
       };
       getOctokit.mockReturnValue(mockOctokit);
-      find.mockReturnValue("");
-      downloadTool.mockResolvedValue("/tmp/download.tar.gz");
-      extractTar.mockResolvedValue("/tmp/extracted");
-      cacheDir.mockResolvedValue("/cache/space/0.1.0");
+      find.mockReturnValue('');
+      downloadTool.mockResolvedValue('/tmp/download.tar.gz');
+      extractTar.mockResolvedValue('/tmp/extracted');
+      cacheDir.mockResolvedValue('/cache/space/0.1.0');
 
       const result = await installer.getSpace();
 
-      expect(result).toBe("/cache/space/0.1.0");
+      expect(result).toBe('/cache/space/0.1.0');
       expect(downloadTool).toHaveBeenCalled();
-      expect(addPath).toHaveBeenCalledWith("/cache/space/0.1.0");
+      expect(addPath).toHaveBeenCalledWith('/cache/space/0.1.0');
     });
   });
 
-  describe("pre-release version", () => {
+  describe('pre-release version', () => {
     function createMockOctokitWithPreRelease(preReleaseVersion: string) {
       return {
         rest: {
           repos: {
-            listReleases: vi.fn(),
-          },
+            listReleases: vi.fn()
+          }
         },
         paginate: {
           iterator: vi.fn().mockReturnValue([
             {
               data: [
-                { tag_name: "v0.2.0", prerelease: false },
-                { tag_name: preReleaseVersion, prerelease: true },
-                { tag_name: "v0.1.0", prerelease: false },
-              ],
-            },
-          ]),
-        },
+                {tag_name: 'v0.2.0', prerelease: false},
+                {tag_name: preReleaseVersion, prerelease: true},
+                {tag_name: 'v0.1.0', prerelease: false}
+              ]
+            }
+          ])
+        }
       };
     }
 
-    test("downloads pre-release when no existing binary", async () => {
-      mockInputs({ "space-version": "pre-release", "github-token": "token" });
-      which.mockResolvedValue("");
-      getOctokit.mockReturnValue(createMockOctokitWithPreRelease("v0.3.0-beta.1"));
-      find.mockReturnValue("");
-      downloadTool.mockResolvedValue("/tmp/download.tar.gz");
-      extractTar.mockResolvedValue("/tmp/extracted");
-      cacheDir.mockResolvedValue("/cache/space/0.3.0-beta.1");
+    test('downloads pre-release when no existing binary', async () => {
+      mockInputs({'space-version': 'pre-release', 'github-token': 'token'});
+      which.mockResolvedValue('');
+      getOctokit.mockReturnValue(
+        createMockOctokitWithPreRelease('v0.3.0-beta.1')
+      );
+      find.mockReturnValue('');
+      downloadTool.mockResolvedValue('/tmp/download.tar.gz');
+      extractTar.mockResolvedValue('/tmp/extracted');
+      cacheDir.mockResolvedValue('/cache/space/0.3.0-beta.1');
 
       const result = await installer.getSpace();
 
-      expect(result).toBe("/cache/space/0.3.0-beta.1");
+      expect(result).toBe('/cache/space/0.3.0-beta.1');
       expect(downloadTool).toHaveBeenCalledWith(
-        expect.stringContaining("v0.3.0-beta.1"),
+        expect.stringContaining('v0.3.0-beta.1'),
         undefined,
-        "token"
+        'token'
       );
     });
 
-    test("uses existing when already on pre-release", async () => {
-      mockInputs({ "space-version": "pre-release", "github-token": "token" });
-      which.mockResolvedValue("/usr/local/bin/space");
+    test('uses existing when already on pre-release', async () => {
+      mockInputs({'space-version': 'pre-release', 'github-token': 'token'});
+      which.mockResolvedValue('/usr/local/bin/space');
       getExecOutput.mockResolvedValue({
         exitCode: 0,
-        stdout: JSON.stringify({ version: "0.3.0-beta.1", commit: "abc", date: "2026-01-01" }),
-        stderr: "",
+        stdout: JSON.stringify({
+          version: '0.3.0-beta.1',
+          commit: 'abc',
+          date: '2026-01-01'
+        }),
+        stderr: ''
       });
-      getOctokit.mockReturnValue(createMockOctokitWithPreRelease("v0.3.0-beta.1"));
+      getOctokit.mockReturnValue(
+        createMockOctokitWithPreRelease('v0.3.0-beta.1')
+      );
 
       const result = await installer.getSpace();
 
-      expect(result).toBe("/usr/local/bin");
+      expect(result).toBe('/usr/local/bin');
       expect(downloadTool).not.toHaveBeenCalled();
     });
 
-    test("downloads when existing is not latest pre-release", async () => {
-      mockInputs({ "space-version": "pre-release", "github-token": "token" });
-      which.mockResolvedValue("/usr/local/bin/space");
+    test('downloads when existing is not latest pre-release', async () => {
+      mockInputs({'space-version': 'pre-release', 'github-token': 'token'});
+      which.mockResolvedValue('/usr/local/bin/space');
       getExecOutput.mockResolvedValue({
         exitCode: 0,
-        stdout: JSON.stringify({ version: "0.3.0-beta.0", commit: "abc", date: "2026-01-01" }),
-        stderr: "",
+        stdout: JSON.stringify({
+          version: '0.3.0-beta.0',
+          commit: 'abc',
+          date: '2026-01-01'
+        }),
+        stderr: ''
       });
-      getOctokit.mockReturnValue(createMockOctokitWithPreRelease("v0.3.0-beta.1"));
-      find.mockReturnValue("");
-      downloadTool.mockResolvedValue("/tmp/download.tar.gz");
-      extractTar.mockResolvedValue("/tmp/extracted");
-      cacheDir.mockResolvedValue("/cache/space/0.3.0-beta.1");
+      getOctokit.mockReturnValue(
+        createMockOctokitWithPreRelease('v0.3.0-beta.1')
+      );
+      find.mockReturnValue('');
+      downloadTool.mockResolvedValue('/tmp/download.tar.gz');
+      extractTar.mockResolvedValue('/tmp/extracted');
+      cacheDir.mockResolvedValue('/cache/space/0.3.0-beta.1');
 
       const result = await installer.getSpace();
 
-      expect(result).toBe("/cache/space/0.3.0-beta.1");
+      expect(result).toBe('/cache/space/0.3.0-beta.1');
       expect(downloadTool).toHaveBeenCalled();
     });
-
   });
 });
-

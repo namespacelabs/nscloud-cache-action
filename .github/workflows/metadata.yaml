@@ -5,9 +5,9 @@ on:
       - main
   pull_request:
     branches:
-      - "*"
+      - '*'
   schedule:
-    - cron: "55 */6 * * *"
+    - cron: '55 */6 * * *'
   workflow_dispatch:
 
   # Allow check to run on the merge queue so that it is eligible to be a "required" check.
