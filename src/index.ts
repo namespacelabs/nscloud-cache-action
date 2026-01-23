@@ -21,10 +21,13 @@ void main();
 
 async function main() {
   // nscloud-cache-action should run within seconds. Time out after five minutes as a safety guard.
-  const timeoutId = setTimeout(() => {
-    core.setFailed('nscloud-cache-action timed out');
-    process.exit(1);
-  }, 5 * 60 * 1000);
+  const timeoutId = setTimeout(
+    () => {
+      core.setFailed('nscloud-cache-action timed out');
+      process.exit(1);
+    },
+    5 * 60 * 1000
+  );
 
   try {
     if (action.isSpaceEnabled()) {
