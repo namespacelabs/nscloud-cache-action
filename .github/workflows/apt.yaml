@@ -5,7 +5,7 @@ on:
       - main
   pull_request:
     branches:
-      - "*"
+      - '*'
   workflow_dispatch:
 
   # Allow check to run on the merge queue so that it is eligible to be a "required" check.

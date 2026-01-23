@@ -1,5 +1,5 @@
-import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest';
-import * as action from "./action";
+import {afterEach, beforeEach, describe, expect, test, vi} from 'vitest';
+import * as action from './action';
 
 beforeEach(() => {
   vi.clearAllMocks();
@@ -15,10 +15,10 @@ beforeEach(() => {
     error: vi.fn(),
     exportVariable,
     getBooleanInput,
-    getMultilineInput,
+    getMultilineInput
   }));
   vi.mock('@actions/exec', () => ({
-    exec: execFn,
+    exec: execFn
   }));
 });
 
@@ -51,7 +51,7 @@ describe('getManualModesInput', async () => {
 
   test('deprecated cache input', () => {
     getMultilineInput.mockImplementation((name: string): string[] => {
-      return (name === action.Input_Cache) ? ['cache-input'] : [];
+      return name === action.Input_Cache ? ['cache-input'] : [];
     });
 
     expect(action.getManualModesInput()).toEqual(['cache-input']);
@@ -59,7 +59,7 @@ describe('getManualModesInput', async () => {
 
   test('mode input', () => {
     getMultilineInput.mockImplementation((name: string): string[] => {
-      return (name === action.Input_Mode) ? ['mode-input'] : [];
+      return name === action.Input_Mode ? ['mode-input'] : [];
     });
 
     expect(action.getManualModesInput()).toEqual(['mode-input']);
@@ -92,15 +92,19 @@ describe('getMountCommand', async () => {
 
   test('detect input', () => {
     getMultilineInput.mockImplementation((name: string): string[] => {
-      return (name === action.Input_Detect_Mode) ? ['node', 'go'] : [];
+      return name === action.Input_Detect_Mode ? ['node', 'go'] : [];
     });
 
-    expect(action.getMountCommand()).toEqual(['cache', 'mount', '--detect=go,node']);
+    expect(action.getMountCommand()).toEqual([
+      'cache',
+      'mount',
+      '--detect=go,node'
+    ]);
   });
 
   test('detect all', () => {
     getMultilineInput.mockImplementation((name: string): string[] => {
-      return (name === action.Input_Detect_Mode) ? ['true'] : [];
+      return name === action.Input_Detect_Mode ? ['true'] : [];
     });
 
     expect(action.getMountCommand()).toEqual(['cache', 'mount', '--detect=*']);
@@ -108,15 +112,19 @@ describe('getMountCommand', async () => {
 
   test('manual mode input', () => {
     getMultilineInput.mockImplementation((name: string): string[] => {
-      return (name === action.Input_Mode) ? ['go', 'node'] : [];
+      return name === action.Input_Mode ? ['go', 'node'] : [];
     });
 
-    expect(action.getMountCommand()).toEqual(['cache', 'mount', '--mode=go,node']);
+    expect(action.getMountCommand()).toEqual([
+      'cache',
+      'mount',
+      '--mode=go,node'
+    ]);
   });
 
   test('deprecated cache input', () => {
     getMultilineInput.mockImplementation((name: string): string[] => {
-      return (name === action.Input_Cache) ? ['rust'] : [];
+      return name === action.Input_Cache ? ['rust'] : [];
     });
 
     expect(action.getMountCommand()).toEqual(['cache', 'mount', '--mode=rust']);
@@ -124,10 +132,14 @@ describe('getMountCommand', async () => {
 
   test('path input', () => {
     getMultilineInput.mockImplementation((name: string): string[] => {
-      return (name === action.Input_Path) ? ['/tmp/cache', '/var/data'] : [];
+      return name === action.Input_Path ? ['/tmp/cache', '/var/data'] : [];
     });
 
-    expect(action.getMountCommand()).toEqual(['cache', 'mount', '--path=/tmp/cache,/var/data']);
+    expect(action.getMountCommand()).toEqual([
+      'cache',
+      'mount',
+      '--path=/tmp/cache,/var/data'
+    ]);
   });
 
   test('combined inputs', () => {
@@ -144,7 +156,13 @@ describe('getMountCommand', async () => {
       }
     });
 
-    expect(action.getMountCommand()).toEqual(['cache', 'mount', '--detect=go', '--mode=node', '--path=/tmp/cache']);
+    expect(action.getMountCommand()).toEqual([
+      'cache',
+      'mount',
+      '--detect=go',
+      '--mode=node',
+      '--path=/tmp/cache'
+    ]);
   });
 });
 
@@ -154,33 +172,39 @@ describe('mount', async () => {
   });
 
   function mockExecWithPayload(payload: object) {
-    execFn.mockImplementation(async (_cmd: string, _args: string[], options: { listeners?: { stdout?: (data: Buffer) => void } }) => {
-      options?.listeners?.stdout?.(Buffer.from(JSON.stringify(payload)));
-      return 0;
-    });
+    execFn.mockImplementation(
+      async (
+        _cmd: string,
+        _args: string[],
+        options: {listeners?: {stdout?: (data: Buffer) => void}}
+      ) => {
+        options?.listeners?.stdout?.(Buffer.from(JSON.stringify(payload)));
+        return 0;
+      }
+    );
   }
 
   test('parses minimal response', async () => {
     const payload = {
-      input: { modes: ['go'] },
+      input: {modes: ['go']},
       output: {
         destructive_mode: false,
-        disk_usage: { total: '10G', used: '1G' },
+        disk_usage: {total: '10G', used: '1G'},
         mounts: [
           {
             mode: 'go',
             cache_path: '/cache/go',
             mount_path: '/home/runner/go',
-            cache_hit: true,
+            cache_hit: true
           },
           {
             cache_path: '/cache/some/path',
             mount_path: '/some/path',
-            cache_hit: false,
-          },
+            cache_hit: false
+          }
         ],
-        removed_paths: [],
-      },
+        removed_paths: []
+      }
     };
 
     mockExecWithPayload(payload);
@@ -191,55 +215,57 @@ describe('mount', async () => {
 
   test('parses response with add_envs', async () => {
     const payload = {
-      input: { modes: ['node'] },
+      input: {modes: ['node']},
       output: {
         destructive_mode: false,
-        disk_usage: { total: '20G', used: '5G' },
+        disk_usage: {total: '20G', used: '5G'},
         mounts: [],
         removed_paths: [],
-        add_envs: { NODE_PATH: '/cache/node_modules' },
-      },
+        add_envs: {NODE_PATH: '/cache/node_modules'}
+      }
     };
 
     mockExecWithPayload(payload);
 
     const result = await action.mount();
-    expect(result.output.add_envs).toEqual({ NODE_PATH: '/cache/node_modules' });
+    expect(result.output.add_envs).toEqual({NODE_PATH: '/cache/node_modules'});
   });
 
   test('parses response with removed_paths', async () => {
     const payload = {
-      input: { modes: ['apt'] },
+      input: {modes: ['apt']},
       output: {
         destructive_mode: true,
-        disk_usage: { total: '20G', used: '88K' },
+        disk_usage: {total: '20G', used: '88K'},
         mounts: [
           {
             mode: 'apt',
             cache_path: '/cache/var/cache/apt/archives',
             mount_path: '/var/cache/apt/archives/',
-            cache_hit: false,
-          },
+            cache_hit: false
+          }
         ],
-        removed_paths: ['/etc/apt/apt.conf.d/docker-clean'],
-      },
+        removed_paths: ['/etc/apt/apt.conf.d/docker-clean']
+      }
     };
 
     mockExecWithPayload(payload);
 
     const result = await action.mount();
-    expect(result.output.removed_paths).toEqual(['/etc/apt/apt.conf.d/docker-clean']);
+    expect(result.output.removed_paths).toEqual([
+      '/etc/apt/apt.conf.d/docker-clean'
+    ]);
   });
 
   test('parses response with input paths', async () => {
     const payload = {
-      input: { modes: [], paths: ['/tmp/cache'] },
+      input: {modes: [], paths: ['/tmp/cache']},
       output: {
         destructive_mode: false,
-        disk_usage: { total: '10G', used: '0' },
+        disk_usage: {total: '10G', used: '0'},
         mounts: [],
-        removed_paths: [],
-      },
+        removed_paths: []
+      }
     };
 
     mockExecWithPayload(payload);
@@ -250,17 +276,32 @@ describe('mount', async () => {
 
   test('parses response with multiple mounts', async () => {
     const payload = {
-      input: { modes: ['apt', 'go'] },
+      input: {modes: ['apt', 'go']},
       output: {
         destructive_mode: true,
-        disk_usage: { total: '20G', used: '88K' },
+        disk_usage: {total: '20G', used: '88K'},
         mounts: [
-          { mode: 'apt', cache_path: '/cache/apt', mount_path: '/var/cache/apt/archives/', cache_hit: false },
-          { mode: 'go', cache_path: '/cache/go-build', mount_path: '/home/runner/.cache/go-build', cache_hit: false },
-          { mode: 'go', cache_path: '/cache/go-mod', mount_path: '/home/runner/go/pkg/mod', cache_hit: true },
+          {
+            mode: 'apt',
+            cache_path: '/cache/apt',
+            mount_path: '/var/cache/apt/archives/',
+            cache_hit: false
+          },
+          {
+            mode: 'go',
+            cache_path: '/cache/go-build',
+            mount_path: '/home/runner/.cache/go-build',
+            cache_hit: false
+          },
+          {
+            mode: 'go',
+            cache_path: '/cache/go-mod',
+            mount_path: '/home/runner/go/pkg/mod',
+            cache_hit: true
+          }
         ],
-        removed_paths: ['/etc/apt/apt.conf.d/docker-clean'],
-      },
+        removed_paths: ['/etc/apt/apt.conf.d/docker-clean']
+      }
     };
 
     mockExecWithPayload(payload);
@@ -283,18 +324,24 @@ describe('exportAddEnvs', () => {
   });
 
   test('exports single env var', () => {
-    action.exportAddEnvs({ NODE_PATH: '/cache/node_modules' });
+    action.exportAddEnvs({NODE_PATH: '/cache/node_modules'});
     expect(exportVariable).toHaveBeenCalledTimes(1);
-    expect(exportVariable).toHaveBeenCalledWith('NODE_PATH', '/cache/node_modules');
+    expect(exportVariable).toHaveBeenCalledWith(
+      'NODE_PATH',
+      '/cache/node_modules'
+    );
   });
 
   test('exports multiple env vars', () => {
     action.exportAddEnvs({
       NODE_PATH: '/cache/node_modules',
-      GOPATH: '/cache/go',
+      GOPATH: '/cache/go'
     });
     expect(exportVariable).toHaveBeenCalledTimes(2);
-    expect(exportVariable).toHaveBeenCalledWith('NODE_PATH', '/cache/node_modules');
+    expect(exportVariable).toHaveBeenCalledWith(
+      'NODE_PATH',
+      '/cache/node_modules'
+    );
     expect(exportVariable).toHaveBeenCalledWith('GOPATH', '/cache/go');
   });
 });

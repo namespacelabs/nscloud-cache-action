@@ -1,27 +1,30 @@
-import * as core from "@actions/core";
-import * as exec from "@actions/exec";
+import * as core from '@actions/core';
+import * as exec from '@actions/exec';
 
-export const Input_Space_Enabled = "space-enabled";
-export const Input_FailOnCacheMiss = "fail-on-cache-miss";
-export const Input_Detect_Mode = "detect";
-export const Input_Mode = "mode";
-export const Input_Cache = "cache"; // deprecated, use Input_Mode
-export const Input_Path = "path";
-export const Output_CacheHit = "cache-hit";
+export const Input_Space_Enabled = 'space-enabled';
+export const Input_FailOnCacheMiss = 'fail-on-cache-miss';
+export const Input_Detect_Mode = 'detect';
+export const Input_Mode = 'mode';
+export const Input_Cache = 'cache'; // deprecated, use Input_Mode
+export const Input_Path = 'path';
+export const Output_CacheHit = 'cache-hit';
 
 export function isSpaceEnabled(): boolean {
   return core.getBooleanInput(Input_Space_Enabled);
 }
 
-export async function space(args?: string[], options?: exec.ExecOptions): Promise<exec.ExecOutput> {
+export async function space(
+  args?: string[],
+  options?: exec.ExecOptions
+): Promise<exec.ExecOutput> {
   // Request JSON output so we can parse the response
   // This causes the space binary to write logs to stderr and JSON to stdout
-  args.push("--output=json");
+  args.push('--output=json');
 
-  let stdout = "";
-  let stderr = "";
+  let stdout = '';
+  let stderr = '';
 
-  const exitCode = await exec.exec("space", args, {
+  const exitCode = await exec.exec('space', args, {
     ignoreReturnCode: true,
     silent: true,
     listeners: {
@@ -34,16 +37,18 @@ export async function space(args?: string[], options?: exec.ExecOptions): Promis
         // commands like ::debug::. The space binary outputs these to stderr
         // when --output=json is used to keep stdout clean for JSON.
         process.stdout.write(data);
-      },
+      }
     },
-    ...options,
+    ...options
   });
 
   if (exitCode !== 0) {
-    throw new Error(`'space ${args.join(" ")}' failed with exit code ${exitCode}`);
+    throw new Error(
+      `'space ${args.join(' ')}' failed with exit code ${exitCode}`
+    );
   }
 
-  return { exitCode, stdout, stderr };
+  return {exitCode, stdout, stderr};
 }
 
 export interface MountResponse {
@@ -81,7 +86,7 @@ export interface MountResponseOutputMount {
 }
 
 export async function mount(): Promise<MountResponse> {
-  const { stdout: mount } = await space(getMountCommand());
+  const {stdout: mount} = await space(getMountCommand());
   return JSON.parse(mount.trim()) as MountResponse;
 }
 
@@ -96,7 +101,10 @@ export function exportAddEnvs(addEnvs?: MountResponseOutputAddEnvs): void {
 
 // getManualModesInput combines modes, handling deprecated inputs
 export function getManualModesInput(): string[] {
-  return core.getMultilineInput(Input_Mode).concat(core.getMultilineInput(Input_Cache)).sort();
+  return core
+    .getMultilineInput(Input_Mode)
+    .concat(core.getMultilineInput(Input_Cache))
+    .sort();
 }
 
 export function getMountCommand(): string[] {
@@ -105,26 +113,26 @@ export function getMountCommand(): string[] {
   let detectModes = core.getMultilineInput(Input_Detect_Mode).sort();
   if (detectModes.length > 0) {
     if (detectModes.length === 1 && detectModes[0].toLowerCase() === 'true') {
-      detectModes = ["*"];
+      detectModes = ['*'];
     }
-    args.push("--detect="+detectModes.join(","));
+    args.push('--detect=' + detectModes.join(','));
   }
 
   const manualModes = getManualModesInput();
   if (manualModes.length > 0) {
-    args.push("--mode="+manualModes.join(","));
+    args.push('--mode=' + manualModes.join(','));
   }
 
   const manualPaths = core.getMultilineInput(Input_Path);
   if (manualPaths.length > 0) {
-    args.push("--path="+manualPaths.join(","));
+    args.push('--path=' + manualPaths.join(','));
   }
 
   // if nothing has been enabled, default to detecting all
   if (args.length === 0) {
-    args.push("--detect=*");
+    args.push('--detect=*');
   }
 
-  args.unshift("cache", "mount");
+  args.unshift('cache', 'mount');
   return args;
 }
