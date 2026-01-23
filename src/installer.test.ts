@@ -303,6 +303,84 @@ describe("getSpace", () => {
       expect(addPath).toHaveBeenCalledWith("/cache/space/0.1.0");
     });
   });
-});
 
+  describe("pre-release version", () => {
+    function createMockOctokitWithPreRelease(preReleaseVersion: string) {
+      return {
+        rest: {
+          repos: {
+            listReleases: vi.fn(),
+          },
+        },
+        paginate: {
+          iterator: vi.fn().mockReturnValue([
+            {
+              data: [
+                { tag_name: "v0.2.0", prerelease: false },
+                { tag_name: preReleaseVersion, prerelease: true },
+                { tag_name: "v0.1.0", prerelease: false },
+              ],
+            },
+          ]),
+        },
+      };
+    }
+
+    test("downloads pre-release when no existing binary", async () => {
+      mockInputs({ "space-version": "pre-release", "github-token": "token" });
+      which.mockResolvedValue("");
+      getOctokit.mockReturnValue(createMockOctokitWithPreRelease("v0.3.0-beta.1"));
+      find.mockReturnValue("");
+      downloadTool.mockResolvedValue("/tmp/download.tar.gz");
+      extractTar.mockResolvedValue("/tmp/extracted");
+      cacheDir.mockResolvedValue("/cache/space/0.3.0-beta.1");
+
+      const result = await installer.getSpace();
+
+      expect(result).toBe("/cache/space/0.3.0-beta.1");
+      expect(downloadTool).toHaveBeenCalledWith(
+        expect.stringContaining("v0.3.0-beta.1"),
+        undefined,
+        "token"
+      );
+    });
+
+    test("uses existing when already on pre-release", async () => {
+      mockInputs({ "space-version": "pre-release", "github-token": "token" });
+      which.mockResolvedValue("/usr/local/bin/space");
+      getExecOutput.mockResolvedValue({
+        exitCode: 0,
+        stdout: JSON.stringify({ version: "0.3.0-beta.1", commit: "abc", date: "2026-01-01" }),
+        stderr: "",
+      });
+      getOctokit.mockReturnValue(createMockOctokitWithPreRelease("v0.3.0-beta.1"));
+
+      const result = await installer.getSpace();
+
+      expect(result).toBe("/usr/local/bin");
+      expect(downloadTool).not.toHaveBeenCalled();
+    });
+
+    test("downloads when existing is not latest pre-release", async () => {
+      mockInputs({ "space-version": "pre-release", "github-token": "token" });
+      which.mockResolvedValue("/usr/local/bin/space");
+      getExecOutput.mockResolvedValue({
+        exitCode: 0,
+        stdout: JSON.stringify({ version: "0.3.0-beta.0", commit: "abc", date: "2026-01-01" }),
+        stderr: "",
+      });
+      getOctokit.mockReturnValue(createMockOctokitWithPreRelease("v0.3.0-beta.1"));
+      find.mockReturnValue("");
+      downloadTool.mockResolvedValue("/tmp/download.tar.gz");
+      extractTar.mockResolvedValue("/tmp/extracted");
+      cacheDir.mockResolvedValue("/cache/space/0.3.0-beta.1");
+
+      const result = await installer.getSpace();
+
+      expect(result).toBe("/cache/space/0.3.0-beta.1");
+      expect(downloadTool).toHaveBeenCalled();
+    });
+
+  });
+});
 

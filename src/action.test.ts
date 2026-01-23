@@ -6,7 +6,7 @@ beforeEach(() => {
 });
 
 const exportVariable = vi.hoisted(() => vi.fn());
-const getExecOutput = vi.hoisted(() => vi.fn());
+const execFn = vi.hoisted(() => vi.fn());
 const getBooleanInput = vi.hoisted(() => vi.fn());
 const getMultilineInput = vi.hoisted(() => vi.fn());
 
@@ -18,7 +18,7 @@ beforeEach(() => {
     getMultilineInput,
   }));
   vi.mock('@actions/exec', () => ({
-    getExecOutput,
+    exec: execFn,
   }));
 });
 
@@ -153,6 +153,13 @@ describe('mount', async () => {
     getMultilineInput.mockReturnValue([]);
   });
 
+  function mockExecWithPayload(payload: object) {
+    execFn.mockImplementation(async (_cmd: string, _args: string[], options: { listeners?: { stdout?: (data: Buffer) => void } }) => {
+      options?.listeners?.stdout?.(Buffer.from(JSON.stringify(payload)));
+      return 0;
+    });
+  }
+
   test('parses minimal response', async () => {
     const payload = {
       input: { modes: ['go'] },
@@ -176,7 +183,7 @@ describe('mount', async () => {
       },
     };
 
-    getExecOutput.mockResolvedValue({ exitCode: 0, stdout: JSON.stringify(payload), stderr: '' });
+    mockExecWithPayload(payload);
 
     const result = await action.mount();
     expect(result).toEqual(payload);
@@ -194,7 +201,7 @@ describe('mount', async () => {
       },
     };
 
-    getExecOutput.mockResolvedValue({ exitCode: 0, stdout: JSON.stringify(payload), stderr: '' });
+    mockExecWithPayload(payload);
 
     const result = await action.mount();
     expect(result.output.add_envs).toEqual({ NODE_PATH: '/cache/node_modules' });
@@ -218,7 +225,7 @@ describe('mount', async () => {
       },
     };
 
-    getExecOutput.mockResolvedValue({ exitCode: 0, stdout: JSON.stringify(payload), stderr: '' });
+    mockExecWithPayload(payload);
 
     const result = await action.mount();
     expect(result.output.removed_paths).toEqual(['/etc/apt/apt.conf.d/docker-clean']);
@@ -235,7 +242,7 @@ describe('mount', async () => {
       },
     };
 
-    getExecOutput.mockResolvedValue({ exitCode: 0, stdout: JSON.stringify(payload), stderr: '' });
+    mockExecWithPayload(payload);
 
     const result = await action.mount();
     expect(result.input.paths).toEqual(['/tmp/cache']);
@@ -256,7 +263,7 @@ describe('mount', async () => {
       },
     };
 
-    getExecOutput.mockResolvedValue({ exitCode: 0, stdout: JSON.stringify(payload), stderr: '' });
+    mockExecWithPayload(payload);
 
     const result = await action.mount();
     expect(result.output.mounts).toHaveLength(3);
