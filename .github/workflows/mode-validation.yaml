@@ -176,6 +176,54 @@ jobs:
       - run: pip install -r ./requirements.txt
         working-directory: ./demo
 
+  rust:
+    runs-on: namespace-profile-e2e-small
+    strategy:
+      matrix:
+        space-enabled: [false, true]
+        space-version: ['', 'dev', 'latest']
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/checkout@v6
+        with:
+          repository: namespace-integration-demos/rust-cache
+          path: demo
+      - name: Setup cache
+        uses: ./
+        with:
+          space-enabled: ${{ matrix.space-enabled }}
+          space-version: ${{ matrix.space-version }}
+          mode: rust
+      - run: cargo build --locked --release --no-default-features --all
+        working-directory: ./demo
+      - run: cargo test --locked --release --all
+        working-directory: ./demo
+
+  rust-pre-existing-file:
+    runs-on: namespace-profile-e2e-small
+    strategy:
+      matrix:
+        space-enabled: [false, true]
+        space-version: ['', 'dev', 'latest']
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/checkout@v6
+        with:
+          repository: namespace-integration-demos/rust-cache
+          path: demo
+      - name: Create .global-cache file that should be removed before creating mount
+        run: touch ~/.cargo/.global-cache
+      - name: Setup cache
+        uses: ./
+        with:
+          space-enabled: ${{ matrix.space-enabled }}
+          space-version: ${{ matrix.space-version }}
+          mode: rust
+      - run: cargo build --locked --release --no-default-features --all
+        working-directory: ./demo
+      - run: cargo test --locked --release --all
+        working-directory: ./demo
+
   yarn:
     runs-on: namespace-profile-e2e-small
     strategy:
