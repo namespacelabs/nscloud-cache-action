@@ -262,18 +262,20 @@ jobs:
         space-version: ['', 'dev', 'latest']
     steps:
       - uses: actions/checkout@v6
-      - name: Install mise
-        uses: jdx/mise-action@v3
-        with:
-          install: false
-          cache: false
       - name: Setup cache
         uses: ./
         with:
           space-enabled: ${{ matrix.space-enabled }}
           space-version: ${{ matrix.space-version }}
           mode: mise
-      - run: mise exec node@lts -- node --version
+      - name: Install mise
+        uses: jdx/mise-action@v3
+        with:
+          cache: false
+          mise_toml: |
+            [tools]
+            node = "latest"
+      - run: node --version
 
   nix:
     runs-on: namespace-profile-e2e-small
