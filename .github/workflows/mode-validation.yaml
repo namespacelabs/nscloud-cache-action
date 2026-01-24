@@ -155,6 +155,61 @@ jobs:
       - name: Run golangci-lint
         run: cd ./demo && golangci-lint run
 
+  pnpm:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [namespace-profile-macos, namespace-profile-e2e-small]
+        space-enabled: [false, true]
+        space-version: ['', 'dev', 'latest']
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          path: nscloud-cache-action
+      - uses: actions/checkout@v6
+        with:
+          repository: namespace-integration-demos/cache-pnpm-workspace
+          path: demo
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: '10.3.0'
+      - name: Setup cache
+        uses: ./nscloud-cache-action
+        with:
+          space-enabled: ${{ matrix.space-enabled }}
+          space-version: ${{ matrix.space-version }}
+          mode: pnpm
+          path: |
+            ~/.cache
+      - run: pnpm install
+        working-directory: ./demo/fullstack
+
+  pnpm-ignore-warnings:
+    runs-on: namespace-profile-e2e-small
+    strategy:
+      matrix:
+        pnpm-version: ['8.15.5', '9.7.0', '9.15.0']
+        space-enabled: [false, true]
+        space-version: ['', 'dev', 'latest']
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          path: nscloud-cache-action
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: ${{ matrix.pnpm-version }}
+      - name: Produce problematic .npmrc
+        run: cp ./nscloud-cache-action/.github/workflows/testdata/.npmrc .
+      - name: Setup cache
+        uses: ./nscloud-cache-action
+        with:
+          space-enabled: ${{ matrix.space-enabled }}
+          space-version: ${{ matrix.space-version }}
+          mode: pnpm
+
   python:
     runs-on: namespace-profile-e2e-small
     strategy:
