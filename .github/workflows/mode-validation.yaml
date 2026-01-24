@@ -74,6 +74,26 @@ jobs:
       - run: |
           bun install
 
+  cocoapods:
+    runs-on: namespace-profile-macos
+    strategy:
+      matrix:
+        space-enabled: [false, true]
+        space-version: ['', 'dev', 'latest']
+    steps:
+      - uses: actions/checkout@v6
+      - name: Setup cache
+        uses: ./
+        with:
+          space-enabled: ${{ matrix.space-enabled }}
+          space-version: ${{ matrix.space-version }}
+          mode: cocoapods
+      - name: Create Podfile and install
+        run: |
+          echo "platform :ios, '15.0'" > Podfile
+          echo "pod 'Alamofire', '~> 5.9'" >> Podfile
+          pod install
+
   deno:
     runs-on: namespace-profile-e2e-small
     strategy:
@@ -155,6 +175,33 @@ jobs:
       - name: Run golangci-lint
         run: cd ./demo && golangci-lint run
 
+  gradle:
+    runs-on: namespace-profile-e2e-small
+    strategy:
+      matrix:
+        space-enabled: [false, true]
+        space-version: ['', 'dev', 'latest']
+    steps:
+      - uses: actions/checkout@v6
+      - name: Set up JDK 17
+        uses: actions/setup-java@v5
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+      - uses: actions/checkout@v6
+        with:
+          repository: namespace-integration-demos/gradle-cache
+          path: demo
+      - name: Setup cache
+        uses: ./
+        with:
+          space-enabled: ${{ matrix.space-enabled }}
+          space-version: ${{ matrix.space-version }}
+          mode: gradle
+      - name: Build with Gradle
+        run: ./gradlew build
+        working-directory: ./demo
+
   maven:
     runs-on: namespace-profile-e2e-small
     strategy:
@@ -185,6 +232,27 @@ jobs:
       - name: Build with Maven
         run: mvn -B clean test
         working-directory: ./demo
+
+  mise:
+    runs-on: namespace-profile-e2e-small
+    strategy:
+      matrix:
+        space-enabled: [false, true]
+        space-version: ['', 'dev', 'latest']
+    steps:
+      - uses: actions/checkout@v6
+      - name: Install mise
+        uses: jdx/mise-action@v3
+        with:
+          install: false
+          cache: false
+      - name: Setup cache
+        uses: ./
+        with:
+          space-enabled: ${{ matrix.space-enabled }}
+          space-version: ${{ matrix.space-version }}
+          mode: mise
+      - run: mise install node@lts
 
   playwright:
     runs-on: ${{ matrix.os }}
@@ -279,6 +347,29 @@ jobs:
           space-version: ${{ matrix.space-version }}
           mode: pnpm
 
+  poetry:
+    runs-on: namespace-profile-e2e-small
+    strategy:
+      matrix:
+        space-enabled: [false, true]
+        space-version: ['', 'dev', 'latest']
+    steps:
+      - uses: actions/checkout@v6
+      - name: Install poetry
+        run: pipx install poetry
+      - uses: actions/checkout@v6
+        with:
+          repository: namespace-integration-demos/poetry
+          path: demo
+      - name: Setup cache
+        uses: ./
+        with:
+          space-enabled: ${{ matrix.space-enabled }}
+          space-version: ${{ matrix.space-version }}
+          mode: poetry
+      - run: poetry install
+        working-directory: ./demo
+
   python:
     runs-on: namespace-profile-e2e-small
     strategy:
@@ -323,6 +414,29 @@ jobs:
       - run: cargo test --locked --release --all
         working-directory: ./demo
 
+  ruby:
+    runs-on: namespace-profile-e2e-small
+    strategy:
+      matrix:
+        space-enabled: [false, true]
+        space-version: ['', 'dev', 'latest']
+    steps:
+      - uses: actions/checkout@v6
+      - uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: '3.2'
+          bundler-cache: false
+      - name: Setup cache
+        uses: ./
+        with:
+          space-enabled: ${{ matrix.space-enabled }}
+          space-version: ${{ matrix.space-version }}
+          mode: ruby
+      - run: |
+          bundle config set --local path 'vendor/bundle'
+          bundle init
+          bundle add rake
+
   rust-pre-existing-file:
     runs-on: namespace-profile-e2e-small
     strategy:
@@ -348,6 +462,45 @@ jobs:
         working-directory: ./demo
       - run: cargo test --locked --release --all
         working-directory: ./demo
+
+  swiftpm:
+    runs-on: namespace-profile-macos
+    strategy:
+      matrix:
+        space-enabled: [false, true]
+        space-version: ['', 'dev', 'latest']
+    steps:
+      - uses: actions/checkout@v6
+      - name: Setup cache
+        uses: ./
+        with:
+          space-enabled: ${{ matrix.space-enabled }}
+          space-version: ${{ matrix.space-version }}
+          mode: swiftpm
+      - name: Create and build Swift package
+        run: |
+          swift package init --type executable
+          swift build
+
+  uv:
+    runs-on: namespace-profile-e2e-small
+    strategy:
+      matrix:
+        space-enabled: [false, true]
+        space-version: ['', 'dev', 'latest']
+    steps:
+      - uses: actions/checkout@v6
+      - name: Install uv
+        uses: astral-sh/setup-uv@v7
+        with:
+          enable-cache: false
+      - name: Setup cache
+        uses: ./
+        with:
+          space-enabled: ${{ matrix.space-enabled }}
+          space-version: ${{ matrix.space-version }}
+          mode: uv
+      - run: uv pip install requests --system
 
   yarn:
     runs-on: namespace-profile-e2e-small
