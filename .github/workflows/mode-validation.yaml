@@ -82,17 +82,18 @@ jobs:
         space-version: ['', 'dev', 'latest']
     steps:
       - uses: actions/checkout@v6
+        with:
+          repository: nscloud-demo/ios-demo
+      - uses: actions/checkout@v6
+        with:
+          path: cache-action
       - name: Setup cache
-        uses: ./
+        uses: ./cache-action/
         with:
           space-enabled: ${{ matrix.space-enabled }}
           space-version: ${{ matrix.space-version }}
           mode: cocoapods
-      - name: Create Podfile and install
-        run: |
-          echo "platform :ios, '15.0'" > Podfile
-          echo "pod 'Alamofire', '~> 5.9'" >> Podfile
-          pod install
+      - run: pod install
 
   composer:
     runs-on: namespace-profile-e2e-small
@@ -102,10 +103,6 @@ jobs:
         space-version: ['', 'dev', 'latest']
     steps:
       - uses: actions/checkout@v6
-      - uses: actions/checkout@v6
-        with:
-          repository: namespace-integration-demos/php-composer
-          path: demo
       - name: Setup PHP
         uses: shivammathur/setup-php@v2
         with:
@@ -116,8 +113,7 @@ jobs:
           space-enabled: ${{ matrix.space-enabled }}
           space-version: ${{ matrix.space-version }}
           mode: composer
-      - run: composer install
-        working-directory: ./demo
+      - run: composer require monolog/monolog
 
   deno:
     runs-on: namespace-profile-e2e-small
@@ -277,7 +273,7 @@ jobs:
           space-enabled: ${{ matrix.space-enabled }}
           space-version: ${{ matrix.space-version }}
           mode: mise
-      - run: mise install node@lts
+      - run: mise exec node@lts -- node --version
 
   nix:
     runs-on: namespace-profile-e2e-small
@@ -295,7 +291,11 @@ jobs:
           mode: nix
       - name: Install Nix
         uses: cachix/install-nix-action@v31
-      - run: nix-shell -p hello --run 'hello'
+        with:
+          extra_nix_config: |
+            access-tokens = github.com=${{ secrets.GITHUB_TOKEN }}
+            system-features = kvm nixos-test
+      - run: echo "Hello Nix" | nix run "https://flakehub.com/f/snowfallorg/cowsay/1.3.0"
 
   playwright:
     runs-on: ${{ matrix.os }}
@@ -543,7 +543,9 @@ jobs:
           space-enabled: ${{ matrix.space-enabled }}
           space-version: ${{ matrix.space-version }}
           mode: uv
-      - run: uv pip install requests --system
+      - run: |
+          uv venv
+          uv pip install requests
 
   yarn:
     runs-on: namespace-profile-e2e-small
