@@ -371,3 +371,60 @@ jobs:
         working-directory: ./demo
       - run: yarn workspace @project/web-app build
         working-directory: ./demo
+
+  xcode:
+    runs-on:
+      - nscloud-macos-sequoia-arm64-6x14-with-cache
+      - nscloud-cache-size-50gb
+      - nscloud-cache-tag-xcode-swift-ruby
+    strategy:
+      matrix:
+        space-enabled: [false, true]
+        space-version: ['', 'dev', 'latest']
+    steps:
+      - name: Checkout ios-demo
+        uses: actions/checkout@v6
+        with:
+          repository: nscloud-demo/ios-demo
+      - uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: '3.2.7'
+          bundler-cache: false
+      - uses: actions/checkout@v6
+        with:
+          path: cache-action
+      - name: Setup cache
+        uses: ./cache-action/
+        with:
+          space-enabled: ${{ matrix.space-enabled }}
+          space-version: ${{ matrix.space-version }}
+          mode: |
+            xcode
+            swift
+            ruby
+      - name: Select Xcode 16.4
+        run: |
+          if [ -d "/Applications/Xcode_16.4.app" ]; then
+            sudo xcode-select -s /Applications/Xcode_16.4.app
+          fi
+      - name: Wait for iPhone 15 simulator
+        run: |
+          set -o pipefail
+          for i in {1..24}; do
+            echo "Looking for iPhone 15 simulator (attempt $i)..."
+            if xcrun simctl list -j | jq '.devices["com.apple.CoreSimulator.SimRuntime.iOS-17-5"][] | select(.name == "iPhone 15" and .isAvailable)' -e; then
+              echo "Found iPhone 15."
+              break
+            fi
+            sleep 5
+          done
+      - name: xcodebuild
+        run: xcodebuild test -scheme ios-demo -sdk iphonesimulator -destination 'platform=iOS Simulator,name=iPhone 15,OS=17.5'
+      - name: fastlane
+        run: fastlane screenshots
+      - name: Breakpoint on failure
+        if: failure()
+        uses: namespacelabs/breakpoint-action@v0
+        with:
+          duration: 15m
+          authorized-users: hugosantos,n-g,htr
