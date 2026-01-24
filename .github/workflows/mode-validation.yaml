@@ -155,6 +155,44 @@ jobs:
       - name: Run golangci-lint
         run: cd ./demo && golangci-lint run
 
+  playwright:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [namespace-profile-macos, namespace-profile-e2e-small]
+        space-enabled: [false, true]
+        space-version: ['', 'dev', 'latest']
+    steps:
+      - uses: actions/checkout@v6
+      - name: Setup cache
+        uses: ./
+        with:
+          space-enabled: ${{ matrix.space-enabled }}
+          space-version: ${{ matrix.space-version }}
+          mode: playwright
+      - run: npx playwright install --with-deps
+
+  playwright-custom-dir:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [namespace-profile-macos, namespace-profile-e2e-small]
+        space-enabled: [false, true]
+        space-version: ['', 'dev', 'latest']
+    env:
+      PLAYWRIGHT_BROWSERS_PATH: ~/playwright-cache
+    steps:
+      - uses: actions/checkout@v6
+      - name: Setup cache
+        uses: ./
+        with:
+          space-enabled: ${{ matrix.space-enabled }}
+          space-version: ${{ matrix.space-version }}
+          mode: playwright
+      - run: npx playwright install --with-deps
+
   pnpm:
     runs-on: ${{ matrix.os }}
     strategy:
