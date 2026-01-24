@@ -12,28 +12,15 @@ on:
     types: [checks_requested]
 
 jobs:
-  define-matrix:
-    runs-on: ubuntu-latest
-    outputs:
-      matrix: ${{ steps.matrix.outputs.matrix }}
-    steps:
-      - name: Build matrix
-        id: matrix
-        run: |
-          echo '{
-            "space-enabled": ["false", "true"],
-            "space-version": ["", "dev", "latest"]
-          }' >> "$GITHUB_OUTPUT"
-
   apt:
     runs-on: namespace-profile-e2e-small
-    needs:
-      - define-matrix
     strategy:
-      matrix: ${{ fromJson(needs.define-matrix.outputs.matrix) }}
+      matrix:
+        space-enabled: [false, true]
+        space-version: ['', 'dev', 'latest']
     steps:
       - uses: actions/checkout@v6
-      - name: Setup Apt cache
+      - name: Setup cache
         uses: ./
         with:
           space-enabled: ${{ matrix.space-enabled }}
@@ -45,16 +32,16 @@ jobs:
           lcov -h
 
   brew:
+    runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
       matrix:
         os: [namespace-profile-macos, namespace-profile-e2e-small]
-        space-enabled: [false, true] # temp. while we migrate
+        space-enabled: [false, true]
         space-version: ['', 'dev', 'latest']
-    runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v6
-      - name: Setup Homebrew cache
+      - name: Setup cache
         uses: ./
         with:
           space-enabled: ${{ matrix.space-enabled }}
@@ -67,3 +54,22 @@ jobs:
       - if: runner.os == 'macOS'
         # Not available on Linux.
         run: brew tap vectordotdev/brew && brew install vector
+
+  bun:
+    runs-on: namespace-profile-e2e-small
+    strategy:
+      matrix:
+        space-enabled: [false, true]
+        space-version: ['', 'dev', 'latest']
+    steps:
+      - uses: actions/checkout@v6
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+      - name: Setup cache
+        uses: ./
+        with:
+          space-enabled: ${{ matrix.space-enabled }}
+          space-version: ${{ matrix.space-version }}
+          mode: bun
+      - run: |
+          bun install
