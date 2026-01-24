@@ -175,3 +175,26 @@ jobs:
           mode: python
       - run: pip install -r ./requirements.txt
         working-directory: ./demo
+
+  yarn:
+    runs-on: namespace-profile-e2e-small
+    strategy:
+      matrix:
+        space-enabled: [false, true]
+        space-version: ['', 'dev', 'latest']
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/checkout@v6
+        with:
+          repository: namespace-integration-demos/cache-yarn-workspaces
+          path: demo
+      - name: Setup cache
+        uses: ./
+        with:
+          space-enabled: ${{ matrix.space-enabled }}
+          space-version: ${{ matrix.space-version }}
+          mode: yarn
+      - run: yarn
+        working-directory: ./demo
+      - run: yarn workspace @project/web-app build
+        working-directory: ./demo
