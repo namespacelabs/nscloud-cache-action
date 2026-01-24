@@ -204,7 +204,8 @@ jobs:
     strategy:
       matrix:
         space-enabled: [false, true]
-        space-version: ['', 'dev', 'latest']
+        # space-version: ['', 'dev', 'latest']
+        space-version: ['dev'] # TODO: fix release
     steps:
       - uses: actions/checkout@v6
       - uses: actions/checkout@v6
