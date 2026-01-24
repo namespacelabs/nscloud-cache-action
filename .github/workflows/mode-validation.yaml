@@ -94,6 +94,31 @@ jobs:
           echo "pod 'Alamofire', '~> 5.9'" >> Podfile
           pod install
 
+  composer:
+    runs-on: namespace-profile-e2e-small
+    strategy:
+      matrix:
+        space-enabled: [false, true]
+        space-version: ['', 'dev', 'latest']
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/checkout@v6
+        with:
+          repository: namespace-integration-demos/php-composer
+          path: demo
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+      - name: Setup cache
+        uses: ./
+        with:
+          space-enabled: ${{ matrix.space-enabled }}
+          space-version: ${{ matrix.space-version }}
+          mode: composer
+      - run: composer install
+        working-directory: ./demo
+
   deno:
     runs-on: namespace-profile-e2e-small
     strategy:
@@ -183,15 +208,15 @@ jobs:
         space-version: ['', 'dev', 'latest']
     steps:
       - uses: actions/checkout@v6
+      - uses: actions/checkout@v6
+        with:
+          repository: namespace-integration-demos/gradle-cache
+          path: demo
       - name: Set up JDK 17
         uses: actions/setup-java@v5
         with:
           java-version: '17'
           distribution: 'temurin'
-      - uses: actions/checkout@v6
-        with:
-          repository: namespace-integration-demos/gradle-cache
-          path: demo
       - name: Setup cache
         uses: ./
         with:
@@ -253,6 +278,24 @@ jobs:
           space-version: ${{ matrix.space-version }}
           mode: mise
       - run: mise install node@lts
+
+  nix:
+    runs-on: namespace-profile-e2e-small
+    strategy:
+      matrix:
+        space-enabled: [true]
+        space-version: ['', 'dev', 'latest']
+    steps:
+      - uses: actions/checkout@v6
+      - name: Setup cache
+        uses: ./
+        with:
+          space-enabled: ${{ matrix.space-enabled }}
+          space-version: ${{ matrix.space-version }}
+          mode: nix
+      - name: Install Nix
+        uses: cachix/install-nix-action@v31
+      - run: nix-shell -p hello --run 'hello'
 
   playwright:
     runs-on: ${{ matrix.os }}
@@ -355,12 +398,12 @@ jobs:
         space-version: ['', 'dev', 'latest']
     steps:
       - uses: actions/checkout@v6
-      - name: Install poetry
-        run: pipx install poetry
       - uses: actions/checkout@v6
         with:
           repository: namespace-integration-demos/poetry
           path: demo
+      - name: Install poetry
+        run: pipx install poetry
       - name: Setup cache
         uses: ./
         with:
