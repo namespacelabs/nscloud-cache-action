@@ -37,7 +37,7 @@
 #         space-enabled: ${{ fromJson(needs.setup.outputs.space-enabled) }}
 #         space-version: ${{ fromJson(needs.setup.outputs.space-version) }}
 #     steps:
-#       - uses: actions/checkout@v6
+#       - uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6
 #         with:
 #           repository: namespacelabs/nscloud-cache-action
 #           ref: ${{ github.job_workflow_sha }}
@@ -68,7 +68,7 @@
 #
 # 3. If you need a demo repository, checkout it after the main checkout:
 #
-#       - uses: actions/checkout@v6
+#       - uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6
 #         with:
 #           repository: namespace-integration-demos/your-demo
 #           path: demo
@@ -133,12 +133,12 @@ jobs:
             goarch: arm64
     steps:
       - name: Setup Go
-        uses: actions/setup-go@v6
+        uses: actions/setup-go@7a3fe6cf4cb3a834922a1244abfce67bcef6a0c5 # v6
         with:
           go-version: 'stable'
           cache: false
       - name: Checkout space source
-        uses: actions/checkout@v6
+        uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6
         with:
           repository: namespacelabs/space
           ref: ${{ inputs.space-source-ref }}
@@ -146,7 +146,7 @@ jobs:
         run: |
           GOOS=${{ matrix.goos }} GOARCH=${{ matrix.goarch }} go build -o space-${{ matrix.goos }}-${{ matrix.goarch }} .
       - name: Upload space binary
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
           name: space-${{ matrix.os }}
           path: space-${{ matrix.goos }}-${{ matrix.goarch }}
@@ -165,7 +165,7 @@ jobs:
         space-enabled: ${{ fromJson(needs.setup.outputs.space-enabled) }}
         space-version: ${{ fromJson(needs.setup.outputs.space-version) }}
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6
         with:
           repository: namespacelabs/nscloud-cache-action
           ref: ${{ github.job_workflow_sha }}
@@ -198,7 +198,7 @@ jobs:
         space-enabled: ${{ fromJson(needs.setup.outputs.space-enabled) }}
         space-version: ${{ fromJson(needs.setup.outputs.space-version) }}
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6
         with:
           repository: namespacelabs/nscloud-cache-action
           ref: ${{ github.job_workflow_sha }}
@@ -231,7 +231,7 @@ jobs:
         space-enabled: ${{ fromJson(needs.setup.outputs.space-enabled) }}
         space-version: ${{ fromJson(needs.setup.outputs.space-version) }}
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6
         with:
           repository: namespacelabs/nscloud-cache-action
           ref: ${{ github.job_workflow_sha }}
@@ -241,7 +241,7 @@ jobs:
         with:
           space-source-ref: ${{ inputs.space-source-ref }}
       - name: Setup Bun
-        uses: oven-sh/setup-bun@v2
+        uses: oven-sh/setup-bun@3d267786b128fe76c2f16a390aa2448b815359f3 # v2
       - name: Setup cache
         uses: ./
         with:
@@ -261,7 +261,7 @@ jobs:
         space-enabled: ${{ fromJson(needs.setup.outputs.space-enabled) }}
         space-version: ${{ fromJson(needs.setup.outputs.space-version) }}
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6
         with:
           repository: namespacelabs/nscloud-cache-action
           ref: ${{ github.job_workflow_sha }}
@@ -298,7 +298,7 @@ jobs:
         space-enabled: ${{ fromJson(needs.setup.outputs.space-enabled) }}
         space-version: ${{ fromJson(needs.setup.outputs.space-version) }}
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6
         with:
           repository: namespacelabs/nscloud-cache-action
           ref: ${{ github.job_workflow_sha }}
@@ -308,7 +308,7 @@ jobs:
         with:
           space-source-ref: ${{ inputs.space-source-ref }}
       - name: Setup PHP
-        uses: shivammathur/setup-php@v2
+        uses: shivammathur/setup-php@d59004228537ca90c8dca680592a08a675bf52b6 # v2
         with:
           php-version: '8.3'
       - name: Setup cache
@@ -330,7 +330,7 @@ jobs:
         space-enabled: ${{ fromJson(needs.setup.outputs.space-enabled) }}
         space-version: ${{ fromJson(needs.setup.outputs.space-version) }}
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6
         with:
           repository: namespacelabs/nscloud-cache-action
           ref: ${{ github.job_workflow_sha }}
@@ -340,7 +340,7 @@ jobs:
         with:
           space-source-ref: ${{ inputs.space-source-ref }}
       - name: Setup Deno
-        uses: denoland/setup-deno@v2
+        uses: denoland/setup-deno@e95548e56dfa95d4e1a28d6f422fafe75c4c26fb # v2
         with:
           cache: false
       - name: Setup cache
@@ -362,7 +362,7 @@ jobs:
         space-enabled: ${{ fromJson(needs.setup.outputs.space-enabled) }}
         space-version: ${{ fromJson(needs.setup.outputs.space-version) }}
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6
         with:
           repository: namespacelabs/nscloud-cache-action
           ref: ${{ github.job_workflow_sha }}
@@ -372,7 +372,7 @@ jobs:
         with:
           space-source-ref: ${{ inputs.space-source-ref }}
       - name: Setup Go
-        uses: actions/setup-go@v6
+        uses: actions/setup-go@7a3fe6cf4cb3a834922a1244abfce67bcef6a0c5 # v6
         with:
           go-version: '1.25'
           cache: false
@@ -398,11 +398,11 @@ jobs:
         space-enabled: ${{ fromJson(needs.setup.outputs.space-enabled) }}
         space-version: ${{ fromJson(needs.setup.outputs.space-version) }}
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6
         with:
           repository: namespacelabs/nscloud-cache-action
           ref: ${{ github.job_workflow_sha }}
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6
         with:
           repository: namespace-integration-demos/go-cache
           path: demo
@@ -412,12 +412,12 @@ jobs:
         with:
           space-source-ref: ${{ inputs.space-source-ref }}
       - name: Setup Go
-        uses: actions/setup-go@v6
+        uses: actions/setup-go@7a3fe6cf4cb3a834922a1244abfce67bcef6a0c5 # v6
         with:
           go-version: '1.25'
           cache: false
       - name: Setup golangci-lint
-        uses: golangci/golangci-lint-action@v9
+        uses: golangci/golangci-lint-action@1e7e51e771db61008b38414a730f564565cf7c20 # v9
         with:
           version: v2.6
           install-only: true
@@ -444,11 +444,11 @@ jobs:
         space-enabled: ${{ fromJson(needs.setup.outputs.space-enabled) }}
         space-version: ${{ fromJson(needs.setup.outputs.space-version) }}
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6
         with:
           repository: namespacelabs/nscloud-cache-action
           ref: ${{ github.job_workflow_sha }}
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6
         with:
           repository: namespace-integration-demos/gradle-cache
           path: demo
@@ -458,7 +458,7 @@ jobs:
         with:
           space-source-ref: ${{ inputs.space-source-ref }}
       - name: Set up JDK 17
-        uses: actions/setup-java@v5
+        uses: actions/setup-java@be666c2fcd27ec809703dec50e508c2fdc7f6654 # v5
         with:
           java-version: '17'
           distribution: 'temurin'
@@ -483,11 +483,11 @@ jobs:
         space-enabled: ${{ fromJson(needs.setup.outputs.space-enabled) }}
         space-version: ${{ fromJson(needs.setup.outputs.space-version) }}
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6
         with:
           repository: namespacelabs/nscloud-cache-action
           ref: ${{ github.job_workflow_sha }}
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6
         with:
           repository: namespace-integration-demos/selenium-cache
           path: demo
@@ -497,11 +497,11 @@ jobs:
         with:
           space-source-ref: ${{ inputs.space-source-ref }}
       - name: Set up JDK 11
-        uses: actions/setup-java@v5
+        uses: actions/setup-java@be666c2fcd27ec809703dec50e508c2fdc7f6654 # v5
         with:
           java-version: '11'
           distribution: 'temurin'
-      - uses: browser-actions/setup-chrome@v2
+      - uses: browser-actions/setup-chrome@d2811ded0d087168641bbf52f388afe459d02892 # v2
         with:
           chrome-version: latest
       - run: chrome --version
@@ -526,7 +526,7 @@ jobs:
         space-enabled: ${{ fromJson(needs.setup.outputs.space-enabled) }}
         space-version: ${{ fromJson(needs.setup.outputs.space-version) }}
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6
         with:
           repository: namespacelabs/nscloud-cache-action
           ref: ${{ github.job_workflow_sha }}
@@ -544,7 +544,7 @@ jobs:
         env:
           NSC_POWERTOYS_DIR: ${{ steps.space.outputs.powertoys-dir }}
       - name: Install mise
-        uses: jdx/mise-action@v3
+        uses: jdx/mise-action@6d1e696aa24c1aa1bcc1adea0212707c71ab78a8 # v3
         with:
           cache: false
           mise_toml: |
@@ -562,7 +562,7 @@ jobs:
         space-enabled: ${{ fromJson(needs.setup.outputs.space-enabled-true-only) }}
         space-version: ${{ fromJson(needs.setup.outputs.space-version) }}
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6
         with:
           repository: namespacelabs/nscloud-cache-action
           ref: ${{ github.job_workflow_sha }}
@@ -580,7 +580,7 @@ jobs:
         env:
           NSC_POWERTOYS_DIR: ${{ steps.space.outputs.powertoys-dir }}
       - name: Install Nix
-        uses: cachix/install-nix-action@v31
+        uses: cachix/install-nix-action@bec50b45a8bb06017c42af46702a3f502adcfa9e # v31
         with:
           extra_nix_config: |
             access-tokens = github.com=${{ secrets.GITHUB_TOKEN }}
@@ -598,7 +598,7 @@ jobs:
         space-enabled: ${{ fromJson(needs.setup.outputs.space-enabled) }}
         space-version: ${{ fromJson(needs.setup.outputs.space-version) }}
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6
         with:
           repository: namespacelabs/nscloud-cache-action
           ref: ${{ github.job_workflow_sha }}
@@ -630,7 +630,7 @@ jobs:
     env:
       PLAYWRIGHT_BROWSERS_PATH: ~/playwright-cache
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6
         with:
           repository: namespacelabs/nscloud-cache-action
           ref: ${{ github.job_workflow_sha }}
@@ -660,11 +660,11 @@ jobs:
         space-enabled: ${{ fromJson(needs.setup.outputs.space-enabled) }}
         space-version: ${{ fromJson(needs.setup.outputs.space-version) }}
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6
         with:
           repository: namespacelabs/nscloud-cache-action
           ref: ${{ github.job_workflow_sha }}
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6
         with:
           repository: namespace-integration-demos/cache-pnpm-workspace
           path: demo
@@ -674,7 +674,7 @@ jobs:
         with:
           space-source-ref: ${{ inputs.space-source-ref }}
       - name: Install pnpm
-        uses: pnpm/action-setup@v4
+        uses: pnpm/action-setup@c5ba7f7862a0f64c1b1a05fbac13e0b8e86ba08c # v4
         with:
           version: '10.3.0'
       - name: Setup cache
@@ -700,11 +700,11 @@ jobs:
         space-enabled: ${{ fromJson(needs.setup.outputs.space-enabled) }}
         space-version: ${{ fromJson(needs.setup.outputs.space-version) }}
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6
         with:
           repository: namespacelabs/nscloud-cache-action
           ref: ${{ github.job_workflow_sha }}
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6
         with:
           repository: namespace-integration-demos/cache-pnpm-workspace
           path: demo
@@ -714,7 +714,7 @@ jobs:
         with:
           space-source-ref: ${{ inputs.space-source-ref }}
       - name: Install pnpm
-        uses: pnpm/action-setup@v4
+        uses: pnpm/action-setup@c5ba7f7862a0f64c1b1a05fbac13e0b8e86ba08c # v4
         with:
           version: ${{ matrix.pnpm-version }}
       - name: Produce problematic .npmrc
@@ -737,11 +737,11 @@ jobs:
         space-enabled: ${{ fromJson(needs.setup.outputs.space-enabled) }}
         space-version: ${{ fromJson(needs.setup.outputs.space-version) }}
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6
         with:
           repository: namespacelabs/nscloud-cache-action
           ref: ${{ github.job_workflow_sha }}
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6
         with:
           repository: namespace-integration-demos/poetry
           path: demo
@@ -772,11 +772,11 @@ jobs:
         space-enabled: ${{ fromJson(needs.setup.outputs.space-enabled) }}
         space-version: ${{ fromJson(needs.setup.outputs.space-version) }}
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6
         with:
           repository: namespacelabs/nscloud-cache-action
           ref: ${{ github.job_workflow_sha }}
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6
         with:
           repository: namespace-integration-demos/python-cache
           path: demo
@@ -805,11 +805,11 @@ jobs:
         space-enabled: ${{ fromJson(needs.setup.outputs.space-enabled) }}
         space-version: ${{ fromJson(needs.setup.outputs.space-version) }}
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6
         with:
           repository: namespacelabs/nscloud-cache-action
           ref: ${{ github.job_workflow_sha }}
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6
         with:
           repository: namespace-integration-demos/rust-cache
           path: demo
@@ -840,7 +840,7 @@ jobs:
         space-enabled: ${{ fromJson(needs.setup.outputs.space-enabled) }}
         space-version: ${{ fromJson(needs.setup.outputs.space-version) }}
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6
         with:
           repository: namespacelabs/nscloud-cache-action
           ref: ${{ github.job_workflow_sha }}
@@ -849,7 +849,7 @@ jobs:
         uses: ./.github/actions/setup-space-binary
         with:
           space-source-ref: ${{ inputs.space-source-ref }}
-      - uses: ruby/setup-ruby@v1
+      - uses: ruby/setup-ruby@90be1154f987f4dc0fe0dd0feedac9e473aa4ba8 # v1
         with:
           ruby-version: '3.2'
           bundler-cache: false
@@ -878,11 +878,11 @@ jobs:
         # space-version: ${{ fromJson(needs.setup.outputs.space-version) }}
         space-version: ${{ fromJson(needs.setup.outputs.space-version-dev-only) }}
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6
         with:
           repository: namespacelabs/nscloud-cache-action
           ref: ${{ github.job_workflow_sha }}
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6
         with:
           repository: namespace-integration-demos/rust-cache
           path: demo
@@ -915,7 +915,7 @@ jobs:
         space-enabled: ${{ fromJson(needs.setup.outputs.space-enabled) }}
         space-version: ${{ fromJson(needs.setup.outputs.space-version) }}
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6
         with:
           repository: namespacelabs/nscloud-cache-action
           ref: ${{ github.job_workflow_sha }}
@@ -946,7 +946,7 @@ jobs:
         space-enabled: ${{ fromJson(needs.setup.outputs.space-enabled) }}
         space-version: ${{ fromJson(needs.setup.outputs.space-version) }}
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6
         with:
           repository: namespacelabs/nscloud-cache-action
           ref: ${{ github.job_workflow_sha }}
@@ -956,7 +956,7 @@ jobs:
         with:
           space-source-ref: ${{ inputs.space-source-ref }}
       - name: Install uv
-        uses: astral-sh/setup-uv@v7
+        uses: astral-sh/setup-uv@f06b870e0a91d23284a3013acc55e6f88ab4b904 # v7
         with:
           enable-cache: false
       - name: Setup cache
@@ -980,11 +980,11 @@ jobs:
         space-enabled: ${{ fromJson(needs.setup.outputs.space-enabled) }}
         space-version: ${{ fromJson(needs.setup.outputs.space-version) }}
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6
         with:
           repository: namespacelabs/nscloud-cache-action
           ref: ${{ github.job_workflow_sha }}
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6
         with:
           repository: namespace-integration-demos/cache-yarn-workspaces
           path: demo
@@ -1019,14 +1019,14 @@ jobs:
         space-version: ${{ fromJson(needs.setup.outputs.space-version) }}
     steps:
       - name: Checkout ios-demo
-        uses: actions/checkout@v6
+        uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6
         with:
           repository: nscloud-demo/ios-demo
-      - uses: ruby/setup-ruby@v1
+      - uses: ruby/setup-ruby@90be1154f987f4dc0fe0dd0feedac9e473aa4ba8 # v1
         with:
           ruby-version: '3.2.7'
           bundler-cache: false
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6
         with:
           repository: namespacelabs/nscloud-cache-action
           ref: ${{ github.job_workflow_sha }}
