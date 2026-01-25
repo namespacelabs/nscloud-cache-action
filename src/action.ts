@@ -43,9 +43,17 @@ export async function space(
   });
 
   if (exitCode !== 0) {
-    throw new Error(
-      `'space ${args.join(' ')}' failed with exit code ${exitCode}`
-    );
+    let errorMessage = `'space ${args.join(' ')}' failed with exit code ${exitCode}`;
+    try {
+      const errorJson = JSON.parse(stdout.trim());
+      if (errorJson.message) {
+        errorMessage = errorJson.message;
+      }
+    } catch {
+      // stdout wasn't valid JSON, use default message
+    }
+    core.error(errorMessage);
+    process.exit(exitCode);
   }
 
   return {exitCode, stdout, stderr};
