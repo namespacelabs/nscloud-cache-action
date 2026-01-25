@@ -1,17 +1,17 @@
-name: Basic validation
+name: Basic
 
 on:
+  workflow_dispatch:
   push:
     branches:
       - main
   pull_request:
     branches:
       - '*'
-  workflow_dispatch:
-
-  # Allow check to run on the merge queue so that it is eligible to be a "required" check.
   merge_group:
     types: [checks_requested]
+  schedule:
+    - cron: '10 */6 * * *'
 
 jobs:
   check:
