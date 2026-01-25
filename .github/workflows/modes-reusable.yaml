@@ -84,37 +84,6 @@ on:
 
 jobs:
   # ---------------------------------------------------------------------------
-  # Anchors: Define reusable step configurations. This job never runs.
-  # ---------------------------------------------------------------------------
-  _anchors:
-    if: false
-    runs-on: ubuntu-latest
-    steps:
-      - &download-space-binary
-        name: Download space binary
-        if: inputs.space-source-ref != ''
-        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
-        with:
-          name: space-${{ runner.os == 'macOS' && 'macos' || 'linux' }}
-          path: ${{ runner.temp }}/space-bin
-      - &install-space-binary
-        name: Install space binary
-        id: space
-        shell: bash
-        run: |
-          if [ -n "${{ inputs.space-source-ref }}" ]; then
-            if [[ "$RUNNER_OS" == "Linux" ]]; then
-              mv "${{ runner.temp }}/space-bin/space-linux-amd64" "${{ runner.temp }}/space-bin/space"
-            else
-              mv "${{ runner.temp }}/space-bin/space-darwin-arm64" "${{ runner.temp }}/space-bin/space"
-            fi
-            chmod +x "${{ runner.temp }}/space-bin/space"
-            echo "powertoys-dir=${{ runner.temp }}/space-bin/" >> $GITHUB_OUTPUT
-          else
-            echo "powertoys-dir=" >> $GITHUB_OUTPUT
-          fi
-
-  # ---------------------------------------------------------------------------
   # Setup job: Determines matrix values based on whether we're testing a custom
   # space binary or using released versions.
   # ---------------------------------------------------------------------------
@@ -197,8 +166,29 @@ jobs:
         with:
           repository: namespacelabs/nscloud-cache-action
           ref: ${{ github.job_workflow_sha }}
-      - *download-space-binary
-      - *install-space-binary
+      - &download-space-binary
+        name: Download space binary
+        if: inputs.space-source-ref != ''
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
+        with:
+          name: space-${{ runner.os == 'macOS' && 'macos' || 'linux' }}
+          path: ${{ runner.temp }}/space-bin
+      - &install-space-binary
+        name: Install space binary
+        id: space
+        shell: bash
+        run: |
+          if [ -n "${{ inputs.space-source-ref }}" ]; then
+            if [[ "$RUNNER_OS" == "Linux" ]]; then
+              mv "${{ runner.temp }}/space-bin/space-linux-amd64" "${{ runner.temp }}/space-bin/space"
+            else
+              mv "${{ runner.temp }}/space-bin/space-darwin-arm64" "${{ runner.temp }}/space-bin/space"
+            fi
+            chmod +x "${{ runner.temp }}/space-bin/space"
+            echo "powertoys-dir=${{ runner.temp }}/space-bin/" >> $GITHUB_OUTPUT
+          else
+            echo "powertoys-dir=" >> $GITHUB_OUTPUT
+          fi
       - name: Setup cache
         uses: ./
         with:
