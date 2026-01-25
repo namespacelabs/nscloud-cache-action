@@ -82,17 +82,21 @@ jobs:
         space-version: ['', 'dev', 'latest']
     steps:
       - uses: actions/checkout@v6
-        with:
-          repository: nscloud-demo/ios-demo
-      - uses: actions/checkout@v6
-        with:
-          path: cache-action
       - name: Setup cache
-        uses: ./cache-action/
+        uses: ./
         with:
           space-enabled: ${{ matrix.space-enabled }}
           space-version: ${{ matrix.space-version }}
           mode: cocoapods
+      - name: Create minimal Podfile
+        run: |
+          cat > Podfile << 'EOF'
+          install! 'cocoapods', :integrate_targets => false
+          platform :ios, '14.0'
+          target 'TestApp' do
+            pod 'Alamofire', '~> 5.9'
+          end
+          EOF
       - run: pod install
 
   composer:
