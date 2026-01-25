@@ -1,21 +1,17 @@
-name: Test in a container
+name: Container
+
 on:
+  workflow_dispatch:
   push:
     branches:
       - main
   pull_request:
     branches:
       - '*'
-  schedule:
-    - cron: '5 */6 * * *'
-  workflow_dispatch:
-
-  # Allow check to run on the merge queue so that it is eligible to be a "required" check.
   merge_group:
     types: [checks_requested]
-
-permissions:
-  contents: read
+  schedule:
+    - cron: '10 */6 * * *'
 
 jobs:
   in-container:
