@@ -16,3 +16,17 @@ on:
 jobs:
   modes:
     uses: ./.github/workflows/modes-reusable.yaml
+
+  # Single check for branch protection after all mode tests complete
+  modes-ok:
+    needs: modes
+    if: always()
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check mode tests passed
+        run: |
+          if [[ "${{ needs.modes.result }}" != "success" ]]; then
+            echo "Mode tests failed with result: ${{ needs.modes.result }}"
+            exit 1
+          fi
+          echo "All mode tests passed"
