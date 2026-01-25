@@ -43,7 +43,7 @@
 #           ref: ${{ github.job_workflow_sha }}
 #       - name: Setup space binary
 #         id: space
-#         uses: ./.github/actions/setup-space-binary
+#         uses: namespacelabs/nscloud-cache-action/.github/actions/setup-space-binary@${{ github.job_workflow_sha }}
 #         with:
 #           space-source-ref: ${{ inputs.space-source-ref }}
 #       - name: Setup cache
@@ -171,7 +171,7 @@ jobs:
           ref: ${{ github.job_workflow_sha }}
       - name: Setup space binary
         id: space
-        uses: ./.github/actions/setup-space-binary
+        uses: namespacelabs/nscloud-cache-action/.github/actions/setup-space-binary@${{ github.job_workflow_sha }}
         with:
           space-source-ref: ${{ inputs.space-source-ref }}
       - name: Setup cache
@@ -204,7 +204,7 @@ jobs:
           ref: ${{ github.job_workflow_sha }}
       - name: Setup space binary
         id: space
-        uses: ./.github/actions/setup-space-binary
+        uses: namespacelabs/nscloud-cache-action/.github/actions/setup-space-binary@${{ github.job_workflow_sha }}
         with:
           space-source-ref: ${{ inputs.space-source-ref }}
       - name: Setup cache
@@ -237,7 +237,7 @@ jobs:
           ref: ${{ github.job_workflow_sha }}
       - name: Setup space binary
         id: space
-        uses: ./.github/actions/setup-space-binary
+        uses: namespacelabs/nscloud-cache-action/.github/actions/setup-space-binary@${{ github.job_workflow_sha }}
         with:
           space-source-ref: ${{ inputs.space-source-ref }}
       - name: Setup Bun
@@ -267,7 +267,7 @@ jobs:
           ref: ${{ github.job_workflow_sha }}
       - name: Setup space binary
         id: space
-        uses: ./.github/actions/setup-space-binary
+        uses: namespacelabs/nscloud-cache-action/.github/actions/setup-space-binary@${{ github.job_workflow_sha }}
         with:
           space-source-ref: ${{ inputs.space-source-ref }}
       - name: Setup cache
@@ -304,7 +304,7 @@ jobs:
           ref: ${{ github.job_workflow_sha }}
       - name: Setup space binary
         id: space
-        uses: ./.github/actions/setup-space-binary
+        uses: namespacelabs/nscloud-cache-action/.github/actions/setup-space-binary@${{ github.job_workflow_sha }}
         with:
           space-source-ref: ${{ inputs.space-source-ref }}
       - name: Setup PHP
@@ -336,7 +336,7 @@ jobs:
           ref: ${{ github.job_workflow_sha }}
       - name: Setup space binary
         id: space
-        uses: ./.github/actions/setup-space-binary
+        uses: namespacelabs/nscloud-cache-action/.github/actions/setup-space-binary@${{ github.job_workflow_sha }}
         with:
           space-source-ref: ${{ inputs.space-source-ref }}
       - name: Setup Deno
@@ -368,7 +368,7 @@ jobs:
           ref: ${{ github.job_workflow_sha }}
       - name: Setup space binary
         id: space
-        uses: ./.github/actions/setup-space-binary
+        uses: namespacelabs/nscloud-cache-action/.github/actions/setup-space-binary@${{ github.job_workflow_sha }}
         with:
           space-source-ref: ${{ inputs.space-source-ref }}
       - name: Setup Go
@@ -408,7 +408,7 @@ jobs:
           path: demo
       - name: Setup space binary
         id: space
-        uses: ./.github/actions/setup-space-binary
+        uses: namespacelabs/nscloud-cache-action/.github/actions/setup-space-binary@${{ github.job_workflow_sha }}
         with:
           space-source-ref: ${{ inputs.space-source-ref }}
       - name: Setup Go
@@ -454,7 +454,7 @@ jobs:
           path: demo
       - name: Setup space binary
         id: space
-        uses: ./.github/actions/setup-space-binary
+        uses: namespacelabs/nscloud-cache-action/.github/actions/setup-space-binary@${{ github.job_workflow_sha }}
         with:
           space-source-ref: ${{ inputs.space-source-ref }}
       - name: Set up JDK 17
@@ -493,7 +493,7 @@ jobs:
           path: demo
       - name: Setup space binary
         id: space
-        uses: ./.github/actions/setup-space-binary
+        uses: namespacelabs/nscloud-cache-action/.github/actions/setup-space-binary@${{ github.job_workflow_sha }}
         with:
           space-source-ref: ${{ inputs.space-source-ref }}
       - name: Set up JDK 11
@@ -532,7 +532,7 @@ jobs:
           ref: ${{ github.job_workflow_sha }}
       - name: Setup space binary
         id: space
-        uses: ./.github/actions/setup-space-binary
+        uses: namespacelabs/nscloud-cache-action/.github/actions/setup-space-binary@${{ github.job_workflow_sha }}
         with:
           space-source-ref: ${{ inputs.space-source-ref }}
       - name: Setup cache
@@ -568,7 +568,7 @@ jobs:
           ref: ${{ github.job_workflow_sha }}
       - name: Setup space binary
         id: space
-        uses: ./.github/actions/setup-space-binary
+        uses: namespacelabs/nscloud-cache-action/.github/actions/setup-space-binary@${{ github.job_workflow_sha }}
         with:
           space-source-ref: ${{ inputs.space-source-ref }}
       - name: Setup cache
@@ -604,7 +604,7 @@ jobs:
           ref: ${{ github.job_workflow_sha }}
       - name: Setup space binary
         id: space
-        uses: ./.github/actions/setup-space-binary
+        uses: namespacelabs/nscloud-cache-action/.github/actions/setup-space-binary@${{ github.job_workflow_sha }}
         with:
           space-source-ref: ${{ inputs.space-source-ref }}
       - name: Setup cache
@@ -636,7 +636,7 @@ jobs:
           ref: ${{ github.job_workflow_sha }}
       - name: Setup space binary
         id: space
-        uses: ./.github/actions/setup-space-binary
+        uses: namespacelabs/nscloud-cache-action/.github/actions/setup-space-binary@${{ github.job_workflow_sha }}
         with:
           space-source-ref: ${{ inputs.space-source-ref }}
       - name: Setup cache
@@ -670,7 +670,7 @@ jobs:
           path: demo
       - name: Setup space binary
         id: space
-        uses: ./.github/actions/setup-space-binary
+        uses: namespacelabs/nscloud-cache-action/.github/actions/setup-space-binary@${{ github.job_workflow_sha }}
         with:
           space-source-ref: ${{ inputs.space-source-ref }}
       - name: Install pnpm
@@ -710,7 +710,7 @@ jobs:
           path: demo
       - name: Setup space binary
         id: space
-        uses: ./.github/actions/setup-space-binary
+        uses: namespacelabs/nscloud-cache-action/.github/actions/setup-space-binary@${{ github.job_workflow_sha }}
         with:
           space-source-ref: ${{ inputs.space-source-ref }}
       - name: Install pnpm
@@ -747,7 +747,7 @@ jobs:
           path: demo
       - name: Setup space binary
         id: space
-        uses: ./.github/actions/setup-space-binary
+        uses: namespacelabs/nscloud-cache-action/.github/actions/setup-space-binary@${{ github.job_workflow_sha }}
         with:
           space-source-ref: ${{ inputs.space-source-ref }}
       - name: Install poetry
@@ -782,7 +782,7 @@ jobs:
           path: demo
       - name: Setup space binary
         id: space
-        uses: ./.github/actions/setup-space-binary
+        uses: namespacelabs/nscloud-cache-action/.github/actions/setup-space-binary@${{ github.job_workflow_sha }}
         with:
           space-source-ref: ${{ inputs.space-source-ref }}
       - name: Setup cache
@@ -815,7 +815,7 @@ jobs:
           path: demo
       - name: Setup space binary
         id: space
-        uses: ./.github/actions/setup-space-binary
+        uses: namespacelabs/nscloud-cache-action/.github/actions/setup-space-binary@${{ github.job_workflow_sha }}
         with:
           space-source-ref: ${{ inputs.space-source-ref }}
       - name: Setup cache
@@ -846,7 +846,7 @@ jobs:
           ref: ${{ github.job_workflow_sha }}
       - name: Setup space binary
         id: space
-        uses: ./.github/actions/setup-space-binary
+        uses: namespacelabs/nscloud-cache-action/.github/actions/setup-space-binary@${{ github.job_workflow_sha }}
         with:
           space-source-ref: ${{ inputs.space-source-ref }}
       - uses: ruby/setup-ruby@90be1154f987f4dc0fe0dd0feedac9e473aa4ba8 # v1
@@ -888,7 +888,7 @@ jobs:
           path: demo
       - name: Setup space binary
         id: space
-        uses: ./.github/actions/setup-space-binary
+        uses: namespacelabs/nscloud-cache-action/.github/actions/setup-space-binary@${{ github.job_workflow_sha }}
         with:
           space-source-ref: ${{ inputs.space-source-ref }}
       - name: Create .global-cache file that should be removed before creating mount
@@ -921,7 +921,7 @@ jobs:
           ref: ${{ github.job_workflow_sha }}
       - name: Setup space binary
         id: space
-        uses: ./.github/actions/setup-space-binary
+        uses: namespacelabs/nscloud-cache-action/.github/actions/setup-space-binary@${{ github.job_workflow_sha }}
         with:
           space-source-ref: ${{ inputs.space-source-ref }}
       - name: Setup cache
@@ -952,7 +952,7 @@ jobs:
           ref: ${{ github.job_workflow_sha }}
       - name: Setup space binary
         id: space
-        uses: ./.github/actions/setup-space-binary
+        uses: namespacelabs/nscloud-cache-action/.github/actions/setup-space-binary@${{ github.job_workflow_sha }}
         with:
           space-source-ref: ${{ inputs.space-source-ref }}
       - name: Install uv
@@ -990,7 +990,7 @@ jobs:
           path: demo
       - name: Setup space binary
         id: space
-        uses: ./.github/actions/setup-space-binary
+        uses: namespacelabs/nscloud-cache-action/.github/actions/setup-space-binary@${{ github.job_workflow_sha }}
         with:
           space-source-ref: ${{ inputs.space-source-ref }}
       - name: Setup cache
@@ -1033,7 +1033,7 @@ jobs:
           path: cache-action
       - name: Setup space binary
         id: space
-        uses: ./cache-action/.github/actions/setup-space-binary
+        uses: namespacelabs/nscloud-cache-action/.github/actions/setup-space-binary@${{ github.job_workflow_sha }}
         with:
           space-source-ref: ${{ inputs.space-source-ref }}
       - name: Setup cache
