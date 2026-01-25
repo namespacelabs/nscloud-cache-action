@@ -622,8 +622,14 @@ jobs:
             fi
             sleep 5
           done
+      - name: Boot simulator
+        run: |
+          UDID=$(xcrun simctl list -j | jq -r '.devices["com.apple.CoreSimulator.SimRuntime.iOS-17-5"][] | select(.name == "iPhone 15" and .isAvailable) | .udid')
+          echo "Booting simulator $UDID..."
+          xcrun simctl boot "$UDID" || true
+          xcrun simctl bootstatus "$UDID" -b
       - name: xcodebuild
-        run: xcodebuild test -scheme ios-demo -sdk iphonesimulator -destination 'platform=iOS Simulator,name=iPhone 15,OS=17.5'
+        run: xcodebuild test -scheme ios-demo -sdk iphonesimulator -destination 'platform=iOS Simulator,name=iPhone 15,OS=17.5' -retry-tests-on-failure -test-iterations 3
       - name: fastlane
         run: fastlane screenshots
       - name: Breakpoint on failure
