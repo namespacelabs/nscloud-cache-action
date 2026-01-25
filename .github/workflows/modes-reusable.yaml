@@ -1,0 +1,1075 @@
+# Reusable workflow for testing all cache modes.
+#
+# This workflow tests the nscloud-cache-action against various package managers
+# and build tools (apt, brew, go, rust, npm, etc.) with different space binary
+# configurations.
+#
+# ============================================================================
+# USAGE
+# ============================================================================
+#
+# From nscloud-cache-action (test current commit):
+#
+#   jobs:
+#     modes:
+#       uses: ./.github/workflows/modes-reusable.yaml
+#
+# From the space repo (test with custom space binary):
+#
+#   jobs:
+#     test-cache-modes:
+#       uses: namespacelabs/nscloud-cache-action/.github/workflows/modes-reusable.yaml@main
+#       with:
+#         space-source-ref: ${{ github.sha }}
+#
+# ============================================================================
+# ADDING A NEW MODE TEST
+# ============================================================================
+#
+# 1. Add a new job following this template:
+#
+#   new-mode:
+#     needs: [setup, build-space]
+#     if: always() && (needs.build-space.result == 'success' || needs.build-space.result == 'skipped')
+#     runs-on: namespace-profile-e2e-small  # or namespace-profile-macos for macOS
+#     strategy:
+#       matrix:
+#         space-enabled: ${{ fromJson(needs.setup.outputs.space-enabled) }}
+#         space-version: ${{ fromJson(needs.setup.outputs.space-version) }}
+#     steps:
+#       - uses: actions/checkout@v6
+#         with:
+#           repository: namespacelabs/nscloud-cache-action
+#           ref: ${{ github.job_workflow_sha }}
+#       - name: Setup space binary
+#         id: space
+#         uses: ./.github/actions/setup-space-binary
+#         with:
+#           space-source-ref: ${{ inputs.space-source-ref }}
+#       - name: Setup cache
+#         uses: ./
+#         with:
+#           space-enabled: ${{ matrix.space-enabled }}
+#           space-version: ${{ matrix.space-version }}
+#           mode: new-mode
+#         env:
+#           NSC_POWERTOYS_DIR: ${{ steps.space.outputs.powertoys-dir }}
+#       - run: |
+#           # Your test commands here
+#
+# 2. For multi-OS tests, add an os matrix:
+#
+#     strategy:
+#       fail-fast: false
+#       matrix:
+#         os: [namespace-profile-macos, namespace-profile-e2e-small]
+#         space-enabled: ${{ fromJson(needs.setup.outputs.space-enabled) }}
+#         space-version: ${{ fromJson(needs.setup.outputs.space-version) }}
+#
+# 3. If you need a demo repository, checkout it after the main checkout:
+#
+#       - uses: actions/checkout@v6
+#         with:
+#           repository: namespace-integration-demos/your-demo
+#           path: demo
+#
+# ============================================================================
+
+name: Reusable Modes
+
+on:
+  workflow_call:
+    inputs:
+      space-source-ref:
+        description: 'Git ref of namespacelabs/space to build from source (empty = use released binary)'
+        type: string
+        default: ''
+
+jobs:
+  # ---------------------------------------------------------------------------
+  # Setup job: Determines matrix values based on whether we're testing a custom
+  # space binary or using released versions.
+  # ---------------------------------------------------------------------------
+  setup:
+    runs-on: ubuntu-latest
+    outputs:
+      space-enabled: ${{ steps.matrix.outputs.space-enabled }}
+      space-enabled-true-only: ${{ steps.matrix.outputs.space-enabled-true-only }}
+      space-version: ${{ steps.matrix.outputs.space-version }}
+      # Used by rust-pre-existing-file due to upstream bug - remove when fixed
+      space-version-dev-only: ${{ steps.matrix.outputs.space-version-dev-only }}
+    steps:
+      - id: matrix
+        run: |
+          if [ -n "${{ inputs.space-source-ref }}" ]; then
+            # Testing custom space binary: minimal matrix
+            echo 'space-enabled=[true]' >> $GITHUB_OUTPUT
+            echo 'space-enabled-true-only=[true]' >> $GITHUB_OUTPUT
+            echo 'space-version=[""]' >> $GITHUB_OUTPUT
+            echo 'space-version-dev-only=[""]' >> $GITHUB_OUTPUT
+          else
+            # Testing released versions: full matrix
+            echo 'space-enabled=[false,true]' >> $GITHUB_OUTPUT
+            echo 'space-enabled-true-only=[true]' >> $GITHUB_OUTPUT
+            echo 'space-version=["","dev","latest"]' >> $GITHUB_OUTPUT
+            echo 'space-version-dev-only=["dev"]' >> $GITHUB_OUTPUT
+          fi
+
+  # ---------------------------------------------------------------------------
+  # Build job: Cross-compiles the space binary for Linux and macOS.
+  # Only runs when space-source-ref is provided.
+  # ---------------------------------------------------------------------------
+  build-space:
+    if: inputs.space-source-ref != ''
+    runs-on: namespace-profile-e2e-small
+    strategy:
+      matrix:
+        include:
+          - os: linux
+            goos: linux
+            goarch: amd64
+          - os: macos
+            goos: darwin
+            goarch: arm64
+    steps:
+      - name: Setup Go
+        uses: actions/setup-go@v6
+        with:
+          go-version: 'stable'
+          cache: false
+      - name: Checkout space source
+        uses: actions/checkout@v6
+        with:
+          repository: namespacelabs/space
+          ref: ${{ inputs.space-source-ref }}
+      - name: Build space binary
+        run: |
+          GOOS=${{ matrix.goos }} GOARCH=${{ matrix.goarch }} go build -o space-${{ matrix.goos }}-${{ matrix.goarch }} .
+      - name: Upload space binary
+        uses: actions/upload-artifact@v4
+        with:
+          name: space-${{ matrix.os }}
+          path: space-${{ matrix.goos }}-${{ matrix.goarch }}
+          retention-days: 1
+
+  # ---------------------------------------------------------------------------
+  # Mode tests: Each job tests a specific cache mode.
+  # ---------------------------------------------------------------------------
+
+  apt:
+    needs: [setup, build-space]
+    if: always() && (needs.build-space.result == 'success' || needs.build-space.result == 'skipped')
+    runs-on: namespace-profile-e2e-small
+    strategy:
+      matrix:
+        space-enabled: ${{ fromJson(needs.setup.outputs.space-enabled) }}
+        space-version: ${{ fromJson(needs.setup.outputs.space-version) }}
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          repository: namespacelabs/nscloud-cache-action
+          ref: ${{ github.job_workflow_sha }}
+      - name: Setup space binary
+        id: space
+        uses: ./.github/actions/setup-space-binary
+        with:
+          space-source-ref: ${{ inputs.space-source-ref }}
+      - name: Setup cache
+        uses: ./
+        with:
+          space-enabled: ${{ matrix.space-enabled }}
+          space-version: ${{ matrix.space-version }}
+          mode: apt
+        env:
+          NSC_POWERTOYS_DIR: ${{ steps.space.outputs.powertoys-dir }}
+      - run: |
+          sudo apt-get update
+          sudo apt-get install -y lcov
+          lcov -h
+
+  brew:
+    needs: [setup, build-space]
+    if: always() && (needs.build-space.result == 'success' || needs.build-space.result == 'skipped')
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [namespace-profile-macos, namespace-profile-e2e-small]
+        space-enabled: ${{ fromJson(needs.setup.outputs.space-enabled) }}
+        space-version: ${{ fromJson(needs.setup.outputs.space-version) }}
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          repository: namespacelabs/nscloud-cache-action
+          ref: ${{ github.job_workflow_sha }}
+      - name: Setup space binary
+        id: space
+        uses: ./.github/actions/setup-space-binary
+        with:
+          space-source-ref: ${{ inputs.space-source-ref }}
+      - name: Setup cache
+        uses: ./
+        with:
+          space-enabled: ${{ matrix.space-enabled }}
+          space-version: ${{ matrix.space-version }}
+          mode: brew
+        env:
+          NSC_POWERTOYS_DIR: ${{ steps.space.outputs.powertoys-dir }}
+      - run: |
+          brew --version
+          brew install hello
+          which hello
+      - if: runner.os == 'macOS'
+        run: brew tap vectordotdev/brew && brew install vector
+
+  bun:
+    needs: [setup, build-space]
+    if: always() && (needs.build-space.result == 'success' || needs.build-space.result == 'skipped')
+    runs-on: namespace-profile-e2e-small
+    strategy:
+      matrix:
+        space-enabled: ${{ fromJson(needs.setup.outputs.space-enabled) }}
+        space-version: ${{ fromJson(needs.setup.outputs.space-version) }}
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          repository: namespacelabs/nscloud-cache-action
+          ref: ${{ github.job_workflow_sha }}
+      - name: Setup space binary
+        id: space
+        uses: ./.github/actions/setup-space-binary
+        with:
+          space-source-ref: ${{ inputs.space-source-ref }}
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+      - name: Setup cache
+        uses: ./
+        with:
+          space-enabled: ${{ matrix.space-enabled }}
+          space-version: ${{ matrix.space-version }}
+          mode: bun
+        env:
+          NSC_POWERTOYS_DIR: ${{ steps.space.outputs.powertoys-dir }}
+      - run: bun install
+
+  cocoapods:
+    needs: [setup, build-space]
+    if: always() && (needs.build-space.result == 'success' || needs.build-space.result == 'skipped')
+    runs-on: namespace-profile-macos
+    strategy:
+      matrix:
+        space-enabled: ${{ fromJson(needs.setup.outputs.space-enabled) }}
+        space-version: ${{ fromJson(needs.setup.outputs.space-version) }}
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          repository: namespacelabs/nscloud-cache-action
+          ref: ${{ github.job_workflow_sha }}
+      - name: Setup space binary
+        id: space
+        uses: ./.github/actions/setup-space-binary
+        with:
+          space-source-ref: ${{ inputs.space-source-ref }}
+      - name: Setup cache
+        uses: ./
+        with:
+          space-enabled: ${{ matrix.space-enabled }}
+          space-version: ${{ matrix.space-version }}
+          mode: cocoapods
+        env:
+          NSC_POWERTOYS_DIR: ${{ steps.space.outputs.powertoys-dir }}
+      - name: Create minimal Podfile
+        run: |
+          cat > Podfile << 'EOF'
+          install! 'cocoapods', :integrate_targets => false
+          platform :ios, '14.0'
+          target 'TestApp' do
+            pod 'Alamofire', '~> 5.9'
+          end
+          EOF
+      - run: pod install
+
+  composer:
+    needs: [setup, build-space]
+    if: always() && (needs.build-space.result == 'success' || needs.build-space.result == 'skipped')
+    runs-on: namespace-profile-e2e-small
+    strategy:
+      matrix:
+        space-enabled: ${{ fromJson(needs.setup.outputs.space-enabled) }}
+        space-version: ${{ fromJson(needs.setup.outputs.space-version) }}
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          repository: namespacelabs/nscloud-cache-action
+          ref: ${{ github.job_workflow_sha }}
+      - name: Setup space binary
+        id: space
+        uses: ./.github/actions/setup-space-binary
+        with:
+          space-source-ref: ${{ inputs.space-source-ref }}
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+      - name: Setup cache
+        uses: ./
+        with:
+          space-enabled: ${{ matrix.space-enabled }}
+          space-version: ${{ matrix.space-version }}
+          mode: composer
+        env:
+          NSC_POWERTOYS_DIR: ${{ steps.space.outputs.powertoys-dir }}
+      - run: composer require monolog/monolog
+
+  deno:
+    needs: [setup, build-space]
+    if: always() && (needs.build-space.result == 'success' || needs.build-space.result == 'skipped')
+    runs-on: namespace-profile-e2e-small
+    strategy:
+      matrix:
+        space-enabled: ${{ fromJson(needs.setup.outputs.space-enabled) }}
+        space-version: ${{ fromJson(needs.setup.outputs.space-version) }}
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          repository: namespacelabs/nscloud-cache-action
+          ref: ${{ github.job_workflow_sha }}
+      - name: Setup space binary
+        id: space
+        uses: ./.github/actions/setup-space-binary
+        with:
+          space-source-ref: ${{ inputs.space-source-ref }}
+      - name: Setup Deno
+        uses: denoland/setup-deno@v2
+        with:
+          cache: false
+      - name: Setup cache
+        uses: ./
+        with:
+          space-enabled: ${{ matrix.space-enabled }}
+          space-version: ${{ matrix.space-version }}
+          mode: deno
+        env:
+          NSC_POWERTOYS_DIR: ${{ steps.space.outputs.powertoys-dir }}
+      - run: deno install
+
+  go:
+    needs: [setup, build-space]
+    if: always() && (needs.build-space.result == 'success' || needs.build-space.result == 'skipped')
+    runs-on: namespace-profile-e2e-medium
+    strategy:
+      matrix:
+        space-enabled: ${{ fromJson(needs.setup.outputs.space-enabled) }}
+        space-version: ${{ fromJson(needs.setup.outputs.space-version) }}
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          repository: namespacelabs/nscloud-cache-action
+          ref: ${{ github.job_workflow_sha }}
+      - name: Setup space binary
+        id: space
+        uses: ./.github/actions/setup-space-binary
+        with:
+          space-source-ref: ${{ inputs.space-source-ref }}
+      - name: Setup Go
+        uses: actions/setup-go@v6
+        with:
+          go-version: '1.25'
+          cache: false
+      - name: Check existing directories
+        run: ls -al /home/runner/go
+      - name: Setup cache
+        uses: ./
+        with:
+          space-enabled: ${{ matrix.space-enabled }}
+          space-version: ${{ matrix.space-version }}
+          mode: go
+        env:
+          NSC_POWERTOYS_DIR: ${{ steps.space.outputs.powertoys-dir }}
+      - name: Run go build
+        run: go install namespacelabs.dev/foundation/cmd/ns@aabde5de6327f5e37673fd6d04474890429494ef
+
+  golangci-lint:
+    needs: [setup, build-space]
+    if: always() && (needs.build-space.result == 'success' || needs.build-space.result == 'skipped')
+    runs-on: namespace-profile-e2e-medium
+    strategy:
+      matrix:
+        space-enabled: ${{ fromJson(needs.setup.outputs.space-enabled) }}
+        space-version: ${{ fromJson(needs.setup.outputs.space-version) }}
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          repository: namespacelabs/nscloud-cache-action
+          ref: ${{ github.job_workflow_sha }}
+      - uses: actions/checkout@v6
+        with:
+          repository: namespace-integration-demos/go-cache
+          path: demo
+      - name: Setup space binary
+        id: space
+        uses: ./.github/actions/setup-space-binary
+        with:
+          space-source-ref: ${{ inputs.space-source-ref }}
+      - name: Setup Go
+        uses: actions/setup-go@v6
+        with:
+          go-version: '1.25'
+          cache: false
+      - name: Setup golangci-lint
+        uses: golangci/golangci-lint-action@v9
+        with:
+          version: v2.6
+          install-only: true
+          skip-cache: true
+      - name: Setup cache
+        uses: ./
+        with:
+          space-enabled: ${{ matrix.space-enabled }}
+          space-version: ${{ matrix.space-version }}
+          mode: |
+            go
+            golangci-lint
+        env:
+          NSC_POWERTOYS_DIR: ${{ steps.space.outputs.powertoys-dir }}
+      - name: Run golangci-lint
+        run: cd ./demo && golangci-lint run
+
+  gradle:
+    needs: [setup, build-space]
+    if: always() && (needs.build-space.result == 'success' || needs.build-space.result == 'skipped')
+    runs-on: namespace-profile-e2e-small
+    strategy:
+      matrix:
+        space-enabled: ${{ fromJson(needs.setup.outputs.space-enabled) }}
+        space-version: ${{ fromJson(needs.setup.outputs.space-version) }}
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          repository: namespacelabs/nscloud-cache-action
+          ref: ${{ github.job_workflow_sha }}
+      - uses: actions/checkout@v6
+        with:
+          repository: namespace-integration-demos/gradle-cache
+          path: demo
+      - name: Setup space binary
+        id: space
+        uses: ./.github/actions/setup-space-binary
+        with:
+          space-source-ref: ${{ inputs.space-source-ref }}
+      - name: Set up JDK 17
+        uses: actions/setup-java@v5
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+      - name: Setup cache
+        uses: ./
+        with:
+          space-enabled: ${{ matrix.space-enabled }}
+          space-version: ${{ matrix.space-version }}
+          mode: gradle
+        env:
+          NSC_POWERTOYS_DIR: ${{ steps.space.outputs.powertoys-dir }}
+      - name: Build with Gradle
+        run: ./gradlew build
+        working-directory: ./demo
+
+  maven:
+    needs: [setup, build-space]
+    if: always() && (needs.build-space.result == 'success' || needs.build-space.result == 'skipped')
+    runs-on: namespace-profile-e2e-small
+    strategy:
+      matrix:
+        space-enabled: ${{ fromJson(needs.setup.outputs.space-enabled) }}
+        space-version: ${{ fromJson(needs.setup.outputs.space-version) }}
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          repository: namespacelabs/nscloud-cache-action
+          ref: ${{ github.job_workflow_sha }}
+      - uses: actions/checkout@v6
+        with:
+          repository: namespace-integration-demos/selenium-cache
+          path: demo
+      - name: Setup space binary
+        id: space
+        uses: ./.github/actions/setup-space-binary
+        with:
+          space-source-ref: ${{ inputs.space-source-ref }}
+      - name: Set up JDK 11
+        uses: actions/setup-java@v5
+        with:
+          java-version: '11'
+          distribution: 'temurin'
+      - uses: browser-actions/setup-chrome@v2
+        with:
+          chrome-version: latest
+      - run: chrome --version
+      - name: Setup cache
+        uses: ./
+        with:
+          space-enabled: ${{ matrix.space-enabled }}
+          space-version: ${{ matrix.space-version }}
+          mode: maven
+        env:
+          NSC_POWERTOYS_DIR: ${{ steps.space.outputs.powertoys-dir }}
+      - name: Build with Maven
+        run: mvn -B clean test
+        working-directory: ./demo
+
+  mise:
+    needs: [setup, build-space]
+    if: always() && (needs.build-space.result == 'success' || needs.build-space.result == 'skipped')
+    runs-on: namespace-profile-e2e-small
+    strategy:
+      matrix:
+        space-enabled: ${{ fromJson(needs.setup.outputs.space-enabled) }}
+        space-version: ${{ fromJson(needs.setup.outputs.space-version) }}
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          repository: namespacelabs/nscloud-cache-action
+          ref: ${{ github.job_workflow_sha }}
+      - name: Setup space binary
+        id: space
+        uses: ./.github/actions/setup-space-binary
+        with:
+          space-source-ref: ${{ inputs.space-source-ref }}
+      - name: Setup cache
+        uses: ./
+        with:
+          space-enabled: ${{ matrix.space-enabled }}
+          space-version: ${{ matrix.space-version }}
+          mode: mise
+        env:
+          NSC_POWERTOYS_DIR: ${{ steps.space.outputs.powertoys-dir }}
+      - name: Install mise
+        uses: jdx/mise-action@v3
+        with:
+          cache: false
+          mise_toml: |
+            [tools]
+            node = "latest"
+      - run: node --version
+
+  nix:
+    needs: [setup, build-space]
+    if: always() && (needs.build-space.result == 'success' || needs.build-space.result == 'skipped')
+    runs-on: namespace-profile-e2e-small
+    strategy:
+      matrix:
+        # nix only tests with space-enabled: true
+        space-enabled: ${{ fromJson(needs.setup.outputs.space-enabled-true-only) }}
+        space-version: ${{ fromJson(needs.setup.outputs.space-version) }}
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          repository: namespacelabs/nscloud-cache-action
+          ref: ${{ github.job_workflow_sha }}
+      - name: Setup space binary
+        id: space
+        uses: ./.github/actions/setup-space-binary
+        with:
+          space-source-ref: ${{ inputs.space-source-ref }}
+      - name: Setup cache
+        uses: ./
+        with:
+          space-enabled: ${{ matrix.space-enabled }}
+          space-version: ${{ matrix.space-version }}
+          mode: nix
+        env:
+          NSC_POWERTOYS_DIR: ${{ steps.space.outputs.powertoys-dir }}
+      - name: Install Nix
+        uses: cachix/install-nix-action@v31
+        with:
+          extra_nix_config: |
+            access-tokens = github.com=${{ secrets.GITHUB_TOKEN }}
+            system-features = kvm nixos-test
+      - run: echo "Hello Nix" | nix run "https://flakehub.com/f/snowfallorg/cowsay/1.3.0"
+
+  playwright:
+    needs: [setup, build-space]
+    if: always() && (needs.build-space.result == 'success' || needs.build-space.result == 'skipped')
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [namespace-profile-macos, namespace-profile-e2e-small]
+        space-enabled: ${{ fromJson(needs.setup.outputs.space-enabled) }}
+        space-version: ${{ fromJson(needs.setup.outputs.space-version) }}
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          repository: namespacelabs/nscloud-cache-action
+          ref: ${{ github.job_workflow_sha }}
+      - name: Setup space binary
+        id: space
+        uses: ./.github/actions/setup-space-binary
+        with:
+          space-source-ref: ${{ inputs.space-source-ref }}
+      - name: Setup cache
+        uses: ./
+        with:
+          space-enabled: ${{ matrix.space-enabled }}
+          space-version: ${{ matrix.space-version }}
+          mode: playwright
+        env:
+          NSC_POWERTOYS_DIR: ${{ steps.space.outputs.powertoys-dir }}
+      - run: npx playwright install --with-deps
+
+  playwright-custom-dir:
+    needs: [setup, build-space]
+    if: always() && (needs.build-space.result == 'success' || needs.build-space.result == 'skipped')
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [namespace-profile-macos, namespace-profile-e2e-small]
+        space-enabled: ${{ fromJson(needs.setup.outputs.space-enabled) }}
+        space-version: ${{ fromJson(needs.setup.outputs.space-version) }}
+    env:
+      PLAYWRIGHT_BROWSERS_PATH: ~/playwright-cache
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          repository: namespacelabs/nscloud-cache-action
+          ref: ${{ github.job_workflow_sha }}
+      - name: Setup space binary
+        id: space
+        uses: ./.github/actions/setup-space-binary
+        with:
+          space-source-ref: ${{ inputs.space-source-ref }}
+      - name: Setup cache
+        uses: ./
+        with:
+          space-enabled: ${{ matrix.space-enabled }}
+          space-version: ${{ matrix.space-version }}
+          mode: playwright
+        env:
+          NSC_POWERTOYS_DIR: ${{ steps.space.outputs.powertoys-dir }}
+      - run: npx playwright install --with-deps
+
+  pnpm:
+    needs: [setup, build-space]
+    if: always() && (needs.build-space.result == 'success' || needs.build-space.result == 'skipped')
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [namespace-profile-macos, namespace-profile-e2e-small]
+        space-enabled: ${{ fromJson(needs.setup.outputs.space-enabled) }}
+        space-version: ${{ fromJson(needs.setup.outputs.space-version) }}
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          repository: namespacelabs/nscloud-cache-action
+          ref: ${{ github.job_workflow_sha }}
+      - uses: actions/checkout@v6
+        with:
+          repository: namespace-integration-demos/cache-pnpm-workspace
+          path: demo
+      - name: Setup space binary
+        id: space
+        uses: ./.github/actions/setup-space-binary
+        with:
+          space-source-ref: ${{ inputs.space-source-ref }}
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: '10.3.0'
+      - name: Setup cache
+        uses: ./
+        with:
+          space-enabled: ${{ matrix.space-enabled }}
+          space-version: ${{ matrix.space-version }}
+          mode: pnpm
+          path: |
+            ~/.cache
+        env:
+          NSC_POWERTOYS_DIR: ${{ steps.space.outputs.powertoys-dir }}
+      - run: pnpm install
+        working-directory: ./demo/fullstack
+
+  pnpm-ignore-warnings:
+    needs: [setup, build-space]
+    if: always() && (needs.build-space.result == 'success' || needs.build-space.result == 'skipped')
+    runs-on: namespace-profile-e2e-small
+    strategy:
+      matrix:
+        pnpm-version: ['8.15.5', '9.7.0', '9.15.0']
+        space-enabled: ${{ fromJson(needs.setup.outputs.space-enabled) }}
+        space-version: ${{ fromJson(needs.setup.outputs.space-version) }}
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          repository: namespacelabs/nscloud-cache-action
+          ref: ${{ github.job_workflow_sha }}
+      - uses: actions/checkout@v6
+        with:
+          repository: namespace-integration-demos/cache-pnpm-workspace
+          path: demo
+      - name: Setup space binary
+        id: space
+        uses: ./.github/actions/setup-space-binary
+        with:
+          space-source-ref: ${{ inputs.space-source-ref }}
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: ${{ matrix.pnpm-version }}
+      - name: Produce problematic .npmrc
+        run: cp ./.github/workflows/testdata/.npmrc ./demo/
+      - name: Setup cache
+        uses: ./
+        with:
+          space-enabled: ${{ matrix.space-enabled }}
+          space-version: ${{ matrix.space-version }}
+          mode: pnpm
+        env:
+          NSC_POWERTOYS_DIR: ${{ steps.space.outputs.powertoys-dir }}
+
+  poetry:
+    needs: [setup, build-space]
+    if: always() && (needs.build-space.result == 'success' || needs.build-space.result == 'skipped')
+    runs-on: namespace-profile-e2e-small
+    strategy:
+      matrix:
+        space-enabled: ${{ fromJson(needs.setup.outputs.space-enabled) }}
+        space-version: ${{ fromJson(needs.setup.outputs.space-version) }}
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          repository: namespacelabs/nscloud-cache-action
+          ref: ${{ github.job_workflow_sha }}
+      - uses: actions/checkout@v6
+        with:
+          repository: namespace-integration-demos/poetry
+          path: demo
+      - name: Setup space binary
+        id: space
+        uses: ./.github/actions/setup-space-binary
+        with:
+          space-source-ref: ${{ inputs.space-source-ref }}
+      - name: Install poetry
+        run: pipx install poetry
+      - name: Setup cache
+        uses: ./
+        with:
+          space-enabled: ${{ matrix.space-enabled }}
+          space-version: ${{ matrix.space-version }}
+          mode: poetry
+        env:
+          NSC_POWERTOYS_DIR: ${{ steps.space.outputs.powertoys-dir }}
+      - run: poetry install
+        working-directory: ./demo
+
+  python:
+    needs: [setup, build-space]
+    if: always() && (needs.build-space.result == 'success' || needs.build-space.result == 'skipped')
+    runs-on: namespace-profile-e2e-small
+    strategy:
+      matrix:
+        space-enabled: ${{ fromJson(needs.setup.outputs.space-enabled) }}
+        space-version: ${{ fromJson(needs.setup.outputs.space-version) }}
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          repository: namespacelabs/nscloud-cache-action
+          ref: ${{ github.job_workflow_sha }}
+      - uses: actions/checkout@v6
+        with:
+          repository: namespace-integration-demos/python-cache
+          path: demo
+      - name: Setup space binary
+        id: space
+        uses: ./.github/actions/setup-space-binary
+        with:
+          space-source-ref: ${{ inputs.space-source-ref }}
+      - name: Setup cache
+        uses: ./
+        with:
+          space-enabled: ${{ matrix.space-enabled }}
+          space-version: ${{ matrix.space-version }}
+          mode: python
+        env:
+          NSC_POWERTOYS_DIR: ${{ steps.space.outputs.powertoys-dir }}
+      - run: pip install -r ./requirements.txt
+        working-directory: ./demo
+
+  rust:
+    needs: [setup, build-space]
+    if: always() && (needs.build-space.result == 'success' || needs.build-space.result == 'skipped')
+    runs-on: namespace-profile-e2e-small
+    strategy:
+      matrix:
+        space-enabled: ${{ fromJson(needs.setup.outputs.space-enabled) }}
+        space-version: ${{ fromJson(needs.setup.outputs.space-version) }}
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          repository: namespacelabs/nscloud-cache-action
+          ref: ${{ github.job_workflow_sha }}
+      - uses: actions/checkout@v6
+        with:
+          repository: namespace-integration-demos/rust-cache
+          path: demo
+      - name: Setup space binary
+        id: space
+        uses: ./.github/actions/setup-space-binary
+        with:
+          space-source-ref: ${{ inputs.space-source-ref }}
+      - name: Setup cache
+        uses: ./
+        with:
+          space-enabled: ${{ matrix.space-enabled }}
+          space-version: ${{ matrix.space-version }}
+          mode: rust
+        env:
+          NSC_POWERTOYS_DIR: ${{ steps.space.outputs.powertoys-dir }}
+      - run: cargo build --locked --release --no-default-features --all
+        working-directory: ./demo
+      - run: cargo test --locked --release --all
+        working-directory: ./demo
+
+  ruby:
+    needs: [setup, build-space]
+    if: always() && (needs.build-space.result == 'success' || needs.build-space.result == 'skipped')
+    runs-on: namespace-profile-e2e-small
+    strategy:
+      matrix:
+        space-enabled: ${{ fromJson(needs.setup.outputs.space-enabled) }}
+        space-version: ${{ fromJson(needs.setup.outputs.space-version) }}
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          repository: namespacelabs/nscloud-cache-action
+          ref: ${{ github.job_workflow_sha }}
+      - name: Setup space binary
+        id: space
+        uses: ./.github/actions/setup-space-binary
+        with:
+          space-source-ref: ${{ inputs.space-source-ref }}
+      - uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: '3.2'
+          bundler-cache: false
+      - name: Setup cache
+        uses: ./
+        with:
+          space-enabled: ${{ matrix.space-enabled }}
+          space-version: ${{ matrix.space-version }}
+          mode: ruby
+        env:
+          NSC_POWERTOYS_DIR: ${{ steps.space.outputs.powertoys-dir }}
+      - run: |
+          bundle config set --local path 'vendor/bundle'
+          bundle init
+          bundle add rake
+
+  rust-pre-existing-file:
+    needs: [setup, build-space]
+    if: always() && (needs.build-space.result == 'success' || needs.build-space.result == 'skipped')
+    runs-on: namespace-profile-e2e-small
+    strategy:
+      matrix:
+        space-enabled: ${{ fromJson(needs.setup.outputs.space-enabled) }}
+        # TODO(steeve): Re-enable full version matrix once upstream bug is fixed.
+        # Upstream bug causes failures with '' and 'latest' versions.
+        # space-version: ${{ fromJson(needs.setup.outputs.space-version) }}
+        space-version: ${{ fromJson(needs.setup.outputs.space-version-dev-only) }}
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          repository: namespacelabs/nscloud-cache-action
+          ref: ${{ github.job_workflow_sha }}
+      - uses: actions/checkout@v6
+        with:
+          repository: namespace-integration-demos/rust-cache
+          path: demo
+      - name: Setup space binary
+        id: space
+        uses: ./.github/actions/setup-space-binary
+        with:
+          space-source-ref: ${{ inputs.space-source-ref }}
+      - name: Create .global-cache file that should be removed before creating mount
+        run: touch ~/.cargo/.global-cache
+      - name: Setup cache
+        uses: ./
+        with:
+          space-enabled: ${{ matrix.space-enabled }}
+          space-version: ${{ matrix.space-version }}
+          mode: rust
+        env:
+          NSC_POWERTOYS_DIR: ${{ steps.space.outputs.powertoys-dir }}
+      - run: cargo build --locked --release --no-default-features --all
+        working-directory: ./demo
+      - run: cargo test --locked --release --all
+        working-directory: ./demo
+
+  swiftpm:
+    needs: [setup, build-space]
+    if: always() && (needs.build-space.result == 'success' || needs.build-space.result == 'skipped')
+    runs-on: namespace-profile-macos
+    strategy:
+      matrix:
+        space-enabled: ${{ fromJson(needs.setup.outputs.space-enabled) }}
+        space-version: ${{ fromJson(needs.setup.outputs.space-version) }}
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          repository: namespacelabs/nscloud-cache-action
+          ref: ${{ github.job_workflow_sha }}
+      - name: Setup space binary
+        id: space
+        uses: ./.github/actions/setup-space-binary
+        with:
+          space-source-ref: ${{ inputs.space-source-ref }}
+      - name: Setup cache
+        uses: ./
+        with:
+          space-enabled: ${{ matrix.space-enabled }}
+          space-version: ${{ matrix.space-version }}
+          mode: swiftpm
+        env:
+          NSC_POWERTOYS_DIR: ${{ steps.space.outputs.powertoys-dir }}
+      - name: Create and build Swift package
+        run: |
+          swift package init --type executable
+          swift build
+
+  uv:
+    needs: [setup, build-space]
+    if: always() && (needs.build-space.result == 'success' || needs.build-space.result == 'skipped')
+    runs-on: namespace-profile-e2e-small
+    strategy:
+      matrix:
+        space-enabled: ${{ fromJson(needs.setup.outputs.space-enabled) }}
+        space-version: ${{ fromJson(needs.setup.outputs.space-version) }}
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          repository: namespacelabs/nscloud-cache-action
+          ref: ${{ github.job_workflow_sha }}
+      - name: Setup space binary
+        id: space
+        uses: ./.github/actions/setup-space-binary
+        with:
+          space-source-ref: ${{ inputs.space-source-ref }}
+      - name: Install uv
+        uses: astral-sh/setup-uv@v7
+        with:
+          enable-cache: false
+      - name: Setup cache
+        uses: ./
+        with:
+          space-enabled: ${{ matrix.space-enabled }}
+          space-version: ${{ matrix.space-version }}
+          mode: uv
+        env:
+          NSC_POWERTOYS_DIR: ${{ steps.space.outputs.powertoys-dir }}
+      - run: |
+          uv venv
+          uv pip install requests
+
+  yarn:
+    needs: [setup, build-space]
+    if: always() && (needs.build-space.result == 'success' || needs.build-space.result == 'skipped')
+    runs-on: namespace-profile-e2e-small
+    strategy:
+      matrix:
+        space-enabled: ${{ fromJson(needs.setup.outputs.space-enabled) }}
+        space-version: ${{ fromJson(needs.setup.outputs.space-version) }}
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          repository: namespacelabs/nscloud-cache-action
+          ref: ${{ github.job_workflow_sha }}
+      - uses: actions/checkout@v6
+        with:
+          repository: namespace-integration-demos/cache-yarn-workspaces
+          path: demo
+      - name: Setup space binary
+        id: space
+        uses: ./.github/actions/setup-space-binary
+        with:
+          space-source-ref: ${{ inputs.space-source-ref }}
+      - name: Setup cache
+        uses: ./
+        with:
+          space-enabled: ${{ matrix.space-enabled }}
+          space-version: ${{ matrix.space-version }}
+          mode: yarn
+        env:
+          NSC_POWERTOYS_DIR: ${{ steps.space.outputs.powertoys-dir }}
+      - run: yarn
+        working-directory: ./demo
+      - run: yarn workspace @project/web-app build
+        working-directory: ./demo
+
+  xcode:
+    needs: [setup, build-space]
+    if: always() && (needs.build-space.result == 'success' || needs.build-space.result == 'skipped')
+    runs-on:
+      - nscloud-macos-sequoia-arm64-12x28-with-cache
+      - nscloud-cache-size-50gb
+      - nscloud-cache-tag-xcode-swift-ruby
+    strategy:
+      matrix:
+        space-enabled: ${{ fromJson(needs.setup.outputs.space-enabled) }}
+        space-version: ${{ fromJson(needs.setup.outputs.space-version) }}
+    steps:
+      - name: Checkout ios-demo
+        uses: actions/checkout@v6
+        with:
+          repository: nscloud-demo/ios-demo
+      - uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: '3.2.7'
+          bundler-cache: false
+      - uses: actions/checkout@v6
+        with:
+          repository: namespacelabs/nscloud-cache-action
+          ref: ${{ github.job_workflow_sha }}
+          path: cache-action
+      - name: Setup space binary
+        id: space
+        uses: ./cache-action/.github/actions/setup-space-binary
+        with:
+          space-source-ref: ${{ inputs.space-source-ref }}
+      - name: Setup cache
+        uses: ./cache-action/
+        with:
+          space-enabled: ${{ matrix.space-enabled }}
+          space-version: ${{ matrix.space-version }}
+          mode: |
+            xcode
+            swiftpm
+            ruby
+        env:
+          NSC_POWERTOYS_DIR: ${{ steps.space.outputs.powertoys-dir }}
+      - name: Select Xcode 16.4
+        run: |
+          if [ -d "/Applications/Xcode_16.4.app" ]; then
+            sudo xcode-select -s /Applications/Xcode_16.4.app
+          fi
+      - name: Wait for iPhone 15 simulator
+        run: |
+          set -o pipefail
+          for i in {1..24}; do
+            echo "Looking for iPhone 15 simulator (attempt $i)..."
+            if xcrun simctl list -j | jq '.devices["com.apple.CoreSimulator.SimRuntime.iOS-17-5"][] | select(.name == "iPhone 15" and .isAvailable)' -e; then
+              echo "Found iPhone 15."
+              break
+            fi
+            sleep 5
+          done
+      - name: Boot simulator
+        run: |
+          UDID=$(xcrun simctl list -j | jq -r '.devices["com.apple.CoreSimulator.SimRuntime.iOS-17-5"][] | select(.name == "iPhone 15" and .isAvailable) | .udid')
+          echo "Booting simulator $UDID..."
+          xcrun simctl boot "$UDID" || true
+          xcrun simctl bootstatus "$UDID" -b
+      - name: xcodebuild
+        run: xcodebuild test -scheme ios-demo -sdk iphonesimulator -destination 'platform=iOS Simulator,name=iPhone 15,OS=17.5' -retry-tests-on-failure -test-iterations 3
+      - name: fastlane
+        run: fastlane screenshots
