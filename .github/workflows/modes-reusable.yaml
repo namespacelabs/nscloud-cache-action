@@ -93,8 +93,6 @@ jobs:
       space-enabled: ${{ steps.matrix.outputs.space-enabled }}
       space-enabled-true-only: ${{ steps.matrix.outputs.space-enabled-true-only }}
       space-version: ${{ steps.matrix.outputs.space-version }}
-      # Used by rust-pre-existing-file due to upstream bug - remove when fixed
-      space-version-dev-only: ${{ steps.matrix.outputs.space-version-dev-only }}
     steps:
       - id: matrix
         run: |
@@ -103,13 +101,11 @@ jobs:
             echo 'space-enabled=[true]' >> $GITHUB_OUTPUT
             echo 'space-enabled-true-only=[true]' >> $GITHUB_OUTPUT
             echo 'space-version=[""]' >> $GITHUB_OUTPUT
-            echo 'space-version-dev-only=[""]' >> $GITHUB_OUTPUT
           else
             # Testing released versions: full matrix
             echo 'space-enabled=[false,true]' >> $GITHUB_OUTPUT
             echo 'space-enabled-true-only=[true]' >> $GITHUB_OUTPUT
             echo 'space-version=["","dev","latest"]' >> $GITHUB_OUTPUT
-            echo 'space-version-dev-only=["dev"]' >> $GITHUB_OUTPUT
           fi
 
   # ---------------------------------------------------------------------------
@@ -831,10 +827,7 @@ jobs:
     strategy:
       matrix:
         space-enabled: ${{ fromJson(needs.setup.outputs.space-enabled) }}
-        # TODO(steeve): Re-enable full version matrix once upstream bug is fixed.
-        # Upstream bug causes failures with '' and 'latest' versions.
-        # space-version: ${{ fromJson(needs.setup.outputs.space-version) }}
-        space-version: ${{ fromJson(needs.setup.outputs.space-version-dev-only) }}
+        space-version: ${{ fromJson(needs.setup.outputs.space-version) }}
     steps:
       - uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6
         with:
