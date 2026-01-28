@@ -4,8 +4,7 @@ import * as exec from '@actions/exec';
 export const Input_Space_Enabled = 'space-enabled';
 export const Input_FailOnCacheMiss = 'fail-on-cache-miss';
 export const Input_Detect_Mode = 'detect';
-export const Input_Mode = 'mode';
-export const Input_Cache = 'cache'; // deprecated, use Input_Mode
+export const Input_Cache = 'cache';
 export const Input_Path = 'path';
 export const Output_CacheHit = 'cache-hit';
 
@@ -107,12 +106,8 @@ export function exportAddEnvs(addEnvs?: MountResponseOutputAddEnvs): void {
   }
 }
 
-// getManualModesInput combines modes, handling deprecated inputs
 export function getManualModesInput(): string[] {
-  return core
-    .getMultilineInput(Input_Mode)
-    .concat(core.getMultilineInput(Input_Cache))
-    .sort();
+  return core.getMultilineInput(Input_Cache).sort();
 }
 
 export function getMountCommand(): string[] {

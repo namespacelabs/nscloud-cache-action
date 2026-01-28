@@ -18,19 +18,14 @@ inputs:
     default: "false"
     required: false
   detect:
-    description: "A list of cache modes you want to enable, only if detected. Set to 'true' to detect all available cache modes based on the environment. See `mode` for a list of available cache modes."
+    description: "A list of cache modes you want to enable, only if detected. Set to 'true' to detect all available cache modes based on the environment. See `cache` for a list of available cache modes."
     required: false
-  mode:
-    description: "A list of cache modes to enable. Supported options are 'apt,go,golangci-lint'"
+  cache:
+    description: "A list of cache modes to enable. Supported options are 'apt,brew,bun,cocoapods,composer,deno,go,golangci-lint,gradle,maven,mise,nix,playwright,pnpm,poetry,python,ruby,rust,swiftpm,uv,xcode,yarn'"
     required: false
   path:
     description: "A list of files, directories, and wildcard patterns to cache and restore"
     required: false
-  # Deprecated
-  cache:
-    description: "A list of native cache modes. Supported options are 'go,yarn,rust,brew,pnpm,gradle,maven,composer,poetry,uv,python,xcode,swiftpm,cocoapods'"
-    required: false
-    deprecationMessage: "`cache` has been renamed to `mode`. This change is to distinguish between detecting a mode and explicitly enabling a mode."
 outputs:
   cache-hit:
     description: "A boolean value to indicate an exact match was found for the primary key"

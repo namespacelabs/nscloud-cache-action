@@ -50,7 +50,7 @@ describe('getManualModesInput', async () => {
     expect(action.getManualModesInput()).toEqual([]);
   });
 
-  test('deprecated cache input', () => {
+  test('cache input', () => {
     getMultilineInput.mockImplementation((name: string): string[] => {
       return name === action.Input_Cache ? ['cache-input'] : [];
     });
@@ -58,27 +58,12 @@ describe('getManualModesInput', async () => {
     expect(action.getManualModesInput()).toEqual(['cache-input']);
   });
 
-  test('mode input', () => {
+  test('sorts cache modes', () => {
     getMultilineInput.mockImplementation((name: string): string[] => {
-      return name === action.Input_Mode ? ['mode-input'] : [];
+      return name === action.Input_Cache ? ['rust', 'go', 'yarn'] : [];
     });
 
-    expect(action.getManualModesInput()).toEqual(['mode-input']);
-  });
-
-  test('both inputs', () => {
-    getMultilineInput.mockImplementation((name: string): string[] => {
-      switch (name) {
-        case action.Input_Cache:
-          return ['cache-input'];
-        case action.Input_Mode:
-          return ['mode-input'];
-        default:
-          return [];
-      }
-    });
-
-    expect(action.getManualModesInput()).toEqual(['cache-input', 'mode-input']);
+    expect(action.getManualModesInput()).toEqual(['go', 'rust', 'yarn']);
   });
 });
 
@@ -111,9 +96,9 @@ describe('getMountCommand', async () => {
     expect(action.getMountCommand()).toEqual(['cache', 'mount', '--detect=*']);
   });
 
-  test('manual mode input', () => {
+  test('cache input', () => {
     getMultilineInput.mockImplementation((name: string): string[] => {
-      return name === action.Input_Mode ? ['go', 'node'] : [];
+      return name === action.Input_Cache ? ['go', 'node'] : [];
     });
 
     expect(action.getMountCommand()).toEqual([
@@ -121,14 +106,6 @@ describe('getMountCommand', async () => {
       'mount',
       '--mode=go,node'
     ]);
-  });
-
-  test('deprecated cache input', () => {
-    getMultilineInput.mockImplementation((name: string): string[] => {
-      return name === action.Input_Cache ? ['rust'] : [];
-    });
-
-    expect(action.getMountCommand()).toEqual(['cache', 'mount', '--mode=rust']);
   });
 
   test('path input', () => {
@@ -148,7 +125,7 @@ describe('getMountCommand', async () => {
       switch (name) {
         case action.Input_Detect_Mode:
           return ['go'];
-        case action.Input_Mode:
+        case action.Input_Cache:
           return ['node'];
         case action.Input_Path:
           return ['/tmp/cache'];
