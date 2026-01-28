@@ -31,7 +31,7 @@ jobs:
           cache: go
 
   unknown-cache-mode:
-    name: Profile does not configure cache volume
+    name: Unknown cache mode
     runs-on: namespace-profile-e2e-small
     steps:
       - name: Github Checkout current
