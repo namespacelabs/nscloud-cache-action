@@ -3,9 +3,9 @@ description: "Cache artifacts like dependencies and build outputs to a Namespace
 author: "Namespace Labs"
 inputs:
   space-enabled:
-    description: "Opt-in to the Space CLI experiment"
+    description: "Opt-out of using Space CLI to power action"
     required: false
-    default: "false"
+    default: "true"
   space-version:
     description: "Version of space CLI to use (e.g., '0.1.0' or 'latest'). If not specified, uses existing binary or fetches latest."
     required: false
