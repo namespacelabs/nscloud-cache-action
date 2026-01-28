@@ -37471,8 +37471,7 @@ var semver = __nccwpck_require__(2088);
 const Input_Space_Enabled = 'space-enabled';
 const Input_FailOnCacheMiss = 'fail-on-cache-miss';
 const Input_Detect_Mode = 'detect';
-const Input_Mode = 'mode';
-const Input_Cache = 'cache'; // deprecated, use Input_Mode
+const Input_Cache = 'cache';
 const Input_Path = 'path';
 const Output_CacheHit = 'cache-hit';
 function isSpaceEnabled() {
@@ -37529,11 +37528,8 @@ function exportAddEnvs(addEnvs) {
         core.exportVariable(key, value);
     }
 }
-// getManualModesInput combines modes, handling deprecated inputs
 function getManualModesInput() {
-    return core.getMultilineInput(Input_Mode)
-        .concat(core.getMultilineInput(Input_Cache))
-        .sort();
+    return core.getMultilineInput(Input_Cache).sort();
 }
 function getMountCommand() {
     const args = [];
