@@ -48,7 +48,7 @@
 #         with:
 #           space-enabled: ${{ matrix.space-enabled }}
 #           space-version: ${{ matrix.space-version }}
-#           mode: new-mode
+#           cache: new-mode
 #         env:
 #           NSC_POWERTOYS_DIR: ${{ steps.space.outputs.powertoys-dir }}
 #       - run: |
@@ -190,7 +190,7 @@ jobs:
         with:
           space-enabled: ${{ matrix.space-enabled }}
           space-version: ${{ matrix.space-version }}
-          mode: apt
+          cache: apt
         env:
           NSC_POWERTOYS_DIR: ${{ steps.space.outputs.powertoys-dir }}
       - run: |
@@ -220,7 +220,7 @@ jobs:
         with:
           space-enabled: ${{ matrix.space-enabled }}
           space-version: ${{ matrix.space-version }}
-          mode: brew
+          cache: brew
         env:
           NSC_POWERTOYS_DIR: ${{ steps.space.outputs.powertoys-dir }}
       - run: |
@@ -252,7 +252,7 @@ jobs:
         with:
           space-enabled: ${{ matrix.space-enabled }}
           space-version: ${{ matrix.space-version }}
-          mode: bun
+          cache: bun
         env:
           NSC_POWERTOYS_DIR: ${{ steps.space.outputs.powertoys-dir }}
       - run: bun install
@@ -277,7 +277,7 @@ jobs:
         with:
           space-enabled: ${{ matrix.space-enabled }}
           space-version: ${{ matrix.space-version }}
-          mode: cocoapods
+          cache: cocoapods
         env:
           NSC_POWERTOYS_DIR: ${{ steps.space.outputs.powertoys-dir }}
       - name: Create minimal Podfile
@@ -315,7 +315,7 @@ jobs:
         with:
           space-enabled: ${{ matrix.space-enabled }}
           space-version: ${{ matrix.space-version }}
-          mode: composer
+          cache: composer
         env:
           NSC_POWERTOYS_DIR: ${{ steps.space.outputs.powertoys-dir }}
       - run: composer require monolog/monolog
@@ -344,7 +344,7 @@ jobs:
         with:
           space-enabled: ${{ matrix.space-enabled }}
           space-version: ${{ matrix.space-version }}
-          mode: deno
+          cache: deno
         env:
           NSC_POWERTOYS_DIR: ${{ steps.space.outputs.powertoys-dir }}
       - run: deno install
@@ -376,7 +376,7 @@ jobs:
         with:
           space-enabled: ${{ matrix.space-enabled }}
           space-version: ${{ matrix.space-version }}
-          mode: go
+          cache: go
         env:
           NSC_POWERTOYS_DIR: ${{ steps.space.outputs.powertoys-dir }}
       - name: Run go build
@@ -417,7 +417,7 @@ jobs:
         with:
           space-enabled: ${{ matrix.space-enabled }}
           space-version: ${{ matrix.space-version }}
-          mode: |
+          cache: |
             go
             golangci-lint
         env:
@@ -454,7 +454,7 @@ jobs:
         with:
           space-enabled: ${{ matrix.space-enabled }}
           space-version: ${{ matrix.space-version }}
-          mode: gradle
+          cache: gradle
         env:
           NSC_POWERTOYS_DIR: ${{ steps.space.outputs.powertoys-dir }}
       - name: Build with Gradle
@@ -494,7 +494,7 @@ jobs:
         with:
           space-enabled: ${{ matrix.space-enabled }}
           space-version: ${{ matrix.space-version }}
-          mode: maven
+          cache: maven
         env:
           NSC_POWERTOYS_DIR: ${{ steps.space.outputs.powertoys-dir }}
       - name: Build with Maven
@@ -521,7 +521,7 @@ jobs:
         with:
           space-enabled: ${{ matrix.space-enabled }}
           space-version: ${{ matrix.space-version }}
-          mode: mise
+          cache: mise
         env:
           NSC_POWERTOYS_DIR: ${{ steps.space.outputs.powertoys-dir }}
       - name: Install mise
@@ -554,7 +554,7 @@ jobs:
         with:
           space-enabled: ${{ matrix.space-enabled }}
           space-version: ${{ matrix.space-version }}
-          mode: nix
+          cache: nix
         env:
           NSC_POWERTOYS_DIR: ${{ steps.space.outputs.powertoys-dir }}
       - name: Install Nix
@@ -587,7 +587,7 @@ jobs:
         with:
           space-enabled: ${{ matrix.space-enabled }}
           space-version: ${{ matrix.space-version }}
-          mode: playwright
+          cache: playwright
         env:
           NSC_POWERTOYS_DIR: ${{ steps.space.outputs.powertoys-dir }}
       - run: npx playwright install --with-deps
@@ -616,7 +616,7 @@ jobs:
         with:
           space-enabled: ${{ matrix.space-enabled }}
           space-version: ${{ matrix.space-version }}
-          mode: playwright
+          cache: playwright
         env:
           NSC_POWERTOYS_DIR: ${{ steps.space.outputs.powertoys-dir }}
       - run: npx playwright install --with-deps
@@ -651,7 +651,7 @@ jobs:
         with:
           space-enabled: ${{ matrix.space-enabled }}
           space-version: ${{ matrix.space-version }}
-          mode: pnpm
+          cache: pnpm
           path: |
             ~/.cache
         env:
@@ -690,7 +690,7 @@ jobs:
         with:
           space-enabled: ${{ matrix.space-enabled }}
           space-version: ${{ matrix.space-version }}
-          mode: pnpm
+          cache: pnpm
         env:
           NSC_POWERTOYS_DIR: ${{ steps.space.outputs.powertoys-dir }}
 
@@ -720,7 +720,7 @@ jobs:
         with:
           space-enabled: ${{ matrix.space-enabled }}
           space-version: ${{ matrix.space-version }}
-          mode: poetry
+          cache: poetry
         env:
           NSC_POWERTOYS_DIR: ${{ steps.space.outputs.powertoys-dir }}
       - run: poetry install
@@ -750,7 +750,7 @@ jobs:
         with:
           space-enabled: ${{ matrix.space-enabled }}
           space-version: ${{ matrix.space-version }}
-          mode: python
+          cache: python
         env:
           NSC_POWERTOYS_DIR: ${{ steps.space.outputs.powertoys-dir }}
       - run: pip install -r ./requirements.txt
@@ -780,7 +780,7 @@ jobs:
         with:
           space-enabled: ${{ matrix.space-enabled }}
           space-version: ${{ matrix.space-version }}
-          mode: rust
+          cache: rust
         env:
           NSC_POWERTOYS_DIR: ${{ steps.space.outputs.powertoys-dir }}
       - run: cargo build --locked --release --no-default-features --all
@@ -812,7 +812,7 @@ jobs:
         with:
           space-enabled: ${{ matrix.space-enabled }}
           space-version: ${{ matrix.space-version }}
-          mode: ruby
+          cache: ruby
         env:
           NSC_POWERTOYS_DIR: ${{ steps.space.outputs.powertoys-dir }}
       - run: |
@@ -846,7 +846,7 @@ jobs:
         with:
           space-enabled: ${{ matrix.space-enabled }}
           space-version: ${{ matrix.space-version }}
-          mode: rust
+          cache: rust
         env:
           NSC_POWERTOYS_DIR: ${{ steps.space.outputs.powertoys-dir }}
       - run: cargo build --locked --release --no-default-features --all
@@ -874,7 +874,7 @@ jobs:
         with:
           space-enabled: ${{ matrix.space-enabled }}
           space-version: ${{ matrix.space-version }}
-          mode: swiftpm
+          cache: swiftpm
         env:
           NSC_POWERTOYS_DIR: ${{ steps.space.outputs.powertoys-dir }}
       - name: Create and build Swift package
@@ -906,7 +906,7 @@ jobs:
         with:
           space-enabled: ${{ matrix.space-enabled }}
           space-version: ${{ matrix.space-version }}
-          mode: uv
+          cache: uv
         env:
           NSC_POWERTOYS_DIR: ${{ steps.space.outputs.powertoys-dir }}
       - run: |
@@ -937,7 +937,7 @@ jobs:
         with:
           space-enabled: ${{ matrix.space-enabled }}
           space-version: ${{ matrix.space-version }}
-          mode: yarn
+          cache: yarn
         env:
           NSC_POWERTOYS_DIR: ${{ steps.space.outputs.powertoys-dir }}
       - run: yarn
@@ -977,7 +977,7 @@ jobs:
         with:
           space-enabled: ${{ matrix.space-enabled }}
           space-version: ${{ matrix.space-version }}
-          mode: |
+          cache: |
             xcode
             swiftpm
             ruby
