@@ -537,6 +537,11 @@ async function resolveCacheMode(
       return [{mountTarget: yarnCache, framework: cacheMode}];
     }
 
+    case 'bun': {
+      const bunCache = await getExecStdout('bun pm cache');
+      return [{mountTarget: bunCache, framework: cacheMode}];
+    }
+
     default:
       core.warning(`Unknown cache option: ${cacheMode}.`);
       return [];
