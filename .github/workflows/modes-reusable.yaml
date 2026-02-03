@@ -170,7 +170,7 @@ jobs:
           name: spacectl-${{ runner.os == 'macOS' && 'macos' || 'linux' }}
           path: ${{ runner.temp }}/spacectl-bin
       - &install-spacectl-binary
-        name: Install space binary
+        name: Install spacectl binary
         id: space
         shell: bash
         run: |
