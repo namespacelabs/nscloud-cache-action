@@ -90,21 +90,15 @@ jobs:
   setup:
     runs-on: ubuntu-latest
     outputs:
-      spacectl-enabled: ${{ steps.matrix.outputs.spacectl-enabled }}
-      spacectl-enabled-true-only: ${{ steps.matrix.outputs.spacectl-enabled-true-only }}
       spacectl-version: ${{ steps.matrix.outputs.spacectl-version }}
     steps:
       - id: matrix
         run: |
           if [ -n "${{ inputs.spacectl-source-ref }}" ]; then
             # Testing custom space binary: minimal matrix
-            echo 'spacectl-enabled=[true]' >> $GITHUB_OUTPUT
-            echo 'spacectl-enabled-true-only=[true]' >> $GITHUB_OUTPUT
             echo 'spacectl-version=[""]' >> $GITHUB_OUTPUT
           else
             # Testing released versions: full matrix
-            echo 'spacectl-enabled=[false,true]' >> $GITHUB_OUTPUT
-            echo 'spacectl-enabled-true-only=[true]' >> $GITHUB_OUTPUT
             echo 'spacectl-version=["","dev","latest"]' >> $GITHUB_OUTPUT
           fi
 
@@ -263,7 +257,6 @@ jobs:
     runs-on: namespace-profile-macos
     strategy:
       matrix:
-        spacectl-enabled: ${{ fromJson(needs.setup.outputs.spacectl-enabled) }}
         spacectl-version: ${{ fromJson(needs.setup.outputs.spacectl-version) }}
     steps:
       - uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6
@@ -275,7 +268,6 @@ jobs:
       - name: Setup cache
         uses: ./
         with:
-          spacectl-enabled: ${{ matrix.spacectl-enabled }}
           spacectl-version: ${{ matrix.spacectl-version }}
           cache: cocoapods
         env:
@@ -297,7 +289,6 @@ jobs:
     runs-on: namespace-profile-e2e-small
     strategy:
       matrix:
-        spacectl-enabled: ${{ fromJson(needs.setup.outputs.spacectl-enabled) }}
         spacectl-version: ${{ fromJson(needs.setup.outputs.spacectl-version) }}
     steps:
       - uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6
@@ -326,7 +317,6 @@ jobs:
     runs-on: namespace-profile-e2e-small
     strategy:
       matrix:
-        spacectl-enabled: ${{ fromJson(needs.setup.outputs.spacectl-enabled) }}
         spacectl-version: ${{ fromJson(needs.setup.outputs.spacectl-version) }}
     steps:
       - uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6
@@ -342,7 +332,6 @@ jobs:
       - name: Setup cache
         uses: ./
         with:
-          spacectl-enabled: ${{ matrix.spacectl-enabled }}
           spacectl-version: ${{ matrix.spacectl-version }}
           cache: deno
         env:
@@ -507,7 +496,6 @@ jobs:
     runs-on: namespace-profile-e2e-small
     strategy:
       matrix:
-        spacectl-enabled: ${{ fromJson(needs.setup.outputs.spacectl-enabled) }}
         spacectl-version: ${{ fromJson(needs.setup.outputs.spacectl-version) }}
     steps:
       - uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6
@@ -519,7 +507,6 @@ jobs:
       - name: Setup cache
         uses: ./
         with:
-          spacectl-enabled: ${{ matrix.spacectl-enabled }}
           spacectl-version: ${{ matrix.spacectl-version }}
           cache: mise
         env:
@@ -539,8 +526,6 @@ jobs:
     runs-on: namespace-profile-e2e-small
     strategy:
       matrix:
-        # nix only tests with spacectl-enabled: true
-        spacectl-enabled: ${{ fromJson(needs.setup.outputs.spacectl-enabled-true-only) }}
         spacectl-version: ${{ fromJson(needs.setup.outputs.spacectl-version) }}
     steps:
       - uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6
@@ -552,7 +537,6 @@ jobs:
       - name: Setup cache
         uses: ./
         with:
-          spacectl-enabled: ${{ matrix.spacectl-enabled }}
           spacectl-version: ${{ matrix.spacectl-version }}
           cache: nix
         env:
@@ -732,7 +716,6 @@ jobs:
     runs-on: namespace-profile-e2e-small
     strategy:
       matrix:
-        spacectl-enabled: ${{ fromJson(needs.setup.outputs.spacectl-enabled) }}
         spacectl-version: ${{ fromJson(needs.setup.outputs.spacectl-version) }}
     steps:
       - uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6
@@ -748,7 +731,6 @@ jobs:
       - name: Setup cache
         uses: ./
         with:
-          spacectl-enabled: ${{ matrix.spacectl-enabled }}
           spacectl-version: ${{ matrix.spacectl-version }}
           cache: python
         env:
@@ -888,7 +870,6 @@ jobs:
     runs-on: namespace-profile-e2e-small
     strategy:
       matrix:
-        spacectl-enabled: ${{ fromJson(needs.setup.outputs.spacectl-enabled) }}
         spacectl-version: ${{ fromJson(needs.setup.outputs.spacectl-version) }}
     steps:
       - uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6
@@ -904,7 +885,6 @@ jobs:
       - name: Setup cache
         uses: ./
         with:
-          spacectl-enabled: ${{ matrix.spacectl-enabled }}
           spacectl-version: ${{ matrix.spacectl-version }}
           cache: uv
         env:
@@ -954,7 +934,6 @@ jobs:
       - nscloud-cache-tag-xcode-swift-ruby
     strategy:
       matrix:
-        spacectl-enabled: ${{ fromJson(needs.setup.outputs.spacectl-enabled) }}
         spacectl-version: ${{ fromJson(needs.setup.outputs.spacectl-version) }}
     steps:
       - name: Checkout ios-demo
@@ -975,7 +954,6 @@ jobs:
       - name: Setup cache
         uses: ./cache-action/
         with:
-          spacectl-enabled: ${{ matrix.spacectl-enabled }}
           spacectl-version: ${{ matrix.spacectl-version }}
           cache: |
             xcode

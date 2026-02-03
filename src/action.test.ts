@@ -6,14 +6,12 @@ beforeEach(() => {
 });
 
 const exportVariable = vi.hoisted(() => vi.fn());
-const getBooleanInput = vi.hoisted(() => vi.fn());
 const getMultilineInput = vi.hoisted(() => vi.fn());
 const spacectlExec = vi.hoisted(() => vi.fn());
 
 beforeEach(() => {
   vi.mock('@actions/core', () => ({
     exportVariable,
-    getBooleanInput,
     getMultilineInput
   }));
   vi.mock('@namespacelabs/actions-toolkit/spacectl', () => ({
@@ -39,24 +37,6 @@ beforeEach(() => {
       }
     }
   }));
-});
-
-describe('isSpacectlEnabled', async () => {
-  test('disabled', () => {
-    getBooleanInput.mockImplementation((name: string): boolean => {
-      return false;
-    });
-
-    expect(action.isSpacectlEnabled()).toBe(false);
-  });
-
-  test('enabled', () => {
-    getBooleanInput.mockImplementation((name: string): boolean => {
-      return true;
-    });
-
-    expect(action.isSpacectlEnabled()).toBe(true);
-  });
 });
 
 describe('getManualModesInput', async () => {
