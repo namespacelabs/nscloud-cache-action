@@ -305,9 +305,8 @@ describe('mount', async () => {
   });
 
   test('logs error and throws on SpacectlExecError', async () => {
-    const {SpacectlExecError} = await import(
-      '@namespacelabs/actions-toolkit/spacectl'
-    );
+    const {SpacectlExecError} =
+      await import('@namespacelabs/actions-toolkit/spacectl');
     const error = new SpacectlExecError(
       'Cache volume not available',
       1,
