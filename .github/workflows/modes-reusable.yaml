@@ -20,7 +20,7 @@
 #     test-cache-modes:
 #       uses: namespacelabs/nscloud-cache-action/.github/workflows/modes-reusable.yaml@main
 #       with:
-#         space-source-ref: ${{ github.sha }}
+#         spacectl-source-ref: ${{ github.sha }}
 #
 # ============================================================================
 # ADDING A NEW MODE TEST
@@ -29,25 +29,25 @@
 # 1. Add a new job following this template:
 #
 #   new-mode:
-#     needs: [setup, build-space]
-#     if: always() && (needs.build-space.result == 'success' || needs.build-space.result == 'skipped')
+#     needs: [setup, build-spacectl]
+#     if: always() && (needs.build-spacectl.result == 'success' || needs.build-spacectl.result == 'skipped')
 #     runs-on: namespace-profile-e2e-small  # or namespace-profile-macos for macOS
 #     strategy:
 #       matrix:
-#         space-enabled: ${{ fromJson(needs.setup.outputs.space-enabled) }}
-#         space-version: ${{ fromJson(needs.setup.outputs.space-version) }}
+#         spacectl-enabled: ${{ fromJson(needs.setup.outputs.spacectl-enabled) }}
+#         spacectl-version: ${{ fromJson(needs.setup.outputs.spacectl-version) }}
 #     steps:
 #       - uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6
 #         with:
 #           repository: namespacelabs/nscloud-cache-action
 #           ref: ${{ github.job_workflow_sha }}
-#       - *download-space-binary
-#       - *install-space-binary
+#       - *download-spacectl-binary
+#       - *install-spacectl-binary
 #       - name: Setup cache
 #         uses: ./
 #         with:
-#           space-enabled: ${{ matrix.space-enabled }}
-#           space-version: ${{ matrix.space-version }}
+#           spacectl-enabled: ${{ matrix.spacectl-enabled }}
+#           spacectl-version: ${{ matrix.spacectl-version }}
 #           cache: new-mode
 #         env:
 #           NSC_POWERTOYS_DIR: ${{ steps.space.outputs.powertoys-dir }}
@@ -60,8 +60,8 @@
 #       fail-fast: false
 #       matrix:
 #         os: [namespace-profile-macos, namespace-profile-e2e-small]
-#         space-enabled: ${{ fromJson(needs.setup.outputs.space-enabled) }}
-#         space-version: ${{ fromJson(needs.setup.outputs.space-version) }}
+#         spacectl-enabled: ${{ fromJson(needs.setup.outputs.spacectl-enabled) }}
+#         spacectl-version: ${{ fromJson(needs.setup.outputs.spacectl-version) }}
 #
 # 3. If you need a demo repository, checkout it after the main checkout:
 #
@@ -77,8 +77,8 @@ name: Reusable Modes
 on:
   workflow_call:
     inputs:
-      space-source-ref:
-        description: 'Git ref of namespacelabs/space to build from source (empty = use released binary)'
+      spacectl-source-ref:
+        description: 'Git ref of namespacelabs/spacectl to build from source (empty = use released binary)'
         type: string
         default: ''
 
@@ -90,30 +90,30 @@ jobs:
   setup:
     runs-on: ubuntu-latest
     outputs:
-      space-enabled: ${{ steps.matrix.outputs.space-enabled }}
-      space-enabled-true-only: ${{ steps.matrix.outputs.space-enabled-true-only }}
-      space-version: ${{ steps.matrix.outputs.space-version }}
+      spacectl-enabled: ${{ steps.matrix.outputs.spacectl-enabled }}
+      spacectl-enabled-true-only: ${{ steps.matrix.outputs.spacectl-enabled-true-only }}
+      spacectl-version: ${{ steps.matrix.outputs.spacectl-version }}
     steps:
       - id: matrix
         run: |
-          if [ -n "${{ inputs.space-source-ref }}" ]; then
+          if [ -n "${{ inputs.spacectl-source-ref }}" ]; then
             # Testing custom space binary: minimal matrix
-            echo 'space-enabled=[true]' >> $GITHUB_OUTPUT
-            echo 'space-enabled-true-only=[true]' >> $GITHUB_OUTPUT
-            echo 'space-version=[""]' >> $GITHUB_OUTPUT
+            echo 'spacectl-enabled=[true]' >> $GITHUB_OUTPUT
+            echo 'spacectl-enabled-true-only=[true]' >> $GITHUB_OUTPUT
+            echo 'spacectl-version=[""]' >> $GITHUB_OUTPUT
           else
             # Testing released versions: full matrix
-            echo 'space-enabled=[false,true]' >> $GITHUB_OUTPUT
-            echo 'space-enabled-true-only=[true]' >> $GITHUB_OUTPUT
-            echo 'space-version=["","dev","latest"]' >> $GITHUB_OUTPUT
+            echo 'spacectl-enabled=[false,true]' >> $GITHUB_OUTPUT
+            echo 'spacectl-enabled-true-only=[true]' >> $GITHUB_OUTPUT
+            echo 'spacectl-version=["","dev","latest"]' >> $GITHUB_OUTPUT
           fi
 
   # ---------------------------------------------------------------------------
   # Build job: Cross-compiles the space binary for Linux and macOS.
-  # Only runs when space-source-ref is provided.
+  # Only runs when spacectl-source-ref is provided.
   # ---------------------------------------------------------------------------
-  build-space:
-    if: inputs.space-source-ref != ''
+  build-spacectl:
+    if: inputs.spacectl-source-ref != ''
     runs-on: namespace-profile-e2e-small
     strategy:
       matrix:
@@ -133,16 +133,16 @@ jobs:
       - name: Checkout space source
         uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6
         with:
-          repository: namespacelabs/space
-          ref: ${{ inputs.space-source-ref }}
+          repository: namespacelabs/spacectl
+          ref: ${{ inputs.spacectl-source-ref }}
       - name: Build space binary
         run: |
-          GOOS=${{ matrix.goos }} GOARCH=${{ matrix.goarch }} go build -o space-${{ matrix.goos }}-${{ matrix.goarch }} .
+          GOOS=${{ matrix.goos }} GOARCH=${{ matrix.goarch }} go build -o spacectl-${{ matrix.goos }}-${{ matrix.goarch }} .
       - name: Upload space binary
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
-          name: space-${{ matrix.os }}
-          path: space-${{ matrix.goos }}-${{ matrix.goarch }}
+          name: spacectl-${{ matrix.os }}
+          path: spacectl-${{ matrix.goos }}-${{ matrix.goarch }}
           retention-days: 1
 
   # ---------------------------------------------------------------------------
@@ -150,46 +150,46 @@ jobs:
   # ---------------------------------------------------------------------------
 
   apt:
-    needs: [setup, build-space]
-    if: always() && (needs.build-space.result == 'success' || needs.build-space.result == 'skipped')
+    needs: [setup, build-spacectl]
+    if: always() && (needs.build-spacectl.result == 'success' || needs.build-spacectl.result == 'skipped')
     runs-on: namespace-profile-e2e-small
     strategy:
       matrix:
-        space-enabled: ${{ fromJson(needs.setup.outputs.space-enabled) }}
-        space-version: ${{ fromJson(needs.setup.outputs.space-version) }}
+        spacectl-enabled: ${{ fromJson(needs.setup.outputs.spacectl-enabled) }}
+        spacectl-version: ${{ fromJson(needs.setup.outputs.spacectl-version) }}
     steps:
       - uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6
         with:
           repository: namespacelabs/nscloud-cache-action
           ref: ${{ github.job_workflow_sha }}
-      - &download-space-binary
+      - &download-spacectl-binary
         name: Download space binary
-        if: inputs.space-source-ref != ''
+        if: inputs.spacectl-source-ref != ''
         uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
         with:
-          name: space-${{ runner.os == 'macOS' && 'macos' || 'linux' }}
-          path: ${{ runner.temp }}/space-bin
-      - &install-space-binary
+          name: spacectl-${{ runner.os == 'macOS' && 'macos' || 'linux' }}
+          path: ${{ runner.temp }}/spacectl-bin
+      - &install-spacectl-binary
         name: Install space binary
         id: space
         shell: bash
         run: |
-          if [ -n "${{ inputs.space-source-ref }}" ]; then
+          if [ -n "${{ inputs.spacectl-source-ref }}" ]; then
             if [[ "$RUNNER_OS" == "Linux" ]]; then
-              mv "${{ runner.temp }}/space-bin/space-linux-amd64" "${{ runner.temp }}/space-bin/space"
+              mv "${{ runner.temp }}/spacectl-bin/spacectl-linux-amd64" "${{ runner.temp }}/spacectl-bin/spacectl"
             else
-              mv "${{ runner.temp }}/space-bin/space-darwin-arm64" "${{ runner.temp }}/space-bin/space"
+              mv "${{ runner.temp }}/spacectl-bin/spacectl-darwin-arm64" "${{ runner.temp }}/spacectl-bin/spacectl"
             fi
-            chmod +x "${{ runner.temp }}/space-bin/space"
-            echo "powertoys-dir=${{ runner.temp }}/space-bin/" >> $GITHUB_OUTPUT
+            chmod +x "${{ runner.temp }}/spacectl-bin/spacectl"
+            echo "powertoys-dir=${{ runner.temp }}/spacectl-bin/" >> $GITHUB_OUTPUT
           else
             echo "powertoys-dir=" >> $GITHUB_OUTPUT
           fi
       - name: Setup cache
         uses: ./
         with:
-          space-enabled: ${{ matrix.space-enabled }}
-          space-version: ${{ matrix.space-version }}
+          spacectl-enabled: ${{ matrix.spacectl-enabled }}
+          spacectl-version: ${{ matrix.spacectl-version }}
           cache: apt
         env:
           NSC_POWERTOYS_DIR: ${{ steps.space.outputs.powertoys-dir }}
@@ -199,27 +199,27 @@ jobs:
           lcov -h
 
   brew:
-    needs: [setup, build-space]
-    if: always() && (needs.build-space.result == 'success' || needs.build-space.result == 'skipped')
+    needs: [setup, build-spacectl]
+    if: always() && (needs.build-spacectl.result == 'success' || needs.build-spacectl.result == 'skipped')
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
       matrix:
         os: [namespace-profile-macos, namespace-profile-e2e-small]
-        space-enabled: ${{ fromJson(needs.setup.outputs.space-enabled) }}
-        space-version: ${{ fromJson(needs.setup.outputs.space-version) }}
+        spacectl-enabled: ${{ fromJson(needs.setup.outputs.spacectl-enabled) }}
+        spacectl-version: ${{ fromJson(needs.setup.outputs.spacectl-version) }}
     steps:
       - uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6
         with:
           repository: namespacelabs/nscloud-cache-action
           ref: ${{ github.job_workflow_sha }}
-      - *download-space-binary
-      - *install-space-binary
+      - *download-spacectl-binary
+      - *install-spacectl-binary
       - name: Setup cache
         uses: ./
         with:
-          space-enabled: ${{ matrix.space-enabled }}
-          space-version: ${{ matrix.space-version }}
+          spacectl-enabled: ${{ matrix.spacectl-enabled }}
+          spacectl-version: ${{ matrix.spacectl-version }}
           cache: brew
         env:
           NSC_POWERTOYS_DIR: ${{ steps.space.outputs.powertoys-dir }}
@@ -231,52 +231,52 @@ jobs:
         run: brew tap vectordotdev/brew && brew install vector
 
   bun:
-    needs: [setup, build-space]
-    if: always() && (needs.build-space.result == 'success' || needs.build-space.result == 'skipped')
+    needs: [setup, build-spacectl]
+    if: always() && (needs.build-spacectl.result == 'success' || needs.build-spacectl.result == 'skipped')
     runs-on: namespace-profile-e2e-small
     strategy:
       matrix:
-        space-enabled: ${{ fromJson(needs.setup.outputs.space-enabled) }}
-        space-version: ${{ fromJson(needs.setup.outputs.space-version) }}
+        spacectl-enabled: ${{ fromJson(needs.setup.outputs.spacectl-enabled) }}
+        spacectl-version: ${{ fromJson(needs.setup.outputs.spacectl-version) }}
     steps:
       - uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6
         with:
           repository: namespacelabs/nscloud-cache-action
           ref: ${{ github.job_workflow_sha }}
-      - *download-space-binary
-      - *install-space-binary
+      - *download-spacectl-binary
+      - *install-spacectl-binary
       - name: Setup Bun
         uses: oven-sh/setup-bun@3d267786b128fe76c2f16a390aa2448b815359f3 # v2
       - name: Setup cache
         uses: ./
         with:
-          space-enabled: ${{ matrix.space-enabled }}
-          space-version: ${{ matrix.space-version }}
+          spacectl-enabled: ${{ matrix.spacectl-enabled }}
+          spacectl-version: ${{ matrix.spacectl-version }}
           cache: bun
         env:
           NSC_POWERTOYS_DIR: ${{ steps.space.outputs.powertoys-dir }}
       - run: bun install
 
   cocoapods:
-    needs: [setup, build-space]
-    if: always() && (needs.build-space.result == 'success' || needs.build-space.result == 'skipped')
+    needs: [setup, build-spacectl]
+    if: always() && (needs.build-spacectl.result == 'success' || needs.build-spacectl.result == 'skipped')
     runs-on: namespace-profile-macos
     strategy:
       matrix:
-        space-enabled: ${{ fromJson(needs.setup.outputs.space-enabled) }}
-        space-version: ${{ fromJson(needs.setup.outputs.space-version) }}
+        spacectl-enabled: ${{ fromJson(needs.setup.outputs.spacectl-enabled) }}
+        spacectl-version: ${{ fromJson(needs.setup.outputs.spacectl-version) }}
     steps:
       - uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6
         with:
           repository: namespacelabs/nscloud-cache-action
           ref: ${{ github.job_workflow_sha }}
-      - *download-space-binary
-      - *install-space-binary
+      - *download-spacectl-binary
+      - *install-spacectl-binary
       - name: Setup cache
         uses: ./
         with:
-          space-enabled: ${{ matrix.space-enabled }}
-          space-version: ${{ matrix.space-version }}
+          spacectl-enabled: ${{ matrix.spacectl-enabled }}
+          spacectl-version: ${{ matrix.spacectl-version }}
           cache: cocoapods
         env:
           NSC_POWERTOYS_DIR: ${{ steps.space.outputs.powertoys-dir }}
@@ -292,20 +292,20 @@ jobs:
       - run: pod install
 
   composer:
-    needs: [setup, build-space]
-    if: always() && (needs.build-space.result == 'success' || needs.build-space.result == 'skipped')
+    needs: [setup, build-spacectl]
+    if: always() && (needs.build-spacectl.result == 'success' || needs.build-spacectl.result == 'skipped')
     runs-on: namespace-profile-e2e-small
     strategy:
       matrix:
-        space-enabled: ${{ fromJson(needs.setup.outputs.space-enabled) }}
-        space-version: ${{ fromJson(needs.setup.outputs.space-version) }}
+        spacectl-enabled: ${{ fromJson(needs.setup.outputs.spacectl-enabled) }}
+        spacectl-version: ${{ fromJson(needs.setup.outputs.spacectl-version) }}
     steps:
       - uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6
         with:
           repository: namespacelabs/nscloud-cache-action
           ref: ${{ github.job_workflow_sha }}
-      - *download-space-binary
-      - *install-space-binary
+      - *download-spacectl-binary
+      - *install-spacectl-binary
       - name: Setup PHP
         uses: shivammathur/setup-php@d59004228537ca90c8dca680592a08a675bf52b6 # v2
         with:
@@ -313,28 +313,28 @@ jobs:
       - name: Setup cache
         uses: ./
         with:
-          space-enabled: ${{ matrix.space-enabled }}
-          space-version: ${{ matrix.space-version }}
+          spacectl-enabled: ${{ matrix.spacectl-enabled }}
+          spacectl-version: ${{ matrix.spacectl-version }}
           cache: composer
         env:
           NSC_POWERTOYS_DIR: ${{ steps.space.outputs.powertoys-dir }}
       - run: composer require monolog/monolog
 
   deno:
-    needs: [setup, build-space]
-    if: always() && (needs.build-space.result == 'success' || needs.build-space.result == 'skipped')
+    needs: [setup, build-spacectl]
+    if: always() && (needs.build-spacectl.result == 'success' || needs.build-spacectl.result == 'skipped')
     runs-on: namespace-profile-e2e-small
     strategy:
       matrix:
-        space-enabled: ${{ fromJson(needs.setup.outputs.space-enabled) }}
-        space-version: ${{ fromJson(needs.setup.outputs.space-version) }}
+        spacectl-enabled: ${{ fromJson(needs.setup.outputs.spacectl-enabled) }}
+        spacectl-version: ${{ fromJson(needs.setup.outputs.spacectl-version) }}
     steps:
       - uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6
         with:
           repository: namespacelabs/nscloud-cache-action
           ref: ${{ github.job_workflow_sha }}
-      - *download-space-binary
-      - *install-space-binary
+      - *download-spacectl-binary
+      - *install-spacectl-binary
       - name: Setup Deno
         uses: denoland/setup-deno@e95548e56dfa95d4e1a28d6f422fafe75c4c26fb # v2
         with:
@@ -342,28 +342,28 @@ jobs:
       - name: Setup cache
         uses: ./
         with:
-          space-enabled: ${{ matrix.space-enabled }}
-          space-version: ${{ matrix.space-version }}
+          spacectl-enabled: ${{ matrix.spacectl-enabled }}
+          spacectl-version: ${{ matrix.spacectl-version }}
           cache: deno
         env:
           NSC_POWERTOYS_DIR: ${{ steps.space.outputs.powertoys-dir }}
       - run: deno install
 
   go:
-    needs: [setup, build-space]
-    if: always() && (needs.build-space.result == 'success' || needs.build-space.result == 'skipped')
+    needs: [setup, build-spacectl]
+    if: always() && (needs.build-spacectl.result == 'success' || needs.build-spacectl.result == 'skipped')
     runs-on: namespace-profile-e2e-medium
     strategy:
       matrix:
-        space-enabled: ${{ fromJson(needs.setup.outputs.space-enabled) }}
-        space-version: ${{ fromJson(needs.setup.outputs.space-version) }}
+        spacectl-enabled: ${{ fromJson(needs.setup.outputs.spacectl-enabled) }}
+        spacectl-version: ${{ fromJson(needs.setup.outputs.spacectl-version) }}
     steps:
       - uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6
         with:
           repository: namespacelabs/nscloud-cache-action
           ref: ${{ github.job_workflow_sha }}
-      - *download-space-binary
-      - *install-space-binary
+      - *download-spacectl-binary
+      - *install-spacectl-binary
       - name: Setup Go
         uses: actions/setup-go@7a3fe6cf4cb3a834922a1244abfce67bcef6a0c5 # v6
         with:
@@ -374,8 +374,8 @@ jobs:
       - name: Setup cache
         uses: ./
         with:
-          space-enabled: ${{ matrix.space-enabled }}
-          space-version: ${{ matrix.space-version }}
+          spacectl-enabled: ${{ matrix.spacectl-enabled }}
+          spacectl-version: ${{ matrix.spacectl-version }}
           cache: go
         env:
           NSC_POWERTOYS_DIR: ${{ steps.space.outputs.powertoys-dir }}
@@ -383,13 +383,13 @@ jobs:
         run: go install namespacelabs.dev/foundation/cmd/ns@aabde5de6327f5e37673fd6d04474890429494ef
 
   golangci-lint:
-    needs: [setup, build-space]
-    if: always() && (needs.build-space.result == 'success' || needs.build-space.result == 'skipped')
+    needs: [setup, build-spacectl]
+    if: always() && (needs.build-spacectl.result == 'success' || needs.build-spacectl.result == 'skipped')
     runs-on: namespace-profile-e2e-medium
     strategy:
       matrix:
-        space-enabled: ${{ fromJson(needs.setup.outputs.space-enabled) }}
-        space-version: ${{ fromJson(needs.setup.outputs.space-version) }}
+        spacectl-enabled: ${{ fromJson(needs.setup.outputs.spacectl-enabled) }}
+        spacectl-version: ${{ fromJson(needs.setup.outputs.spacectl-version) }}
     steps:
       - uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6
         with:
@@ -399,8 +399,8 @@ jobs:
         with:
           repository: namespace-integration-demos/go-cache
           path: demo
-      - *download-space-binary
-      - *install-space-binary
+      - *download-spacectl-binary
+      - *install-spacectl-binary
       - name: Setup Go
         uses: actions/setup-go@7a3fe6cf4cb3a834922a1244abfce67bcef6a0c5 # v6
         with:
@@ -415,8 +415,8 @@ jobs:
       - name: Setup cache
         uses: ./
         with:
-          space-enabled: ${{ matrix.space-enabled }}
-          space-version: ${{ matrix.space-version }}
+          spacectl-enabled: ${{ matrix.spacectl-enabled }}
+          spacectl-version: ${{ matrix.spacectl-version }}
           cache: |
             go
             golangci-lint
@@ -426,13 +426,13 @@ jobs:
         run: cd ./demo && golangci-lint run
 
   gradle:
-    needs: [setup, build-space]
-    if: always() && (needs.build-space.result == 'success' || needs.build-space.result == 'skipped')
+    needs: [setup, build-spacectl]
+    if: always() && (needs.build-spacectl.result == 'success' || needs.build-spacectl.result == 'skipped')
     runs-on: namespace-profile-e2e-small
     strategy:
       matrix:
-        space-enabled: ${{ fromJson(needs.setup.outputs.space-enabled) }}
-        space-version: ${{ fromJson(needs.setup.outputs.space-version) }}
+        spacectl-enabled: ${{ fromJson(needs.setup.outputs.spacectl-enabled) }}
+        spacectl-version: ${{ fromJson(needs.setup.outputs.spacectl-version) }}
     steps:
       - uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6
         with:
@@ -442,8 +442,8 @@ jobs:
         with:
           repository: namespace-integration-demos/gradle-cache
           path: demo
-      - *download-space-binary
-      - *install-space-binary
+      - *download-spacectl-binary
+      - *install-spacectl-binary
       - name: Set up JDK 17
         uses: actions/setup-java@be666c2fcd27ec809703dec50e508c2fdc7f6654 # v5
         with:
@@ -452,8 +452,8 @@ jobs:
       - name: Setup cache
         uses: ./
         with:
-          space-enabled: ${{ matrix.space-enabled }}
-          space-version: ${{ matrix.space-version }}
+          spacectl-enabled: ${{ matrix.spacectl-enabled }}
+          spacectl-version: ${{ matrix.spacectl-version }}
           cache: gradle
         env:
           NSC_POWERTOYS_DIR: ${{ steps.space.outputs.powertoys-dir }}
@@ -462,13 +462,13 @@ jobs:
         working-directory: ./demo
 
   maven:
-    needs: [setup, build-space]
-    if: always() && (needs.build-space.result == 'success' || needs.build-space.result == 'skipped')
+    needs: [setup, build-spacectl]
+    if: always() && (needs.build-spacectl.result == 'success' || needs.build-spacectl.result == 'skipped')
     runs-on: namespace-profile-e2e-small
     strategy:
       matrix:
-        space-enabled: ${{ fromJson(needs.setup.outputs.space-enabled) }}
-        space-version: ${{ fromJson(needs.setup.outputs.space-version) }}
+        spacectl-enabled: ${{ fromJson(needs.setup.outputs.spacectl-enabled) }}
+        spacectl-version: ${{ fromJson(needs.setup.outputs.spacectl-version) }}
     steps:
       - uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6
         with:
@@ -478,8 +478,8 @@ jobs:
         with:
           repository: namespace-integration-demos/selenium-cache
           path: demo
-      - *download-space-binary
-      - *install-space-binary
+      - *download-spacectl-binary
+      - *install-spacectl-binary
       - name: Set up JDK 11
         uses: actions/setup-java@be666c2fcd27ec809703dec50e508c2fdc7f6654 # v5
         with:
@@ -492,8 +492,8 @@ jobs:
       - name: Setup cache
         uses: ./
         with:
-          space-enabled: ${{ matrix.space-enabled }}
-          space-version: ${{ matrix.space-version }}
+          spacectl-enabled: ${{ matrix.spacectl-enabled }}
+          spacectl-version: ${{ matrix.spacectl-version }}
           cache: maven
         env:
           NSC_POWERTOYS_DIR: ${{ steps.space.outputs.powertoys-dir }}
@@ -502,25 +502,25 @@ jobs:
         working-directory: ./demo
 
   mise:
-    needs: [setup, build-space]
-    if: always() && (needs.build-space.result == 'success' || needs.build-space.result == 'skipped')
+    needs: [setup, build-spacectl]
+    if: always() && (needs.build-spacectl.result == 'success' || needs.build-spacectl.result == 'skipped')
     runs-on: namespace-profile-e2e-small
     strategy:
       matrix:
-        space-enabled: ${{ fromJson(needs.setup.outputs.space-enabled) }}
-        space-version: ${{ fromJson(needs.setup.outputs.space-version) }}
+        spacectl-enabled: ${{ fromJson(needs.setup.outputs.spacectl-enabled) }}
+        spacectl-version: ${{ fromJson(needs.setup.outputs.spacectl-version) }}
     steps:
       - uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6
         with:
           repository: namespacelabs/nscloud-cache-action
           ref: ${{ github.job_workflow_sha }}
-      - *download-space-binary
-      - *install-space-binary
+      - *download-spacectl-binary
+      - *install-spacectl-binary
       - name: Setup cache
         uses: ./
         with:
-          space-enabled: ${{ matrix.space-enabled }}
-          space-version: ${{ matrix.space-version }}
+          spacectl-enabled: ${{ matrix.spacectl-enabled }}
+          spacectl-version: ${{ matrix.spacectl-version }}
           cache: mise
         env:
           NSC_POWERTOYS_DIR: ${{ steps.space.outputs.powertoys-dir }}
@@ -534,26 +534,26 @@ jobs:
       - run: node --version
 
   nix:
-    needs: [setup, build-space]
-    if: always() && (needs.build-space.result == 'success' || needs.build-space.result == 'skipped')
+    needs: [setup, build-spacectl]
+    if: always() && (needs.build-spacectl.result == 'success' || needs.build-spacectl.result == 'skipped')
     runs-on: namespace-profile-e2e-small
     strategy:
       matrix:
-        # nix only tests with space-enabled: true
-        space-enabled: ${{ fromJson(needs.setup.outputs.space-enabled-true-only) }}
-        space-version: ${{ fromJson(needs.setup.outputs.space-version) }}
+        # nix only tests with spacectl-enabled: true
+        spacectl-enabled: ${{ fromJson(needs.setup.outputs.spacectl-enabled-true-only) }}
+        spacectl-version: ${{ fromJson(needs.setup.outputs.spacectl-version) }}
     steps:
       - uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6
         with:
           repository: namespacelabs/nscloud-cache-action
           ref: ${{ github.job_workflow_sha }}
-      - *download-space-binary
-      - *install-space-binary
+      - *download-spacectl-binary
+      - *install-spacectl-binary
       - name: Setup cache
         uses: ./
         with:
-          space-enabled: ${{ matrix.space-enabled }}
-          space-version: ${{ matrix.space-version }}
+          spacectl-enabled: ${{ matrix.spacectl-enabled }}
+          spacectl-version: ${{ matrix.spacectl-version }}
           cache: nix
         env:
           NSC_POWERTOYS_DIR: ${{ steps.space.outputs.powertoys-dir }}
@@ -566,42 +566,42 @@ jobs:
       - run: echo "Hello Nix" | nix run "https://flakehub.com/f/snowfallorg/cowsay/1.3.0"
 
   playwright:
-    needs: [setup, build-space]
-    if: always() && (needs.build-space.result == 'success' || needs.build-space.result == 'skipped')
+    needs: [setup, build-spacectl]
+    if: always() && (needs.build-spacectl.result == 'success' || needs.build-spacectl.result == 'skipped')
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
       matrix:
         os: [namespace-profile-macos, namespace-profile-e2e-small]
-        space-enabled: ${{ fromJson(needs.setup.outputs.space-enabled) }}
-        space-version: ${{ fromJson(needs.setup.outputs.space-version) }}
+        spacectl-enabled: ${{ fromJson(needs.setup.outputs.spacectl-enabled) }}
+        spacectl-version: ${{ fromJson(needs.setup.outputs.spacectl-version) }}
     steps:
       - uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6
         with:
           repository: namespacelabs/nscloud-cache-action
           ref: ${{ github.job_workflow_sha }}
-      - *download-space-binary
-      - *install-space-binary
+      - *download-spacectl-binary
+      - *install-spacectl-binary
       - name: Setup cache
         uses: ./
         with:
-          space-enabled: ${{ matrix.space-enabled }}
-          space-version: ${{ matrix.space-version }}
+          spacectl-enabled: ${{ matrix.spacectl-enabled }}
+          spacectl-version: ${{ matrix.spacectl-version }}
           cache: playwright
         env:
           NSC_POWERTOYS_DIR: ${{ steps.space.outputs.powertoys-dir }}
       - run: npx playwright install --with-deps
 
   playwright-custom-dir:
-    needs: [setup, build-space]
-    if: always() && (needs.build-space.result == 'success' || needs.build-space.result == 'skipped')
+    needs: [setup, build-spacectl]
+    if: always() && (needs.build-spacectl.result == 'success' || needs.build-spacectl.result == 'skipped')
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
       matrix:
         os: [namespace-profile-macos, namespace-profile-e2e-small]
-        space-enabled: ${{ fromJson(needs.setup.outputs.space-enabled) }}
-        space-version: ${{ fromJson(needs.setup.outputs.space-version) }}
+        spacectl-enabled: ${{ fromJson(needs.setup.outputs.spacectl-enabled) }}
+        spacectl-version: ${{ fromJson(needs.setup.outputs.spacectl-version) }}
     env:
       PLAYWRIGHT_BROWSERS_PATH: ~/playwright-cache
     steps:
@@ -609,28 +609,28 @@ jobs:
         with:
           repository: namespacelabs/nscloud-cache-action
           ref: ${{ github.job_workflow_sha }}
-      - *download-space-binary
-      - *install-space-binary
+      - *download-spacectl-binary
+      - *install-spacectl-binary
       - name: Setup cache
         uses: ./
         with:
-          space-enabled: ${{ matrix.space-enabled }}
-          space-version: ${{ matrix.space-version }}
+          spacectl-enabled: ${{ matrix.spacectl-enabled }}
+          spacectl-version: ${{ matrix.spacectl-version }}
           cache: playwright
         env:
           NSC_POWERTOYS_DIR: ${{ steps.space.outputs.powertoys-dir }}
       - run: npx playwright install --with-deps
 
   pnpm:
-    needs: [setup, build-space]
-    if: always() && (needs.build-space.result == 'success' || needs.build-space.result == 'skipped')
+    needs: [setup, build-spacectl]
+    if: always() && (needs.build-spacectl.result == 'success' || needs.build-spacectl.result == 'skipped')
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
       matrix:
         os: [namespace-profile-macos, namespace-profile-e2e-small]
-        space-enabled: ${{ fromJson(needs.setup.outputs.space-enabled) }}
-        space-version: ${{ fromJson(needs.setup.outputs.space-version) }}
+        spacectl-enabled: ${{ fromJson(needs.setup.outputs.spacectl-enabled) }}
+        spacectl-version: ${{ fromJson(needs.setup.outputs.spacectl-version) }}
     steps:
       - uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6
         with:
@@ -640,8 +640,8 @@ jobs:
         with:
           repository: namespace-integration-demos/cache-pnpm-workspace
           path: demo
-      - *download-space-binary
-      - *install-space-binary
+      - *download-spacectl-binary
+      - *install-spacectl-binary
       - name: Install pnpm
         uses: pnpm/action-setup@c5ba7f7862a0f64c1b1a05fbac13e0b8e86ba08c # v4
         with:
@@ -649,8 +649,8 @@ jobs:
       - name: Setup cache
         uses: ./
         with:
-          space-enabled: ${{ matrix.space-enabled }}
-          space-version: ${{ matrix.space-version }}
+          spacectl-enabled: ${{ matrix.spacectl-enabled }}
+          spacectl-version: ${{ matrix.spacectl-version }}
           cache: pnpm
           path: |
             ~/.cache
@@ -660,14 +660,14 @@ jobs:
         working-directory: ./demo/fullstack
 
   pnpm-ignore-warnings:
-    needs: [setup, build-space]
-    if: always() && (needs.build-space.result == 'success' || needs.build-space.result == 'skipped')
+    needs: [setup, build-spacectl]
+    if: always() && (needs.build-spacectl.result == 'success' || needs.build-spacectl.result == 'skipped')
     runs-on: namespace-profile-e2e-small
     strategy:
       matrix:
         pnpm-version: ['8.15.5', '9.7.0', '9.15.0']
-        space-enabled: ${{ fromJson(needs.setup.outputs.space-enabled) }}
-        space-version: ${{ fromJson(needs.setup.outputs.space-version) }}
+        spacectl-enabled: ${{ fromJson(needs.setup.outputs.spacectl-enabled) }}
+        spacectl-version: ${{ fromJson(needs.setup.outputs.spacectl-version) }}
     steps:
       - uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6
         with:
@@ -677,8 +677,8 @@ jobs:
         with:
           repository: namespace-integration-demos/cache-pnpm-workspace
           path: demo
-      - *download-space-binary
-      - *install-space-binary
+      - *download-spacectl-binary
+      - *install-spacectl-binary
       - name: Install pnpm
         uses: pnpm/action-setup@c5ba7f7862a0f64c1b1a05fbac13e0b8e86ba08c # v4
         with:
@@ -688,20 +688,20 @@ jobs:
       - name: Setup cache
         uses: ./
         with:
-          space-enabled: ${{ matrix.space-enabled }}
-          space-version: ${{ matrix.space-version }}
+          spacectl-enabled: ${{ matrix.spacectl-enabled }}
+          spacectl-version: ${{ matrix.spacectl-version }}
           cache: pnpm
         env:
           NSC_POWERTOYS_DIR: ${{ steps.space.outputs.powertoys-dir }}
 
   poetry:
-    needs: [setup, build-space]
-    if: always() && (needs.build-space.result == 'success' || needs.build-space.result == 'skipped')
+    needs: [setup, build-spacectl]
+    if: always() && (needs.build-spacectl.result == 'success' || needs.build-spacectl.result == 'skipped')
     runs-on: namespace-profile-e2e-small
     strategy:
       matrix:
-        space-enabled: ${{ fromJson(needs.setup.outputs.space-enabled) }}
-        space-version: ${{ fromJson(needs.setup.outputs.space-version) }}
+        spacectl-enabled: ${{ fromJson(needs.setup.outputs.spacectl-enabled) }}
+        spacectl-version: ${{ fromJson(needs.setup.outputs.spacectl-version) }}
     steps:
       - uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6
         with:
@@ -711,15 +711,15 @@ jobs:
         with:
           repository: namespace-integration-demos/poetry
           path: demo
-      - *download-space-binary
-      - *install-space-binary
+      - *download-spacectl-binary
+      - *install-spacectl-binary
       - name: Install poetry
         run: pipx install poetry
       - name: Setup cache
         uses: ./
         with:
-          space-enabled: ${{ matrix.space-enabled }}
-          space-version: ${{ matrix.space-version }}
+          spacectl-enabled: ${{ matrix.spacectl-enabled }}
+          spacectl-version: ${{ matrix.spacectl-version }}
           cache: poetry
         env:
           NSC_POWERTOYS_DIR: ${{ steps.space.outputs.powertoys-dir }}
@@ -727,13 +727,13 @@ jobs:
         working-directory: ./demo
 
   python:
-    needs: [setup, build-space]
-    if: always() && (needs.build-space.result == 'success' || needs.build-space.result == 'skipped')
+    needs: [setup, build-spacectl]
+    if: always() && (needs.build-spacectl.result == 'success' || needs.build-spacectl.result == 'skipped')
     runs-on: namespace-profile-e2e-small
     strategy:
       matrix:
-        space-enabled: ${{ fromJson(needs.setup.outputs.space-enabled) }}
-        space-version: ${{ fromJson(needs.setup.outputs.space-version) }}
+        spacectl-enabled: ${{ fromJson(needs.setup.outputs.spacectl-enabled) }}
+        spacectl-version: ${{ fromJson(needs.setup.outputs.spacectl-version) }}
     steps:
       - uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6
         with:
@@ -743,13 +743,13 @@ jobs:
         with:
           repository: namespace-integration-demos/python-cache
           path: demo
-      - *download-space-binary
-      - *install-space-binary
+      - *download-spacectl-binary
+      - *install-spacectl-binary
       - name: Setup cache
         uses: ./
         with:
-          space-enabled: ${{ matrix.space-enabled }}
-          space-version: ${{ matrix.space-version }}
+          spacectl-enabled: ${{ matrix.spacectl-enabled }}
+          spacectl-version: ${{ matrix.spacectl-version }}
           cache: python
         env:
           NSC_POWERTOYS_DIR: ${{ steps.space.outputs.powertoys-dir }}
@@ -757,13 +757,13 @@ jobs:
         working-directory: ./demo
 
   rust:
-    needs: [setup, build-space]
-    if: always() && (needs.build-space.result == 'success' || needs.build-space.result == 'skipped')
+    needs: [setup, build-spacectl]
+    if: always() && (needs.build-spacectl.result == 'success' || needs.build-spacectl.result == 'skipped')
     runs-on: namespace-profile-e2e-small
     strategy:
       matrix:
-        space-enabled: ${{ fromJson(needs.setup.outputs.space-enabled) }}
-        space-version: ${{ fromJson(needs.setup.outputs.space-version) }}
+        spacectl-enabled: ${{ fromJson(needs.setup.outputs.spacectl-enabled) }}
+        spacectl-version: ${{ fromJson(needs.setup.outputs.spacectl-version) }}
     steps:
       - uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6
         with:
@@ -773,13 +773,13 @@ jobs:
         with:
           repository: namespace-integration-demos/rust-cache
           path: demo
-      - *download-space-binary
-      - *install-space-binary
+      - *download-spacectl-binary
+      - *install-spacectl-binary
       - name: Setup cache
         uses: ./
         with:
-          space-enabled: ${{ matrix.space-enabled }}
-          space-version: ${{ matrix.space-version }}
+          spacectl-enabled: ${{ matrix.spacectl-enabled }}
+          spacectl-version: ${{ matrix.spacectl-version }}
           cache: rust
         env:
           NSC_POWERTOYS_DIR: ${{ steps.space.outputs.powertoys-dir }}
@@ -789,20 +789,20 @@ jobs:
         working-directory: ./demo
 
   ruby:
-    needs: [setup, build-space]
-    if: always() && (needs.build-space.result == 'success' || needs.build-space.result == 'skipped')
+    needs: [setup, build-spacectl]
+    if: always() && (needs.build-spacectl.result == 'success' || needs.build-spacectl.result == 'skipped')
     runs-on: namespace-profile-e2e-small
     strategy:
       matrix:
-        space-enabled: ${{ fromJson(needs.setup.outputs.space-enabled) }}
-        space-version: ${{ fromJson(needs.setup.outputs.space-version) }}
+        spacectl-enabled: ${{ fromJson(needs.setup.outputs.spacectl-enabled) }}
+        spacectl-version: ${{ fromJson(needs.setup.outputs.spacectl-version) }}
     steps:
       - uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6
         with:
           repository: namespacelabs/nscloud-cache-action
           ref: ${{ github.job_workflow_sha }}
-      - *download-space-binary
-      - *install-space-binary
+      - *download-spacectl-binary
+      - *install-spacectl-binary
       - uses: ruby/setup-ruby@90be1154f987f4dc0fe0dd0feedac9e473aa4ba8 # v1
         with:
           ruby-version: '3.2'
@@ -810,8 +810,8 @@ jobs:
       - name: Setup cache
         uses: ./
         with:
-          space-enabled: ${{ matrix.space-enabled }}
-          space-version: ${{ matrix.space-version }}
+          spacectl-enabled: ${{ matrix.spacectl-enabled }}
+          spacectl-version: ${{ matrix.spacectl-version }}
           cache: ruby
         env:
           NSC_POWERTOYS_DIR: ${{ steps.space.outputs.powertoys-dir }}
@@ -821,13 +821,13 @@ jobs:
           bundle add rake
 
   rust-pre-existing-file:
-    needs: [setup, build-space]
-    if: always() && (needs.build-space.result == 'success' || needs.build-space.result == 'skipped')
+    needs: [setup, build-spacectl]
+    if: always() && (needs.build-spacectl.result == 'success' || needs.build-spacectl.result == 'skipped')
     runs-on: namespace-profile-e2e-small
     strategy:
       matrix:
-        space-enabled: ${{ fromJson(needs.setup.outputs.space-enabled) }}
-        space-version: ${{ fromJson(needs.setup.outputs.space-version) }}
+        spacectl-enabled: ${{ fromJson(needs.setup.outputs.spacectl-enabled) }}
+        spacectl-version: ${{ fromJson(needs.setup.outputs.spacectl-version) }}
     steps:
       - uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6
         with:
@@ -837,15 +837,15 @@ jobs:
         with:
           repository: namespace-integration-demos/rust-cache
           path: demo
-      - *download-space-binary
-      - *install-space-binary
+      - *download-spacectl-binary
+      - *install-spacectl-binary
       - name: Create .global-cache file that should be removed before creating mount
         run: touch ~/.cargo/.global-cache
       - name: Setup cache
         uses: ./
         with:
-          space-enabled: ${{ matrix.space-enabled }}
-          space-version: ${{ matrix.space-version }}
+          spacectl-enabled: ${{ matrix.spacectl-enabled }}
+          spacectl-version: ${{ matrix.spacectl-version }}
           cache: rust
         env:
           NSC_POWERTOYS_DIR: ${{ steps.space.outputs.powertoys-dir }}
@@ -855,25 +855,25 @@ jobs:
         working-directory: ./demo
 
   swiftpm:
-    needs: [setup, build-space]
-    if: always() && (needs.build-space.result == 'success' || needs.build-space.result == 'skipped')
+    needs: [setup, build-spacectl]
+    if: always() && (needs.build-spacectl.result == 'success' || needs.build-spacectl.result == 'skipped')
     runs-on: namespace-profile-macos
     strategy:
       matrix:
-        space-enabled: ${{ fromJson(needs.setup.outputs.space-enabled) }}
-        space-version: ${{ fromJson(needs.setup.outputs.space-version) }}
+        spacectl-enabled: ${{ fromJson(needs.setup.outputs.spacectl-enabled) }}
+        spacectl-version: ${{ fromJson(needs.setup.outputs.spacectl-version) }}
     steps:
       - uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6
         with:
           repository: namespacelabs/nscloud-cache-action
           ref: ${{ github.job_workflow_sha }}
-      - *download-space-binary
-      - *install-space-binary
+      - *download-spacectl-binary
+      - *install-spacectl-binary
       - name: Setup cache
         uses: ./
         with:
-          space-enabled: ${{ matrix.space-enabled }}
-          space-version: ${{ matrix.space-version }}
+          spacectl-enabled: ${{ matrix.spacectl-enabled }}
+          spacectl-version: ${{ matrix.spacectl-version }}
           cache: swiftpm
         env:
           NSC_POWERTOYS_DIR: ${{ steps.space.outputs.powertoys-dir }}
@@ -883,20 +883,20 @@ jobs:
           swift build
 
   uv:
-    needs: [setup, build-space]
-    if: always() && (needs.build-space.result == 'success' || needs.build-space.result == 'skipped')
+    needs: [setup, build-spacectl]
+    if: always() && (needs.build-spacectl.result == 'success' || needs.build-spacectl.result == 'skipped')
     runs-on: namespace-profile-e2e-small
     strategy:
       matrix:
-        space-enabled: ${{ fromJson(needs.setup.outputs.space-enabled) }}
-        space-version: ${{ fromJson(needs.setup.outputs.space-version) }}
+        spacectl-enabled: ${{ fromJson(needs.setup.outputs.spacectl-enabled) }}
+        spacectl-version: ${{ fromJson(needs.setup.outputs.spacectl-version) }}
     steps:
       - uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6
         with:
           repository: namespacelabs/nscloud-cache-action
           ref: ${{ github.job_workflow_sha }}
-      - *download-space-binary
-      - *install-space-binary
+      - *download-spacectl-binary
+      - *install-spacectl-binary
       - name: Install uv
         uses: astral-sh/setup-uv@f06b870e0a91d23284a3013acc55e6f88ab4b904 # v7
         with:
@@ -904,8 +904,8 @@ jobs:
       - name: Setup cache
         uses: ./
         with:
-          space-enabled: ${{ matrix.space-enabled }}
-          space-version: ${{ matrix.space-version }}
+          spacectl-enabled: ${{ matrix.spacectl-enabled }}
+          spacectl-version: ${{ matrix.spacectl-version }}
           cache: uv
         env:
           NSC_POWERTOYS_DIR: ${{ steps.space.outputs.powertoys-dir }}
@@ -914,13 +914,13 @@ jobs:
           uv pip install requests
 
   yarn:
-    needs: [setup, build-space]
-    if: always() && (needs.build-space.result == 'success' || needs.build-space.result == 'skipped')
+    needs: [setup, build-spacectl]
+    if: always() && (needs.build-spacectl.result == 'success' || needs.build-spacectl.result == 'skipped')
     runs-on: namespace-profile-e2e-small
     strategy:
       matrix:
-        space-enabled: ${{ fromJson(needs.setup.outputs.space-enabled) }}
-        space-version: ${{ fromJson(needs.setup.outputs.space-version) }}
+        spacectl-enabled: ${{ fromJson(needs.setup.outputs.spacectl-enabled) }}
+        spacectl-version: ${{ fromJson(needs.setup.outputs.spacectl-version) }}
     steps:
       - uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6
         with:
@@ -930,13 +930,13 @@ jobs:
         with:
           repository: namespace-integration-demos/cache-yarn-workspaces
           path: demo
-      - *download-space-binary
-      - *install-space-binary
+      - *download-spacectl-binary
+      - *install-spacectl-binary
       - name: Setup cache
         uses: ./
         with:
-          space-enabled: ${{ matrix.space-enabled }}
-          space-version: ${{ matrix.space-version }}
+          spacectl-enabled: ${{ matrix.spacectl-enabled }}
+          spacectl-version: ${{ matrix.spacectl-version }}
           cache: yarn
         env:
           NSC_POWERTOYS_DIR: ${{ steps.space.outputs.powertoys-dir }}
@@ -946,16 +946,16 @@ jobs:
         working-directory: ./demo
 
   xcode:
-    needs: [setup, build-space]
-    if: always() && (needs.build-space.result == 'success' || needs.build-space.result == 'skipped')
+    needs: [setup, build-spacectl]
+    if: always() && (needs.build-spacectl.result == 'success' || needs.build-spacectl.result == 'skipped')
     runs-on:
       - nscloud-macos-sequoia-arm64-12x28-with-cache
       - nscloud-cache-size-50gb
       - nscloud-cache-tag-xcode-swift-ruby
     strategy:
       matrix:
-        space-enabled: ${{ fromJson(needs.setup.outputs.space-enabled) }}
-        space-version: ${{ fromJson(needs.setup.outputs.space-version) }}
+        spacectl-enabled: ${{ fromJson(needs.setup.outputs.spacectl-enabled) }}
+        spacectl-version: ${{ fromJson(needs.setup.outputs.spacectl-version) }}
     steps:
       - name: Checkout ios-demo
         uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6
@@ -970,13 +970,13 @@ jobs:
           repository: namespacelabs/nscloud-cache-action
           ref: ${{ github.job_workflow_sha }}
           path: cache-action
-      - *download-space-binary
-      - *install-space-binary
+      - *download-spacectl-binary
+      - *install-spacectl-binary
       - name: Setup cache
         uses: ./cache-action/
         with:
-          space-enabled: ${{ matrix.space-enabled }}
-          space-version: ${{ matrix.space-version }}
+          spacectl-enabled: ${{ matrix.spacectl-enabled }}
+          spacectl-version: ${{ matrix.spacectl-version }}
           cache: |
             xcode
             swiftpm
