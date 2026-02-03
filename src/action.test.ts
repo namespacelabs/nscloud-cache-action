@@ -1,35 +1,53 @@
-import {afterEach, beforeEach, describe, expect, test, vi} from 'vitest';
+import {beforeEach, describe, expect, test, vi} from 'vitest';
 import * as action from './action';
 
 beforeEach(() => {
   vi.clearAllMocks();
 });
 
-const coreError = vi.hoisted(() => vi.fn());
 const exportVariable = vi.hoisted(() => vi.fn());
-const execFn = vi.hoisted(() => vi.fn());
 const getBooleanInput = vi.hoisted(() => vi.fn());
 const getMultilineInput = vi.hoisted(() => vi.fn());
+const spacectlExec = vi.hoisted(() => vi.fn());
 
 beforeEach(() => {
   vi.mock('@actions/core', () => ({
-    error: coreError,
     exportVariable,
     getBooleanInput,
     getMultilineInput
   }));
-  vi.mock('@actions/exec', () => ({
-    exec: execFn
+  vi.mock('@namespacelabs/actions-toolkit/spacectl', () => ({
+    exec: spacectlExec,
+    SpacectlExecError: class SpacectlExecError extends Error {
+      exitCode: number;
+      stdout: string;
+      stderr: string;
+      command: string;
+      constructor(
+        message: string,
+        exitCode: number,
+        stdout: string,
+        stderr: string,
+        command: string
+      ) {
+        super(message);
+        this.name = 'SpacectlExecError';
+        this.exitCode = exitCode;
+        this.stdout = stdout;
+        this.stderr = stderr;
+        this.command = command;
+      }
+    }
   }));
 });
 
-describe('isSpaceEnabled', async () => {
+describe('isSpacectlEnabled', async () => {
   test('disabled', () => {
     getBooleanInput.mockImplementation((name: string): boolean => {
       return false;
     });
 
-    expect(action.isSpaceEnabled()).toBe(false);
+    expect(action.isSpacectlEnabled()).toBe(false);
   });
 
   test('enabled', () => {
@@ -37,7 +55,7 @@ describe('isSpaceEnabled', async () => {
       return true;
     });
 
-    expect(action.isSpaceEnabled()).toBe(true);
+    expect(action.isSpacectlEnabled()).toBe(true);
   });
 });
 
@@ -150,16 +168,11 @@ describe('mount', async () => {
   });
 
   function mockExecWithPayload(payload: object) {
-    execFn.mockImplementation(
-      async (
-        _cmd: string,
-        _args: string[],
-        options: {listeners?: {stdout?: (data: Buffer) => void}}
-      ) => {
-        options?.listeners?.stdout?.(Buffer.from(JSON.stringify(payload)));
-        return 0;
-      }
-    );
+    spacectlExec.mockResolvedValue({
+      exitCode: 0,
+      stdout: JSON.stringify(payload),
+      stderr: ''
+    });
   }
 
   test('parses minimal response', async () => {
@@ -321,96 +334,5 @@ describe('exportAddEnvs', () => {
       '/cache/node_modules'
     );
     expect(exportVariable).toHaveBeenCalledWith('GOPATH', '/cache/go');
-  });
-});
-
-describe('space', () => {
-  let processExitSpy: ReturnType<typeof vi.spyOn>;
-
-  beforeEach(() => {
-    processExitSpy = vi
-      .spyOn(process, 'exit')
-      .mockImplementation(() => undefined as never);
-  });
-
-  afterEach(() => {
-    processExitSpy.mockRestore();
-  });
-
-  test('returns output on success', async () => {
-    const payload = {result: 'ok'};
-    execFn.mockImplementation(
-      async (
-        _cmd: string,
-        _args: string[],
-        options: {listeners?: {stdout?: (data: Buffer) => void}}
-      ) => {
-        options?.listeners?.stdout?.(Buffer.from(JSON.stringify(payload)));
-        return 0;
-      }
-    );
-
-    const result = await action.space(['cache', 'status']);
-    expect(result.exitCode).toBe(0);
-    expect(result.stdout).toBe(JSON.stringify(payload));
-    expect(coreError).not.toHaveBeenCalled();
-    expect(processExitSpy).not.toHaveBeenCalled();
-  });
-
-  test('logs JSON error message on failure', async () => {
-    const errorPayload = {message: 'Cache volume not available'};
-    execFn.mockImplementation(
-      async (
-        _cmd: string,
-        _args: string[],
-        options: {listeners?: {stdout?: (data: Buffer) => void}}
-      ) => {
-        options?.listeners?.stdout?.(Buffer.from(JSON.stringify(errorPayload)));
-        return 1;
-      }
-    );
-
-    await action.space(['cache', 'mount']);
-    expect(coreError).toHaveBeenCalledWith('Cache volume not available');
-    expect(processExitSpy).toHaveBeenCalledWith(1);
-  });
-
-  test('logs default error message when JSON has no message field', async () => {
-    const errorPayload = {error: 'some other field'};
-    execFn.mockImplementation(
-      async (
-        _cmd: string,
-        _args: string[],
-        options: {listeners?: {stdout?: (data: Buffer) => void}}
-      ) => {
-        options?.listeners?.stdout?.(Buffer.from(JSON.stringify(errorPayload)));
-        return 2;
-      }
-    );
-
-    await action.space(['cache', 'mount']);
-    expect(coreError).toHaveBeenCalledWith(
-      "'space cache mount --output=json' failed with exit code 2"
-    );
-    expect(processExitSpy).toHaveBeenCalledWith(2);
-  });
-
-  test('logs default error message when stdout is not valid JSON', async () => {
-    execFn.mockImplementation(
-      async (
-        _cmd: string,
-        _args: string[],
-        options: {listeners?: {stdout?: (data: Buffer) => void}}
-      ) => {
-        options?.listeners?.stdout?.(Buffer.from('not json'));
-        return 1;
-      }
-    );
-
-    await action.space(['cache', 'mount']);
-    expect(coreError).toHaveBeenCalledWith(
-      "'space cache mount --output=json' failed with exit code 1"
-    );
-    expect(processExitSpy).toHaveBeenCalledWith(1);
   });
 });

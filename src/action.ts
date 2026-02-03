@@ -1,61 +1,15 @@
 import * as core from '@actions/core';
-import * as exec from '@actions/exec';
+import {exec as spacectlExec} from '@namespacelabs/actions-toolkit/spacectl';
 
-export const Input_Space_Enabled = 'space-enabled';
+export const Input_Spacectl_Enabled = 'spacectl-enabled';
 export const Input_FailOnCacheMiss = 'fail-on-cache-miss';
 export const Input_Detect_Mode = 'detect';
 export const Input_Cache = 'cache';
 export const Input_Path = 'path';
 export const Output_CacheHit = 'cache-hit';
 
-export function isSpaceEnabled(): boolean {
-  return core.getBooleanInput(Input_Space_Enabled);
-}
-
-export async function space(
-  args?: string[],
-  options?: exec.ExecOptions
-): Promise<exec.ExecOutput> {
-  // Request JSON output so we can parse the response
-  // This causes the space binary to write logs to stderr and JSON to stdout
-  args.push('--output=json');
-
-  let stdout = '';
-  let stderr = '';
-
-  const exitCode = await exec.exec('space', args, {
-    ignoreReturnCode: true,
-    silent: true,
-    listeners: {
-      stdout: (data: Buffer) => {
-        stdout += data.toString();
-      },
-      stderr: (data: Buffer) => {
-        stderr += data.toString();
-        // Forward stderr to stdout so GitHub Actions can process workflow
-        // commands like ::debug::. The space binary outputs these to stderr
-        // when --output=json is used to keep stdout clean for JSON.
-        process.stdout.write(data);
-      }
-    },
-    ...options
-  });
-
-  if (exitCode !== 0) {
-    let errorMessage = `'space ${args.join(' ')}' failed with exit code ${exitCode}`;
-    try {
-      const errorJson = JSON.parse(stdout.trim());
-      if (errorJson.message) {
-        errorMessage = errorJson.message;
-      }
-    } catch {
-      // stdout wasn't valid JSON, use default message
-    }
-    core.error(errorMessage);
-    process.exit(exitCode);
-  }
-
-  return {exitCode, stdout, stderr};
+export function isSpacectlEnabled(): boolean {
+  return core.getBooleanInput(Input_Spacectl_Enabled);
 }
 
 export interface MountResponse {
@@ -93,8 +47,8 @@ export interface MountResponseOutputMount {
 }
 
 export async function mount(): Promise<MountResponse> {
-  const {stdout: mount} = await space(getMountCommand());
-  return JSON.parse(mount.trim()) as MountResponse;
+  const result = await spacectlExec(getMountCommand());
+  return JSON.parse(result.stdout.trim()) as MountResponse;
 }
 
 export function exportAddEnvs(addEnvs?: MountResponseOutputAddEnvs): void {
@@ -131,7 +85,6 @@ export function getMountCommand(): string[] {
     args.push('--path=' + manualPaths.join(','));
   }
 
-  // if nothing has been enabled, default to detecting all
   if (args.length === 0) {
     args.push('--detect=*');
   }
