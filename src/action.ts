@@ -1,16 +1,11 @@
 import * as core from '@actions/core';
 import {exec as spacectlExec} from '@namespacelabs/actions-toolkit/spacectl';
 
-export const Input_Spacectl_Enabled = 'spacectl-enabled';
 export const Input_FailOnCacheMiss = 'fail-on-cache-miss';
 export const Input_Detect_Mode = 'detect';
 export const Input_Cache = 'cache';
 export const Input_Path = 'path';
 export const Output_CacheHit = 'cache-hit';
-
-export function isSpacectlEnabled(): boolean {
-  return core.getBooleanInput(Input_Spacectl_Enabled);
-}
 
 export interface MountResponse {
   input: MountResponseInput;
