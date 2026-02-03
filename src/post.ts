@@ -6,7 +6,7 @@ import * as fs from 'node:fs';
 void main();
 
 async function main() {
-  if (action.isSpaceEnabled()) {
+  if (action.isSpacectlEnabled()) {
     await spacePost();
   } else {
     await legacyPost();

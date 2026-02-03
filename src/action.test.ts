@@ -43,13 +43,13 @@ beforeEach(() => {
   }));
 });
 
-describe('isSpaceEnabled', async () => {
+describe('isSpacectlEnabled', async () => {
   test('disabled', () => {
     getBooleanInput.mockImplementation((name: string): boolean => {
       return false;
     });
 
-    expect(action.isSpaceEnabled()).toBe(false);
+    expect(action.isSpacectlEnabled()).toBe(false);
   });
 
   test('enabled', () => {
@@ -57,7 +57,7 @@ describe('isSpaceEnabled', async () => {
       return true;
     });
 
-    expect(action.isSpaceEnabled()).toBe(true);
+    expect(action.isSpacectlEnabled()).toBe(true);
   });
 });
 

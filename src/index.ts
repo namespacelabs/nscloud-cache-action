@@ -9,7 +9,7 @@ import {install as installSpacectl} from '@namespacelabs/actions-toolkit/spacect
 import * as action from './action';
 import * as utils from './utils';
 
-const Input_SpaceVersion = 'space-version';
+const Input_SpacectlVersion = 'spacectl-version';
 const Input_GithubToken = 'github-token';
 
 const ActionVersion = 'nscloud-action-cache@v1';
@@ -33,7 +33,7 @@ async function main() {
   );
 
   try {
-    if (action.isSpaceEnabled()) {
+    if (action.isSpacectlEnabled()) {
       await spaceRun();
     } else {
       await legacyRun();
@@ -49,7 +49,7 @@ async function main() {
 async function spaceRun() {
   verifyCacheVolume();
 
-  const versionSpec = core.getInput(Input_SpaceVersion) || undefined;
+  const versionSpec = core.getInput(Input_SpacectlVersion) || undefined;
   const githubToken = core.getInput(Input_GithubToken) || undefined;
 
   await installSpacectl({
