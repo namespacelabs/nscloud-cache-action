@@ -5,9 +5,12 @@ import * as core from '@actions/core';
 import * as exec from '@actions/exec';
 import * as io from '@actions/io';
 import * as semver from 'semver';
+import {install as installSpacectl} from '@namespacelabs/actions-toolkit/spacectl';
 import * as action from './action';
-import * as installer from './installer';
 import * as utils from './utils';
+
+const Input_SpaceVersion = 'space-version';
+const Input_GithubToken = 'github-token';
 
 const ActionVersion = 'nscloud-action-cache@v1';
 
@@ -45,7 +48,15 @@ async function main() {
 
 async function spaceRun() {
   verifyCacheVolume();
-  await installer.getSpace();
+
+  const versionSpec = core.getInput(Input_SpaceVersion) || undefined;
+  const githubToken = core.getInput(Input_GithubToken) || undefined;
+
+  await installSpacectl({
+    version: versionSpec,
+    githubToken: githubToken
+  });
+
   await mount();
 }
 
