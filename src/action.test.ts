@@ -5,7 +5,6 @@ beforeEach(() => {
   vi.clearAllMocks();
 });
 
-const coreError = vi.hoisted(() => vi.fn());
 const exportVariable = vi.hoisted(() => vi.fn());
 const getBooleanInput = vi.hoisted(() => vi.fn());
 const getMultilineInput = vi.hoisted(() => vi.fn());
@@ -13,7 +12,6 @@ const spacectlExec = vi.hoisted(() => vi.fn());
 
 beforeEach(() => {
   vi.mock('@actions/core', () => ({
-    error: coreError,
     exportVariable,
     getBooleanInput,
     getMultilineInput
@@ -302,30 +300,6 @@ describe('mount', async () => {
     const result = await action.mount();
     expect(result.output.mounts).toHaveLength(3);
     expect(result.output.mounts[2].cache_hit).toBe(true);
-  });
-
-  test('logs error and throws on SpacectlExecError', async () => {
-    const {SpacectlExecError} =
-      await import('@namespacelabs/actions-toolkit/spacectl');
-    const error = new SpacectlExecError(
-      'Cache volume not available',
-      1,
-      '',
-      '',
-      'spacectl cache mount'
-    );
-    spacectlExec.mockRejectedValue(error);
-
-    await expect(action.mount()).rejects.toThrow('Cache volume not available');
-    expect(coreError).toHaveBeenCalledWith('Cache volume not available');
-  });
-
-  test('rethrows non-SpacectlExecError errors', async () => {
-    const error = new Error('Network failure');
-    spacectlExec.mockRejectedValue(error);
-
-    await expect(action.mount()).rejects.toThrow('Network failure');
-    expect(coreError).not.toHaveBeenCalled();
   });
 });
 

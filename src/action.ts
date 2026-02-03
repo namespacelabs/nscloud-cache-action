@@ -1,8 +1,5 @@
 import * as core from '@actions/core';
-import {
-  exec as spacectlExec,
-  SpacectlExecError
-} from '@namespacelabs/actions-toolkit/spacectl';
+import {exec as spacectlExec} from '@namespacelabs/actions-toolkit/spacectl';
 
 export const Input_Spacectl_Enabled = 'spacectl-enabled';
 export const Input_FailOnCacheMiss = 'fail-on-cache-miss';
@@ -50,15 +47,8 @@ export interface MountResponseOutputMount {
 }
 
 export async function mount(): Promise<MountResponse> {
-  try {
-    const result = await spacectlExec(getMountCommand());
-    return JSON.parse(result.stdout.trim()) as MountResponse;
-  } catch (error) {
-    if (error instanceof SpacectlExecError) {
-      core.error(error.message);
-    }
-    throw error;
-  }
+  const result = await spacectlExec(getMountCommand());
+  return JSON.parse(result.stdout.trim()) as MountResponse;
 }
 
 export function exportAddEnvs(addEnvs?: MountResponseOutputAddEnvs): void {
