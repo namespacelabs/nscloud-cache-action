@@ -177,7 +177,7 @@ jobs:
             chmod +x "${{ runner.temp }}/spacectl-bin/spacectl"
             echo "powertoys-dir=${{ runner.temp }}/spacectl-bin/" >> $GITHUB_OUTPUT
           else
-            echo "powertoys-dir=" >> $GITHUB_OUTPUT
+            echo "powertoys-dir=${NSC_POWERTOYS_DIR:-}" >> $GITHUB_OUTPUT
           fi
       - name: Setup cache
         uses: ./
