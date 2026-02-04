@@ -34694,6 +34694,8 @@ function getIDToken(aud) {
  */
 
 //# sourceMappingURL=core.js.map
+;// CONCATENATED MODULE: external "node:fs/promises"
+const promises_namespaceObject = require("node:fs/promises");
 ;// CONCATENATED MODULE: external "node:path"
 const external_node_path_namespaceObject = require("node:path");
 // EXTERNAL MODULE: ./node_modules/semver/index.js
@@ -39577,7 +39579,8 @@ function getOctokit(token, options, ...additionalPlugins) {
     return new GitHubWithPlugins(getOctokitOptions(token, options));
 }
 //# sourceMappingURL=github.js.map
-;// CONCATENATED MODULE: ./node_modules/@namespacelabs/actions-toolkit/dist/spacectl-7UtG3LbZ.mjs
+;// CONCATENATED MODULE: ./node_modules/@namespacelabs/actions-toolkit/dist/spacectl-CM8z_TU0.mjs
+
 
 
 
@@ -39601,7 +39604,7 @@ var SpacectlExecError = class extends Error {
 		this.command = command;
 	}
 };
-async function spacectl_7UtG3LbZ_exec(args, options) {
+async function spacectl_CM8z_TU0_exec(args, options) {
 	const binPath = options?.binPath ?? "spacectl";
 	const execArgs = [...args, "--output=json"];
 	let stdout = "";
@@ -39720,7 +39723,7 @@ async function findExistingBinary() {
 	if (powertoysDir) {
 		const powertoysPath = external_node_path_namespaceObject.join(powertoysDir, binaryName);
 		try {
-			await which(powertoysPath, true);
+			await promises_namespaceObject.access(powertoysPath, promises_namespaceObject.constants.X_OK);
 			core_debug(`Found existing binary in powertoys: ${powertoysPath}`);
 			return powertoysPath;
 		} catch {
@@ -39736,7 +39739,7 @@ async function findExistingBinary() {
 	}
 }
 async function getInstalledVersion(binPath) {
-	const result = await spacectl_7UtG3LbZ_exec(["version"], { binPath });
+	const result = await spacectl_CM8z_TU0_exec(["version"], { binPath });
 	try {
 		return normalizeVersion(JSON.parse(result.stdout.trim()).version);
 	} catch (error) {
@@ -39823,7 +39826,7 @@ async function install(options = {}) {
 
 //#endregion
 
-//# sourceMappingURL=spacectl-7UtG3LbZ.mjs.map
+//# sourceMappingURL=spacectl-CM8z_TU0.mjs.map
 ;// CONCATENATED MODULE: ./node_modules/@namespacelabs/actions-toolkit/dist/spacectl.mjs
 
 
@@ -39837,7 +39840,7 @@ const Input_Cache = 'cache';
 const Input_Path = 'path';
 const Output_CacheHit = 'cache-hit';
 async function action_mount() {
-    const result = await spacectl_7UtG3LbZ_exec(getMountCommand());
+    const result = await spacectl_CM8z_TU0_exec(getMountCommand());
     return JSON.parse(result.stdout.trim());
 }
 function exportAddEnvs(addEnvs) {
