@@ -461,7 +461,7 @@ jobs:
         with:
           java-version: '11'
           distribution: 'temurin'
-      - uses: browser-actions/setup-chrome@d2811ded0d087168641bbf52f388afe459d02892 # v2
+      - uses: browser-actions/setup-chrome@b94431e051d1c52dcbe9a7092a4f10f827795416 # v2
         with:
           chrome-version: latest
       - run: chrome --version
