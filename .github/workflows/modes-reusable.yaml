@@ -34,7 +34,6 @@
 #     runs-on: namespace-profile-e2e-small  # or namespace-profile-macos for macOS
 #     strategy:
 #       matrix:
-#         spacectl-enabled: ${{ fromJson(needs.setup.outputs.spacectl-enabled) }}
 #         spacectl-version: ${{ fromJson(needs.setup.outputs.spacectl-version) }}
 #     steps:
 #       - uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6
@@ -46,7 +45,6 @@
 #       - name: Setup cache
 #         uses: ./
 #         with:
-#           spacectl-enabled: ${{ matrix.spacectl-enabled }}
 #           spacectl-version: ${{ matrix.spacectl-version }}
 #           cache: new-mode
 #         env:
@@ -60,7 +58,6 @@
 #       fail-fast: false
 #       matrix:
 #         os: [namespace-profile-macos, namespace-profile-e2e-small]
-#         spacectl-enabled: ${{ fromJson(needs.setup.outputs.spacectl-enabled) }}
 #         spacectl-version: ${{ fromJson(needs.setup.outputs.spacectl-version) }}
 #
 # 3. If you need a demo repository, checkout it after the main checkout:
@@ -153,7 +150,6 @@ jobs:
     runs-on: namespace-profile-e2e-small
     strategy:
       matrix:
-        spacectl-enabled: ${{ fromJson(needs.setup.outputs.spacectl-enabled) }}
         spacectl-version: ${{ fromJson(needs.setup.outputs.spacectl-version) }}
     steps:
       - uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6
@@ -186,7 +182,6 @@ jobs:
       - name: Setup cache
         uses: ./
         with:
-          spacectl-enabled: ${{ matrix.spacectl-enabled }}
           spacectl-version: ${{ matrix.spacectl-version }}
           cache: apt
         env:
@@ -204,7 +199,6 @@ jobs:
       fail-fast: false
       matrix:
         os: [namespace-profile-macos, namespace-profile-e2e-small]
-        spacectl-enabled: ${{ fromJson(needs.setup.outputs.spacectl-enabled) }}
         spacectl-version: ${{ fromJson(needs.setup.outputs.spacectl-version) }}
     steps:
       - uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6
@@ -216,7 +210,6 @@ jobs:
       - name: Setup cache
         uses: ./
         with:
-          spacectl-enabled: ${{ matrix.spacectl-enabled }}
           spacectl-version: ${{ matrix.spacectl-version }}
           cache: brew
         env:
@@ -234,7 +227,6 @@ jobs:
     runs-on: namespace-profile-e2e-small
     strategy:
       matrix:
-        spacectl-enabled: ${{ fromJson(needs.setup.outputs.spacectl-enabled) }}
         spacectl-version: ${{ fromJson(needs.setup.outputs.spacectl-version) }}
     steps:
       - uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6
@@ -248,7 +240,6 @@ jobs:
       - name: Setup cache
         uses: ./
         with:
-          spacectl-enabled: ${{ matrix.spacectl-enabled }}
           spacectl-version: ${{ matrix.spacectl-version }}
           cache: bun
         env:
@@ -308,7 +299,6 @@ jobs:
       - name: Setup cache
         uses: ./
         with:
-          spacectl-enabled: ${{ matrix.spacectl-enabled }}
           spacectl-version: ${{ matrix.spacectl-version }}
           cache: composer
         env:
@@ -348,7 +338,6 @@ jobs:
     runs-on: namespace-profile-e2e-medium
     strategy:
       matrix:
-        spacectl-enabled: ${{ fromJson(needs.setup.outputs.spacectl-enabled) }}
         spacectl-version: ${{ fromJson(needs.setup.outputs.spacectl-version) }}
     steps:
       - uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6
@@ -367,7 +356,6 @@ jobs:
       - name: Setup cache
         uses: ./
         with:
-          spacectl-enabled: ${{ matrix.spacectl-enabled }}
           spacectl-version: ${{ matrix.spacectl-version }}
           cache: go
         env:
@@ -381,7 +369,6 @@ jobs:
     runs-on: namespace-profile-e2e-medium
     strategy:
       matrix:
-        spacectl-enabled: ${{ fromJson(needs.setup.outputs.spacectl-enabled) }}
         spacectl-version: ${{ fromJson(needs.setup.outputs.spacectl-version) }}
     steps:
       - uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6
@@ -408,7 +395,6 @@ jobs:
       - name: Setup cache
         uses: ./
         with:
-          spacectl-enabled: ${{ matrix.spacectl-enabled }}
           spacectl-version: ${{ matrix.spacectl-version }}
           cache: |
             go
@@ -424,7 +410,6 @@ jobs:
     runs-on: namespace-profile-e2e-small
     strategy:
       matrix:
-        spacectl-enabled: ${{ fromJson(needs.setup.outputs.spacectl-enabled) }}
         spacectl-version: ${{ fromJson(needs.setup.outputs.spacectl-version) }}
     steps:
       - uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6
@@ -445,7 +430,6 @@ jobs:
       - name: Setup cache
         uses: ./
         with:
-          spacectl-enabled: ${{ matrix.spacectl-enabled }}
           spacectl-version: ${{ matrix.spacectl-version }}
           cache: gradle
         env:
@@ -460,7 +444,6 @@ jobs:
     runs-on: namespace-profile-e2e-small
     strategy:
       matrix:
-        spacectl-enabled: ${{ fromJson(needs.setup.outputs.spacectl-enabled) }}
         spacectl-version: ${{ fromJson(needs.setup.outputs.spacectl-version) }}
     steps:
       - uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6
@@ -485,7 +468,6 @@ jobs:
       - name: Setup cache
         uses: ./
         with:
-          spacectl-enabled: ${{ matrix.spacectl-enabled }}
           spacectl-version: ${{ matrix.spacectl-version }}
           cache: maven
         env:
@@ -561,7 +543,6 @@ jobs:
       fail-fast: false
       matrix:
         os: [namespace-profile-macos, namespace-profile-e2e-small]
-        spacectl-enabled: ${{ fromJson(needs.setup.outputs.spacectl-enabled) }}
         spacectl-version: ${{ fromJson(needs.setup.outputs.spacectl-version) }}
     steps:
       - uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6
@@ -573,7 +554,6 @@ jobs:
       - name: Setup cache
         uses: ./
         with:
-          spacectl-enabled: ${{ matrix.spacectl-enabled }}
           spacectl-version: ${{ matrix.spacectl-version }}
           cache: playwright
         env:
@@ -588,7 +568,6 @@ jobs:
       fail-fast: false
       matrix:
         os: [namespace-profile-macos, namespace-profile-e2e-small]
-        spacectl-enabled: ${{ fromJson(needs.setup.outputs.spacectl-enabled) }}
         spacectl-version: ${{ fromJson(needs.setup.outputs.spacectl-version) }}
     env:
       PLAYWRIGHT_BROWSERS_PATH: ~/playwright-cache
@@ -602,7 +581,6 @@ jobs:
       - name: Setup cache
         uses: ./
         with:
-          spacectl-enabled: ${{ matrix.spacectl-enabled }}
           spacectl-version: ${{ matrix.spacectl-version }}
           cache: playwright
         env:
@@ -617,7 +595,6 @@ jobs:
       fail-fast: false
       matrix:
         os: [namespace-profile-macos, namespace-profile-e2e-small]
-        spacectl-enabled: ${{ fromJson(needs.setup.outputs.spacectl-enabled) }}
         spacectl-version: ${{ fromJson(needs.setup.outputs.spacectl-version) }}
     steps:
       - uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6
@@ -637,7 +614,6 @@ jobs:
       - name: Setup cache
         uses: ./
         with:
-          spacectl-enabled: ${{ matrix.spacectl-enabled }}
           spacectl-version: ${{ matrix.spacectl-version }}
           cache: pnpm
           path: |
@@ -654,7 +630,6 @@ jobs:
     strategy:
       matrix:
         pnpm-version: ['8.15.5', '9.7.0', '9.15.0']
-        spacectl-enabled: ${{ fromJson(needs.setup.outputs.spacectl-enabled) }}
         spacectl-version: ${{ fromJson(needs.setup.outputs.spacectl-version) }}
     steps:
       - uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6
@@ -676,7 +651,6 @@ jobs:
       - name: Setup cache
         uses: ./
         with:
-          spacectl-enabled: ${{ matrix.spacectl-enabled }}
           spacectl-version: ${{ matrix.spacectl-version }}
           cache: pnpm
         env:
@@ -688,7 +662,6 @@ jobs:
     runs-on: namespace-profile-e2e-small
     strategy:
       matrix:
-        spacectl-enabled: ${{ fromJson(needs.setup.outputs.spacectl-enabled) }}
         spacectl-version: ${{ fromJson(needs.setup.outputs.spacectl-version) }}
     steps:
       - uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6
@@ -706,7 +679,6 @@ jobs:
       - name: Setup cache
         uses: ./
         with:
-          spacectl-enabled: ${{ matrix.spacectl-enabled }}
           spacectl-version: ${{ matrix.spacectl-version }}
           cache: poetry
         env:
@@ -748,7 +720,6 @@ jobs:
     runs-on: namespace-profile-e2e-small
     strategy:
       matrix:
-        spacectl-enabled: ${{ fromJson(needs.setup.outputs.spacectl-enabled) }}
         spacectl-version: ${{ fromJson(needs.setup.outputs.spacectl-version) }}
     steps:
       - uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6
@@ -764,7 +735,6 @@ jobs:
       - name: Setup cache
         uses: ./
         with:
-          spacectl-enabled: ${{ matrix.spacectl-enabled }}
           spacectl-version: ${{ matrix.spacectl-version }}
           cache: rust
         env:
@@ -780,7 +750,6 @@ jobs:
     runs-on: namespace-profile-e2e-small
     strategy:
       matrix:
-        spacectl-enabled: ${{ fromJson(needs.setup.outputs.spacectl-enabled) }}
         spacectl-version: ${{ fromJson(needs.setup.outputs.spacectl-version) }}
     steps:
       - uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6
@@ -796,7 +765,6 @@ jobs:
       - name: Setup cache
         uses: ./
         with:
-          spacectl-enabled: ${{ matrix.spacectl-enabled }}
           spacectl-version: ${{ matrix.spacectl-version }}
           cache: ruby
         env:
@@ -812,7 +780,6 @@ jobs:
     runs-on: namespace-profile-e2e-small
     strategy:
       matrix:
-        spacectl-enabled: ${{ fromJson(needs.setup.outputs.spacectl-enabled) }}
         spacectl-version: ${{ fromJson(needs.setup.outputs.spacectl-version) }}
     steps:
       - uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6
@@ -830,7 +797,6 @@ jobs:
       - name: Setup cache
         uses: ./
         with:
-          spacectl-enabled: ${{ matrix.spacectl-enabled }}
           spacectl-version: ${{ matrix.spacectl-version }}
           cache: rust
         env:
@@ -846,7 +812,6 @@ jobs:
     runs-on: namespace-profile-macos
     strategy:
       matrix:
-        spacectl-enabled: ${{ fromJson(needs.setup.outputs.spacectl-enabled) }}
         spacectl-version: ${{ fromJson(needs.setup.outputs.spacectl-version) }}
     steps:
       - uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6
@@ -858,7 +823,6 @@ jobs:
       - name: Setup cache
         uses: ./
         with:
-          spacectl-enabled: ${{ matrix.spacectl-enabled }}
           spacectl-version: ${{ matrix.spacectl-version }}
           cache: swiftpm
         env:
@@ -903,7 +867,6 @@ jobs:
     runs-on: namespace-profile-e2e-small
     strategy:
       matrix:
-        spacectl-enabled: ${{ fromJson(needs.setup.outputs.spacectl-enabled) }}
         spacectl-version: ${{ fromJson(needs.setup.outputs.spacectl-version) }}
     steps:
       - uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6
@@ -919,7 +882,6 @@ jobs:
       - name: Setup cache
         uses: ./
         with:
-          spacectl-enabled: ${{ matrix.spacectl-enabled }}
           spacectl-version: ${{ matrix.spacectl-version }}
           cache: yarn
         env:
