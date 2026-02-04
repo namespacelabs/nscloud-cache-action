@@ -39579,7 +39579,7 @@ function getOctokit(token, options, ...additionalPlugins) {
     return new GitHubWithPlugins(getOctokitOptions(token, options));
 }
 //# sourceMappingURL=github.js.map
-;// CONCATENATED MODULE: ./node_modules/@namespacelabs/actions-toolkit/dist/spacectl-CM8z_TU0.mjs
+;// CONCATENATED MODULE: ./node_modules/@namespacelabs/actions-toolkit/dist/spacectl-cb0KJypD.mjs
 
 
 
@@ -39604,7 +39604,7 @@ var SpacectlExecError = class extends Error {
 		this.command = command;
 	}
 };
-async function spacectl_CM8z_TU0_exec(args, options) {
+async function spacectl_cb0KJypD_exec(args, options) {
 	const binPath = options?.binPath ?? "spacectl";
 	const execArgs = [...args, "--output=json"];
 	let stdout = "";
@@ -39720,6 +39720,7 @@ var SpacectlInstallError = class extends Error {
 async function findExistingBinary() {
 	const binaryName = getBinaryName();
 	const powertoysDir = process.env.NSC_POWERTOYS_DIR;
+	core_debug(`powertoys directory: ${powertoysDir}`);
 	if (powertoysDir) {
 		const powertoysPath = external_node_path_namespaceObject.join(powertoysDir, binaryName);
 		try {
@@ -39739,7 +39740,7 @@ async function findExistingBinary() {
 	}
 }
 async function getInstalledVersion(binPath) {
-	const result = await spacectl_CM8z_TU0_exec(["version"], { binPath });
+	const result = await spacectl_cb0KJypD_exec(["version"], { binPath });
 	try {
 		return normalizeVersion(JSON.parse(result.stdout.trim()).version);
 	} catch (error) {
@@ -39826,7 +39827,7 @@ async function install(options = {}) {
 
 //#endregion
 
-//# sourceMappingURL=spacectl-CM8z_TU0.mjs.map
+//# sourceMappingURL=spacectl-cb0KJypD.mjs.map
 ;// CONCATENATED MODULE: ./node_modules/@namespacelabs/actions-toolkit/dist/spacectl.mjs
 
 
@@ -39840,7 +39841,7 @@ const Input_Cache = 'cache';
 const Input_Path = 'path';
 const Output_CacheHit = 'cache-hit';
 async function action_mount() {
-    const result = await spacectl_CM8z_TU0_exec(getMountCommand());
+    const result = await spacectl_cb0KJypD_exec(getMountCommand());
     return JSON.parse(result.stdout.trim());
 }
 function exportAddEnvs(addEnvs) {
