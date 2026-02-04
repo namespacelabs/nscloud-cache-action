@@ -168,6 +168,12 @@ jobs:
           fi
           echo "NSC_POWERTOYS_DIR=$NSC_POWERTOYS_DIR"
           ls -la "$NSC_POWERTOYS_DIR"
+      - name: Breakpoint if tests failed
+        if: failure()
+        uses: namespacelabs/breakpoint-action@v0
+        with:
+          duration: 30m
+          authorized-users: rcrowe
       - &download-spacectl-binary
         name: Download space binary
         if: inputs.spacectl-source-ref != ''
