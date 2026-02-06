@@ -40046,17 +40046,16 @@ async function mount() {
     if (mount.input.modes.length > 0) {
         info(`Cache modes used: ${mount.input.modes.join(', ')}.`);
     }
-    const fullHit = mount.output.mounts.every(m => m.cache_hit);
+    const mounts = mount.output.mounts ?? [];
+    const fullHit = mounts.every(m => m.cache_hit);
     setOutput(Output_CacheHit, fullHit.toString());
-    const pathLabel = mount.output.mounts.length === 1 ? 'path' : 'paths';
-    info(`Mounted ${mount.output.mounts.length} cache ${pathLabel}.`);
+    const pathLabel = mounts.length === 1 ? 'path' : 'paths';
+    info(`Mounted ${mounts.length} cache ${pathLabel}.`);
     if (fullHit) {
         info('All cache paths found and restored.');
     }
     else {
-        const cacheMisses = mount.output.mounts
-            .filter(m => !m.cache_hit)
-            .map(m => m.mount_path);
+        const cacheMisses = mounts.filter(m => !m.cache_hit).map(m => m.mount_path);
         info(`Some cache paths missing: ${cacheMisses.join(', ')}`);
         if (getBooleanInput(Input_FailOnCacheMiss)) {
             throw new Error(`Some cache paths missing: ${cacheMisses.join(', ')}`);
