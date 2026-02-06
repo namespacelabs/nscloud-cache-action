@@ -31013,7 +31013,7 @@ async function main() {
         core_debug('Using bind mounts: no risk of finding them deleted.');
     }
     let foundProblems = false;
-    for (const m of mount.output.mounts) {
+    for (const m of mount.output.mounts ?? []) {
         if (useSymlinks) {
             const expandedPath = resolveHome(m.mount_path);
             const st = external_node_fs_namespaceObject.lstatSync(expandedPath, { throwIfNoEntry: false });
