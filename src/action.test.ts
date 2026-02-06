@@ -245,6 +245,22 @@ describe('mount', async () => {
     expect(result.input.paths).toEqual(['/tmp/cache']);
   });
 
+  test('parses response with undefined mounts', async () => {
+    const payload = {
+      input: {modes: ['pnpm']},
+      output: {
+        destructive_mode: false,
+        disk_usage: {total: '10G', used: '0'},
+        removed_paths: []
+      }
+    };
+
+    mockExecWithPayload(payload);
+
+    const result = await action.mount();
+    expect(result.output.mounts).toBeUndefined();
+  });
+
   test('parses response with multiple mounts', async () => {
     const payload = {
       input: {modes: ['apt', 'go']},

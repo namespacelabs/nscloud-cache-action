@@ -87,18 +87,18 @@ async function mount() {
     core.info(`Cache modes used: ${mount.input.modes.join(', ')}.`);
   }
 
-  const fullHit = mount.output.mounts.every(m => m.cache_hit);
+  const mounts = mount.output.mounts ?? [];
+
+  const fullHit = mounts.every(m => m.cache_hit);
   core.setOutput(action.Output_CacheHit, fullHit.toString());
 
-  const pathLabel = mount.output.mounts.length === 1 ? 'path' : 'paths';
-  core.info(`Mounted ${mount.output.mounts.length} cache ${pathLabel}.`);
+  const pathLabel = mounts.length === 1 ? 'path' : 'paths';
+  core.info(`Mounted ${mounts.length} cache ${pathLabel}.`);
 
   if (fullHit) {
     core.info('All cache paths found and restored.');
   } else {
-    const cacheMisses = mount.output.mounts
-      .filter(m => !m.cache_hit)
-      .map(m => m.mount_path);
+    const cacheMisses = mounts.filter(m => !m.cache_hit).map(m => m.mount_path);
 
     core.info(`Some cache paths missing: ${cacheMisses.join(', ')}`);
 
