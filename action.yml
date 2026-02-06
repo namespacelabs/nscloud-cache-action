@@ -5,6 +5,9 @@ inputs:
   spacectl-version:
     description: "Version of spacectl CLI to use (e.g., '0.1.0' or 'latest'). If not specified, uses existing binary or fetches latest."
     required: false
+  spacectl-system-binary:
+    description: "Whether to use an existing spacectl binary. Options: 'prefer' (default), 'require', 'ignore'."
+    required: false
   github-token:
     description: "GitHub token for API requests to fetch space releases"
     required: false
