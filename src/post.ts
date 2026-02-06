@@ -21,7 +21,7 @@ async function main() {
 
   let foundProblems = false;
 
-  for (const m of mount.output.mounts) {
+  for (const m of mount.output.mounts ?? []) {
     if (useSymlinks) {
       const expandedPath = utils.resolveHome(m.mount_path);
       const st = fs.lstatSync(expandedPath, {throwIfNoEntry: false});
