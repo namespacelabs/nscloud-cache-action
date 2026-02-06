@@ -4,6 +4,7 @@ import * as action from './action';
 import * as utils from './utils';
 
 const Input_SpacectlVersion = 'spacectl-version';
+const Input_SpacectlSystemBinary = 'spacectl-system-binary';
 const Input_GithubToken = 'github-token';
 
 void main();
@@ -33,10 +34,16 @@ async function run() {
 
   const versionSpec = core.getInput(Input_SpacectlVersion) || undefined;
   const githubToken = core.getInput(Input_GithubToken) || undefined;
+  const systemBinary =
+    (core.getInput(Input_SpacectlSystemBinary) as
+      | 'prefer'
+      | 'require'
+      | 'ignore') || undefined;
 
   await installSpacectl({
     version: versionSpec,
-    githubToken: githubToken
+    githubToken: githubToken,
+    systemBinary: systemBinary
   });
 
   await mount();
