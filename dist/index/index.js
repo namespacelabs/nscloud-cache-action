@@ -2155,7 +2155,7 @@ const diff = (version1, version2) => {
     return prefix + 'patch'
   }
 
-  // high and low are preleases
+  // high and low are prereleases
   return 'prerelease'
 }
 
@@ -2786,8 +2786,8 @@ createToken('MAINVERSIONLOOSE', `(${src[t.NUMERICIDENTIFIERLOOSE]})\\.` +
 
 // ## Pre-release Version Identifier
 // A numeric identifier, or a non-numeric identifier.
-// Non-numberic identifiers include numberic identifiers but can be longer.
-// Therefore non-numberic identifiers must go first.
+// Non-numeric identifiers include numeric identifiers but can be longer.
+// Therefore non-numeric identifiers must go first.
 
 createToken('PRERELEASEIDENTIFIER', `(?:${src[t.NONNUMERICIDENTIFIER]
 }|${src[t.NUMERICIDENTIFIER]})`)
@@ -3309,7 +3309,7 @@ const compare = __nccwpck_require__(8469)
 // - If LT
 //   - If LT.semver is greater than any < or <= comp in C, return false
 //   - If LT is <=, and LT.semver does not satisfy every C, return false
-//   - If GT.semver has a prerelease, and not in prerelease mode
+//   - If LT.semver has a prerelease, and not in prerelease mode
 //     - If no C has a prerelease and the LT.semver tuple, return false
 // - Else return true
 
@@ -39579,7 +39579,7 @@ function getOctokit(token, options, ...additionalPlugins) {
     return new GitHubWithPlugins(getOctokitOptions(token, options));
 }
 //# sourceMappingURL=github.js.map
-;// CONCATENATED MODULE: ./node_modules/@namespacelabs/actions-toolkit/dist/spacectl-cb0KJypD.mjs
+;// CONCATENATED MODULE: ./node_modules/@namespacelabs/actions-toolkit/dist/installer-CSmL3hNj.mjs
 
 
 
@@ -39604,7 +39604,7 @@ var SpacectlExecError = class extends Error {
 		this.command = command;
 	}
 };
-async function spacectl_cb0KJypD_exec(args, options) {
+async function installer_CSmL3hNj_exec(args, options) {
 	const binPath = options?.binPath ?? "spacectl";
 	const execArgs = [...args, "--output=json"];
 	let stdout = "";
@@ -39740,7 +39740,7 @@ async function findExistingBinary() {
 	}
 }
 async function getInstalledVersion(binPath) {
-	const result = await spacectl_cb0KJypD_exec(["version"], { binPath });
+	const result = await installer_CSmL3hNj_exec(["version"], { binPath });
 	try {
 		return normalizeVersion(JSON.parse(result.stdout.trim()).version);
 	} catch (error) {
@@ -39783,7 +39783,8 @@ async function install(options = {}) {
 		throw new SpacectlInstallError(`Unsupported architecture: ${process.arch}`, "UNSUPPORTED_ARCH", error);
 	}
 	const binaryName = getBinaryName();
-	if (versionSpec === "" && options.useSystemBinary !== false) {
+	const systemBinary = options.systemBinary ?? "prefer";
+	if (systemBinary === "require" || systemBinary === "prefer" && versionSpec === "") {
 		const existingPath = await findExistingBinary();
 		if (existingPath) {
 			const version = await getInstalledVersion(existingPath);
@@ -39795,6 +39796,7 @@ async function install(options = {}) {
 				downloaded: false
 			};
 		}
+		if (systemBinary === "require") throw new SpacectlInstallError("No existing spacectl binary found in powertoys or on PATH", "SYSTEM_BINARY_NOT_FOUND");
 		info("No existing spacectl found, downloading latest version");
 	}
 	let targetVersion;
@@ -39827,7 +39829,7 @@ async function install(options = {}) {
 
 //#endregion
 
-//# sourceMappingURL=spacectl-cb0KJypD.mjs.map
+//# sourceMappingURL=installer-CSmL3hNj.mjs.map
 ;// CONCATENATED MODULE: ./node_modules/@namespacelabs/actions-toolkit/dist/spacectl.mjs
 
 
@@ -39841,7 +39843,7 @@ const Input_Cache = 'cache';
 const Input_Path = 'path';
 const Output_CacheHit = 'cache-hit';
 async function action_mount() {
-    const result = await spacectl_cb0KJypD_exec(getMountCommand());
+    const result = await installer_CSmL3hNj_exec(getMountCommand());
     return JSON.parse(result.stdout.trim());
 }
 function exportAddEnvs(addEnvs) {
