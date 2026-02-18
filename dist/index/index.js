@@ -34592,7 +34592,7 @@ function error(message, properties = {}) {
  * @param properties optional properties to add to the annotation.
  */
 function warning(message, properties = {}) {
-    issueCommand('warning', toCommandProperties(properties), message instanceof Error ? message.toString() : message);
+    command_issueCommand('warning', utils_toCommandProperties(properties), message instanceof Error ? message.toString() : message);
 }
 /**
  * Adds a notice issue
@@ -39579,7 +39579,7 @@ function getOctokit(token, options, ...additionalPlugins) {
     return new GitHubWithPlugins(getOctokitOptions(token, options));
 }
 //# sourceMappingURL=github.js.map
-;// CONCATENATED MODULE: ./node_modules/@namespacelabs/actions-toolkit/dist/installer-CSmL3hNj.mjs
+;// CONCATENATED MODULE: ./node_modules/@namespacelabs/actions-toolkit/dist/installer-0s5y_k0w.mjs
 
 
 
@@ -39604,7 +39604,7 @@ var SpacectlExecError = class extends Error {
 		this.command = command;
 	}
 };
-async function installer_CSmL3hNj_exec(args, options) {
+async function installer_0s5y_k0w_exec(args, options) {
 	const binPath = options?.binPath ?? "spacectl";
 	const execArgs = [...args, "--output=json"];
 	let stdout = "";
@@ -39728,7 +39728,7 @@ async function findExistingBinary() {
 			core_debug(`Found existing binary in powertoys: ${powertoysPath}`);
 			return powertoysPath;
 		} catch {
-			core_debug(`Binary not found in powertoys dir: ${powertoysPath}`);
+			warning(`Binary not found in powertoys dir: ${powertoysPath}`);
 		}
 	}
 	try {
@@ -39740,7 +39740,7 @@ async function findExistingBinary() {
 	}
 }
 async function getInstalledVersion(binPath) {
-	const result = await installer_CSmL3hNj_exec(["version"], { binPath });
+	const result = await installer_0s5y_k0w_exec(["version"], { binPath });
 	try {
 		return normalizeVersion(JSON.parse(result.stdout.trim()).version);
 	} catch (error) {
@@ -39829,7 +39829,7 @@ async function install(options = {}) {
 
 //#endregion
 
-//# sourceMappingURL=installer-CSmL3hNj.mjs.map
+//# sourceMappingURL=installer-0s5y_k0w.mjs.map
 ;// CONCATENATED MODULE: ./node_modules/@namespacelabs/actions-toolkit/dist/spacectl.mjs
 
 
@@ -39843,7 +39843,7 @@ const Input_Cache = 'cache';
 const Input_Path = 'path';
 const Output_CacheHit = 'cache-hit';
 async function action_mount() {
-    const result = await installer_CSmL3hNj_exec(getMountCommand());
+    const result = await installer_0s5y_k0w_exec(getMountCommand());
     return JSON.parse(result.stdout.trim());
 }
 function exportAddEnvs(addEnvs) {
