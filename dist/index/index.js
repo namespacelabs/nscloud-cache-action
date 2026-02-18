@@ -39997,8 +39997,12 @@ async function main() {
     }
     catch (error) {
         // Fail the workflow run if an error occurs
-        if (error instanceof Error)
-            setFailed(error.message);
+        if (error instanceof Error) {
+            const msg = error.cause
+                ? `${error.message}: ${error.cause}`
+                : error.message;
+            setFailed(msg);
+        }
     }
     finally {
         clearTimeout(timeoutId);
