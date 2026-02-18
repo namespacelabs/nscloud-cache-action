@@ -34592,7 +34592,7 @@ function error(message, properties = {}) {
  * @param properties optional properties to add to the annotation.
  */
 function warning(message, properties = {}) {
-    issueCommand('warning', toCommandProperties(properties), message instanceof Error ? message.toString() : message);
+    command_issueCommand('warning', utils_toCommandProperties(properties), message instanceof Error ? message.toString() : message);
 }
 /**
  * Adds a notice issue
@@ -34694,6 +34694,8 @@ function getIDToken(aud) {
  */
 
 //# sourceMappingURL=core.js.map
+;// CONCATENATED MODULE: external "node:fs"
+const external_node_fs_namespaceObject = require("node:fs");
 ;// CONCATENATED MODULE: external "node:fs/promises"
 const promises_namespaceObject = require("node:fs/promises");
 ;// CONCATENATED MODULE: external "node:path"
@@ -39579,7 +39581,8 @@ function getOctokit(token, options, ...additionalPlugins) {
     return new GitHubWithPlugins(getOctokitOptions(token, options));
 }
 //# sourceMappingURL=github.js.map
-;// CONCATENATED MODULE: ./node_modules/@namespacelabs/actions-toolkit/dist/installer-CSmL3hNj.mjs
+;// CONCATENATED MODULE: ./node_modules/@namespacelabs/actions-toolkit/dist/installer-BnV4sR91.mjs
+
 
 
 
@@ -39604,7 +39607,7 @@ var SpacectlExecError = class extends Error {
 		this.command = command;
 	}
 };
-async function installer_CSmL3hNj_exec(args, options) {
+async function installer_BnV4sR91_exec(args, options) {
 	const binPath = options?.binPath ?? "spacectl";
 	const execArgs = [...args, "--output=json"];
 	let stdout = "";
@@ -39679,7 +39682,7 @@ async function getLatestVersion(token) {
 		return normalizeVersion(release.tag_name);
 	} catch (error) {
 		core_debug(`Failed to get latest release: ${error}`);
-		throw new Error("Failed to resolve latest version. If hitting rate limits, provide a GitHub token via options.githubToken or GITHUB_TOKEN env var.");
+		throw new Error("Failed to resolve latest version. If hitting rate limits, provide a GitHub token via options.githubToken or GITHUB_TOKEN env var.", { cause: error });
 	}
 }
 async function getLatestDevVersion(token) {
@@ -39694,7 +39697,7 @@ async function getLatestDevVersion(token) {
 		throw new Error("No dev release found");
 	} catch (error) {
 		core_debug(`Failed to get dev release: ${error}`);
-		throw new Error("Failed to resolve dev version. If hitting rate limits, provide a GitHub token via options.githubToken or GITHUB_TOKEN env var.");
+		throw new Error("Failed to resolve dev version. If hitting rate limits, provide a GitHub token via options.githubToken or GITHUB_TOKEN env var.", { cause: error });
 	}
 }
 async function resolveVersion(versionSpec, token) {
@@ -39728,9 +39731,20 @@ async function findExistingBinary() {
 			core_debug(`Found existing binary in powertoys: ${powertoysPath}`);
 			return powertoysPath;
 		} catch {
-			core_debug(`Binary not found in powertoys dir: ${powertoysPath}`);
+			warning(`Binary at powertoys path is not executable: ${powertoysPath}`);
 		}
 	}
+	const defaultDir = getPlatform() === "darwin" ? "/opt/powertoys" : "/nsc/powertoys";
+	const defaultPath = external_node_path_namespaceObject.join(defaultDir, binaryName);
+	core_debug(`Checking default powertoys path: ${defaultPath}`);
+	if ((0,external_node_fs_namespaceObject.existsSync)(defaultPath)) try {
+		await promises_namespaceObject.access(defaultPath, promises_namespaceObject.constants.X_OK);
+		core_debug(`Found existing binary at default path: ${defaultPath}`);
+		return defaultPath;
+	} catch {
+		warning(`Binary at default path is not executable: ${defaultPath}`);
+	}
+	else core_debug(`Binary not found at default path: ${defaultPath}`);
 	try {
 		const systemPath = await which(TOOL_NAME, true);
 		core_debug(`Found existing binary on PATH: ${systemPath}`);
@@ -39740,7 +39754,7 @@ async function findExistingBinary() {
 	}
 }
 async function getInstalledVersion(binPath) {
-	const result = await installer_CSmL3hNj_exec(["version"], { binPath });
+	const result = await installer_BnV4sR91_exec(["version"], { binPath });
 	try {
 		return normalizeVersion(JSON.parse(result.stdout.trim()).version);
 	} catch (error) {
@@ -39829,7 +39843,7 @@ async function install(options = {}) {
 
 //#endregion
 
-//# sourceMappingURL=installer-CSmL3hNj.mjs.map
+//# sourceMappingURL=installer-BnV4sR91.mjs.map
 ;// CONCATENATED MODULE: ./node_modules/@namespacelabs/actions-toolkit/dist/spacectl.mjs
 
 
@@ -39843,7 +39857,7 @@ const Input_Cache = 'cache';
 const Input_Path = 'path';
 const Output_CacheHit = 'cache-hit';
 async function action_mount() {
-    const result = await installer_CSmL3hNj_exec(getMountCommand());
+    const result = await installer_BnV4sR91_exec(getMountCommand());
     return JSON.parse(result.stdout.trim());
 }
 function exportAddEnvs(addEnvs) {
@@ -39881,8 +39895,6 @@ function getMountCommand() {
     return args;
 }
 
-;// CONCATENATED MODULE: external "node:fs"
-const external_node_fs_namespaceObject = require("node:fs");
 ;// CONCATENATED MODULE: ./src/utils.ts
 
 
