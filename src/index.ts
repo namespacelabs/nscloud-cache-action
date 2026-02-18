@@ -23,7 +23,12 @@ async function main() {
     await run();
   } catch (error) {
     // Fail the workflow run if an error occurs
-    if (error instanceof Error) core.setFailed(error.message);
+    if (error instanceof Error) {
+      const msg = error.cause
+        ? `${error.message}: ${error.cause}`
+        : error.message;
+      core.setFailed(msg);
+    }
   } finally {
     clearTimeout(timeoutId);
   }
