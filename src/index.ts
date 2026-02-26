@@ -86,7 +86,8 @@ Are you running in a container? Check out https://namespace.so/docs/reference/gi
 }
 
 async function mount() {
-  const mount = await action.mount();
+  const mountOptions = action.parseMountInputs();
+  const mount = await action.mount(mountOptions);
 
   if (mount.input.modes.length > 0) {
     core.info(`Cache modes used: ${mount.input.modes.join(', ')}.`);

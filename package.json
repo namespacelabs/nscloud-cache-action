@@ -16,7 +16,7 @@
     "lint:fix": "eslint \"**/*.ts\" --fix",
     "test": "vitest",
     "typecheck": "tsc --noEmit",
-    "pre-checkin": "npm run format && npm run lint:fix && tsc --noEmit && npm run build && npm test run"
+    "pre-checkin": "npm run format && npm run lint:fix && npm run typecheck && npm run build && npm test run"
   },
   "author": "Namespace Labs",
   "dependencies": {

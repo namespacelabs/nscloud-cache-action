@@ -39,13 +39,17 @@ beforeEach(() => {
   }));
 });
 
-describe('getManualModesInput', async () => {
+describe('parseMountInputs', async () => {
   test('no input', () => {
     getMultilineInput.mockImplementation((name: string): string[] => {
       return [];
     });
 
-    expect(action.getManualModesInput()).toEqual([]);
+    expect(action.parseMountInputs()).toEqual<action.MountOptions>({
+      detect: [],
+      modes: [],
+      paths: []
+    });
   });
 
   test('cache input', () => {
@@ -53,7 +57,11 @@ describe('getManualModesInput', async () => {
       return name === action.Input_Cache ? ['cache-input'] : [];
     });
 
-    expect(action.getManualModesInput()).toEqual(['cache-input']);
+    expect(action.parseMountInputs()).toEqual<action.MountOptions>({
+      detect: [],
+      modes: ['cache-input'],
+      paths: []
+    });
   });
 
   test('sorts cache modes', () => {
@@ -61,29 +69,11 @@ describe('getManualModesInput', async () => {
       return name === action.Input_Cache ? ['rust', 'go', 'yarn'] : [];
     });
 
-    expect(action.getManualModesInput()).toEqual(['go', 'rust', 'yarn']);
-  });
-});
-
-describe('getMountCommand', async () => {
-  test('no input', () => {
-    getMultilineInput.mockImplementation((name: string): string[] => {
-      return [];
+    expect(action.parseMountInputs()).toEqual<action.MountOptions>({
+      detect: [],
+      modes: ['go', 'rust', 'yarn'],
+      paths: []
     });
-
-    expect(action.getMountCommand()).toEqual(['cache', 'mount', '--detect=*']);
-  });
-
-  test('detect input', () => {
-    getMultilineInput.mockImplementation((name: string): string[] => {
-      return name === action.Input_Detect_Mode ? ['node', 'go'] : [];
-    });
-
-    expect(action.getMountCommand()).toEqual([
-      'cache',
-      'mount',
-      '--detect=go,node'
-    ]);
   });
 
   test('detect all', () => {
@@ -91,31 +81,11 @@ describe('getMountCommand', async () => {
       return name === action.Input_Detect_Mode ? ['true'] : [];
     });
 
-    expect(action.getMountCommand()).toEqual(['cache', 'mount', '--detect=*']);
-  });
-
-  test('cache input', () => {
-    getMultilineInput.mockImplementation((name: string): string[] => {
-      return name === action.Input_Cache ? ['go', 'node'] : [];
+    expect(action.parseMountInputs()).toEqual<action.MountOptions>({
+      detect: ['*'],
+      modes: [],
+      paths: []
     });
-
-    expect(action.getMountCommand()).toEqual([
-      'cache',
-      'mount',
-      '--mode=go,node'
-    ]);
-  });
-
-  test('path input', () => {
-    getMultilineInput.mockImplementation((name: string): string[] => {
-      return name === action.Input_Path ? ['/tmp/cache', '/var/data'] : [];
-    });
-
-    expect(action.getMountCommand()).toEqual([
-      'cache',
-      'mount',
-      '--path=/tmp/cache,/var/data'
-    ]);
   });
 
   test('combined inputs', () => {
@@ -132,7 +102,67 @@ describe('getMountCommand', async () => {
       }
     });
 
-    expect(action.getMountCommand()).toEqual([
+    expect(action.parseMountInputs()).toEqual<action.MountOptions>({
+      detect: ['go'],
+      modes: ['node'],
+      paths: ['/tmp/cache']
+    });
+  });
+});
+
+describe('getMountCommand', async () => {
+  test('no input', () => {
+    expect(action.getMountCommand({detect: [], modes: [], paths: []})).toEqual([
+      'cache',
+      'mount',
+      '--detect=*'
+    ]);
+  });
+
+  test('detect input', () => {
+    expect(
+      action.getMountCommand({
+        detect: ['go', 'node'],
+        modes: [],
+        paths: []
+      })
+    ).toEqual(['cache', 'mount', '--detect=go,node']);
+  });
+
+  test('detect all', () => {
+    expect(
+      action.getMountCommand({detect: ['*'], modes: [], paths: []})
+    ).toEqual(['cache', 'mount', '--detect=*']);
+  });
+
+  test('cache input', () => {
+    expect(
+      action.getMountCommand({
+        detect: [],
+        modes: ['go', 'node'],
+        paths: []
+      })
+    ).toEqual(['cache', 'mount', '--mode=go,node']);
+  });
+
+  test('path input', () => {
+    expect(
+      action.getMountCommand({
+        detect: [],
+        modes: [],
+        paths: ['/tmp/cache', '/var/data']
+      })
+    ).toEqual(['cache', 'mount', '--path=/tmp/cache,/var/data']);
+  });
+
+  test('combined inputs', () => {
+    expect(
+      action.getMountCommand({
+        detect: ['go'],
+        modes: ['node'],
+        paths: ['/tmp/cache']
+      })
+    ).toEqual([
       'cache',
       'mount',
       '--detect=go',
@@ -180,7 +210,7 @@ describe('mount', async () => {
 
     mockExecWithPayload(payload);
 
-    const result = await action.mount();
+    const result = await action.mount(action.parseMountInputs());
     expect(result).toEqual(payload);
   });
 
@@ -198,7 +228,7 @@ describe('mount', async () => {
 
     mockExecWithPayload(payload);
 
-    const result = await action.mount();
+    const result = await action.mount(action.parseMountInputs());
     expect(result.output.add_envs).toEqual({NODE_PATH: '/cache/node_modules'});
   });
 
@@ -222,7 +252,7 @@ describe('mount', async () => {
 
     mockExecWithPayload(payload);
 
-    const result = await action.mount();
+    const result = await action.mount(action.parseMountInputs());
     expect(result.output.removed_paths).toEqual([
       '/etc/apt/apt.conf.d/docker-clean'
     ]);
@@ -241,7 +271,7 @@ describe('mount', async () => {
 
     mockExecWithPayload(payload);
 
-    const result = await action.mount();
+    const result = await action.mount(action.parseMountInputs());
     expect(result.input.paths).toEqual(['/tmp/cache']);
   });
 
@@ -257,7 +287,7 @@ describe('mount', async () => {
 
     mockExecWithPayload(payload);
 
-    const result = await action.mount();
+    const result = await action.mount(action.parseMountInputs());
     expect(result.output.mounts).toBeUndefined();
   });
 
@@ -293,7 +323,7 @@ describe('mount', async () => {
 
     mockExecWithPayload(payload);
 
-    const result = await action.mount();
+    const result = await action.mount(action.parseMountInputs());
     expect(result.output.mounts).toHaveLength(3);
     expect(result.output.mounts[2].cache_hit).toBe(true);
   });

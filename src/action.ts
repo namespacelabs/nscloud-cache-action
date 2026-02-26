@@ -41,8 +41,8 @@ export interface MountResponseOutputMount {
   cache_hit: boolean;
 }
 
-export async function mount(): Promise<MountResponse> {
-  const result = await spacectlExec(getMountCommand());
+export async function mount(options: MountOptions): Promise<MountResponse> {
+  const result = await spacectlExec(getMountCommand(options));
   return JSON.parse(result.stdout.trim()) as MountResponse;
 }
 
@@ -55,29 +55,37 @@ export function exportAddEnvs(addEnvs?: MountResponseOutputAddEnvs): void {
   }
 }
 
-export function getManualModesInput(): string[] {
-  return core.getMultilineInput(Input_Cache).sort();
+export interface MountOptions {
+  detect: string[];
+  modes: string[];
+  paths: string[];
 }
 
-export function getMountCommand(): string[] {
+export function parseMountInputs(): MountOptions {
+  let detect = core.getMultilineInput(Input_Detect_Mode).sort();
+  if (detect.length === 1 && detect[0].toLowerCase() === 'true') {
+    detect = ['*'];
+  }
+
+  const mode = core.getMultilineInput(Input_Cache).sort();
+  const paths = core.getMultilineInput(Input_Path);
+
+  return {detect, modes: mode, paths};
+}
+
+export function getMountCommand(options: MountOptions): string[] {
   const args: string[] = [];
 
-  let detectModes = core.getMultilineInput(Input_Detect_Mode).sort();
-  if (detectModes.length > 0) {
-    if (detectModes.length === 1 && detectModes[0].toLowerCase() === 'true') {
-      detectModes = ['*'];
-    }
-    args.push('--detect=' + detectModes.join(','));
+  if (options.detect.length > 0) {
+    args.push('--detect=' + options.detect.join(','));
   }
 
-  const manualModes = getManualModesInput();
-  if (manualModes.length > 0) {
-    args.push('--mode=' + manualModes.join(','));
+  if (options.modes.length > 0) {
+    args.push('--mode=' + options.modes.join(','));
   }
 
-  const manualPaths = core.getMultilineInput(Input_Path);
-  if (manualPaths.length > 0) {
-    args.push('--path=' + manualPaths.join(','));
+  if (options.paths.length > 0) {
+    args.push('--path=' + options.paths.join(','));
   }
 
   if (args.length === 0) {
