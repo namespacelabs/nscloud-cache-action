@@ -714,6 +714,47 @@ jobs:
       - run: pip install -r ./requirements.txt
         working-directory: ./demo
 
+  manual-paths:
+    needs: [setup, build-spacectl]
+    if: always() && (needs.build-spacectl.result == 'success' || needs.build-spacectl.result == 'skipped')
+    runs-on: namespace-profile-e2e-small
+    strategy:
+      matrix:
+        spacectl-version: ${{ fromJson(needs.setup.outputs.spacectl-version) }}
+    steps:
+      - uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6
+        with:
+          repository: namespacelabs/nscloud-cache-action
+          ref: ${{ github.job_workflow_sha }}
+      - *download-spacectl-binary
+      - *install-spacectl-binary
+      - name: Setup cache
+        uses: ./
+        with:
+          spacectl-version: ${{ matrix.spacectl-version }}
+          path: |
+            /tmp/cache-a
+            /tmp/cache-b
+            /tmp/cache-c
+        env:
+          NSC_POWERTOYS_DIR: ${{ steps.space.outputs.powertoys-dir }}
+      - name: Verify mounts are backed by cache volume
+        run: |
+          # Create a marker file in each cached path.
+          echo "hello-a" > /tmp/cache-a/marker-a.txt
+          echo "hello-b" > /tmp/cache-b/marker-b.txt
+          echo "hello-c" > /tmp/cache-c/marker-c.txt
+
+          # All three paths should appear under the cache volume.
+          for f in marker-a.txt marker-b.txt marker-c.txt; do
+            if ! find "$NSC_CACHE_PATH" -name "$f" | grep -q .; then
+              echo "FAIL: $f not found under \$NSC_CACHE_PATH ($NSC_CACHE_PATH)"
+              find "$NSC_CACHE_PATH" -type f
+              exit 1
+            fi
+          done
+          echo "All manual paths are correctly mounted in the cache volume."
+
   rust:
     needs: [setup, build-spacectl]
     if: always() && (needs.build-spacectl.result == 'success' || needs.build-spacectl.result == 'skipped')
