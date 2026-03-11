@@ -84,8 +84,8 @@ export function getMountCommand(options: MountOptions): string[] {
     args.push('--mode=' + options.modes.join(','));
   }
 
-  if (options.paths.length > 0) {
-    args.push('--path=' + options.paths.join(','));
+  for (const p of options.paths) {
+    args.push('--path=' + p);
   }
 
   if (args.length === 0) {

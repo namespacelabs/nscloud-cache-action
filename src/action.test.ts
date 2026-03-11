@@ -152,7 +152,7 @@ describe('getMountCommand', async () => {
         modes: [],
         paths: ['/tmp/cache', '/var/data']
       })
-    ).toEqual(['cache', 'mount', '--path=/tmp/cache,/var/data']);
+    ).toEqual(['cache', 'mount', '--path=/tmp/cache', '--path=/var/data']);
   });
 
   test('combined inputs', () => {
