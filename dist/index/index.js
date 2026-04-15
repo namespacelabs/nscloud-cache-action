@@ -41472,8 +41472,8 @@ const Input_Detect_Mode = 'detect';
 const Input_Cache = 'cache';
 const Input_Path = 'path';
 const Output_CacheHit = 'cache-hit';
-async function action_mount() {
-    const result = await installer_ChCQe8oE_exec(getMountCommand());
+async function action_mount(options) {
+    const result = await installer_ChCQe8oE_exec(getMountCommand(options));
     return JSON.parse(result.stdout.trim());
 }
 function exportAddEnvs(addEnvs) {
@@ -41484,25 +41484,25 @@ function exportAddEnvs(addEnvs) {
         exportVariable(key, value);
     }
 }
-function getManualModesInput() {
-    return getMultilineInput(Input_Cache).sort();
+function parseMountInputs() {
+    let detect = getMultilineInput(Input_Detect_Mode).sort();
+    if (detect.length === 1 && detect[0].toLowerCase() === 'true') {
+        detect = ['*'];
+    }
+    const mode = getMultilineInput(Input_Cache).sort();
+    const paths = getMultilineInput(Input_Path);
+    return { detect, modes: mode, paths };
 }
-function getMountCommand() {
+function getMountCommand(options) {
     const args = [];
-    let detectModes = getMultilineInput(Input_Detect_Mode).sort();
-    if (detectModes.length > 0) {
-        if (detectModes.length === 1 && detectModes[0].toLowerCase() === 'true') {
-            detectModes = ['*'];
-        }
-        args.push('--detect=' + detectModes.join(','));
+    if (options.detect.length > 0) {
+        args.push('--detect=' + options.detect.join(','));
     }
-    const manualModes = getManualModesInput();
-    if (manualModes.length > 0) {
-        args.push('--mode=' + manualModes.join(','));
+    if (options.modes.length > 0) {
+        args.push('--mode=' + options.modes.join(','));
     }
-    const manualPaths = getMultilineInput(Input_Path);
-    if (manualPaths.length > 0) {
-        args.push('--path=' + manualPaths.join(','));
+    for (const p of options.paths) {
+        args.push('--path=' + p);
     }
     if (args.length === 0) {
         args.push('--detect=*');
@@ -41674,7 +41674,8 @@ See also https://namespace.so/docs/solutions/github-actions/caching
 Are you running in a container? Check out https://namespace.so/docs/reference/github-actions/runner-configuration#jobs-in-containers`);
 }
 async function mount() {
-    const mount = await action_mount();
+    const mountOptions = parseMountInputs();
+    const mount = await action_mount(mountOptions);
     if (mount.input.modes.length > 0) {
         info(`Cache modes used: ${mount.input.modes.join(', ')}.`);
     }
