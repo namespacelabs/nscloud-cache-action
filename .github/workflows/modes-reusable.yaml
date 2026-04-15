@@ -121,7 +121,7 @@ jobs:
             goarch: arm64
     steps:
       - name: Setup Go
-        uses: actions/setup-go@7a3fe6cf4cb3a834922a1244abfce67bcef6a0c5 # v6
+        uses: actions/setup-go@4b73464bb391d4059bd26b0524d20df3927bd417 # v6
         with:
           go-version: 'stable'
           cache: false
@@ -236,7 +236,7 @@ jobs:
       - *download-spacectl-binary
       - *install-spacectl-binary
       - name: Setup Bun
-        uses: oven-sh/setup-bun@3d267786b128fe76c2f16a390aa2448b815359f3 # v2
+        uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2
       - name: Setup cache
         uses: ./
         with:
@@ -293,7 +293,7 @@ jobs:
       - *download-spacectl-binary
       - *install-spacectl-binary
       - name: Setup PHP
-        uses: shivammathur/setup-php@44454db4f0199b8b9685a5d763dc37cbf79108e1 # v2
+        uses: shivammathur/setup-php@accd6127cb78bee3e8082180cb391013d204ef9f # v2
         with:
           php-version: '8.3'
       - name: Setup cache
@@ -320,7 +320,7 @@ jobs:
       - *download-spacectl-binary
       - *install-spacectl-binary
       - name: Setup Deno
-        uses: denoland/setup-deno@e95548e56dfa95d4e1a28d6f422fafe75c4c26fb # v2
+        uses: denoland/setup-deno@667a34cdef165d8d2b2e98dde39547c9daac7282 # v2
         with:
           cache: false
       - name: Setup cache
@@ -347,7 +347,7 @@ jobs:
       - *download-spacectl-binary
       - *install-spacectl-binary
       - name: Setup Go
-        uses: actions/setup-go@7a3fe6cf4cb3a834922a1244abfce67bcef6a0c5 # v6
+        uses: actions/setup-go@4b73464bb391d4059bd26b0524d20df3927bd417 # v6
         with:
           go-version: '1.25'
           cache: false
@@ -382,7 +382,7 @@ jobs:
       - *download-spacectl-binary
       - *install-spacectl-binary
       - name: Setup Go
-        uses: actions/setup-go@7a3fe6cf4cb3a834922a1244abfce67bcef6a0c5 # v6
+        uses: actions/setup-go@4b73464bb391d4059bd26b0524d20df3927bd417 # v6
         with:
           go-version: '1.25'
           cache: false
@@ -461,7 +461,7 @@ jobs:
         with:
           java-version: '11'
           distribution: 'temurin'
-      - uses: browser-actions/setup-chrome@b94431e051d1c52dcbe9a7092a4f10f827795416 # v2
+      - uses: browser-actions/setup-chrome@4f8e94349a351df0f048634f25fec36c3c91eded # v2
         with:
           chrome-version: latest
       - run: chrome --version
@@ -528,7 +528,7 @@ jobs:
         env:
           NSC_POWERTOYS_DIR: ${{ steps.space.outputs.powertoys-dir }}
       - name: Install Nix
-        uses: cachix/install-nix-action@4e002c8ec80594ecd40e759629461e26c8abed15 # v31
+        uses: cachix/install-nix-action@1ca7d21a94afc7c957383a2d217460d980de4934 # v31
         with:
           extra_nix_config: |
             access-tokens = github.com=${{ secrets.GITHUB_TOKEN }}
@@ -758,7 +758,7 @@ jobs:
           ref: ${{ github.job_workflow_sha }}
       - *download-spacectl-binary
       - *install-spacectl-binary
-      - uses: ruby/setup-ruby@09a7688d3b55cf0e976497ff046b70949eeaccfd # v1
+      - uses: ruby/setup-ruby@319994f95fa847cf3fb3cd3dbe89f6dcde9f178f # v1
         with:
           ruby-version: '3.2'
           bundler-cache: false
@@ -906,7 +906,7 @@ jobs:
         uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6
         with:
           repository: nscloud-demo/ios-demo
-      - uses: ruby/setup-ruby@09a7688d3b55cf0e976497ff046b70949eeaccfd # v1
+      - uses: ruby/setup-ruby@319994f95fa847cf3fb3cd3dbe89f6dcde9f178f # v1
         with:
           ruby-version: '3.2.7'
           bundler-cache: false
