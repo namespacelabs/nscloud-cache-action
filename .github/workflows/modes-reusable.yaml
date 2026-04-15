@@ -739,9 +739,9 @@ jobs:
           cache: rust
         env:
           NSC_POWERTOYS_DIR: ${{ steps.space.outputs.powertoys-dir }}
-      - run: cargo build --locked --release --no-default-features --all
+      - run: cargo build --verbose --locked --release --no-default-features --all
         working-directory: ./demo
-      - run: cargo test --locked --release --all
+      - run: cargo test --verbose --locked --release --all
         working-directory: ./demo
 
   ruby:
@@ -801,9 +801,9 @@ jobs:
           cache: rust
         env:
           NSC_POWERTOYS_DIR: ${{ steps.space.outputs.powertoys-dir }}
-      - run: cargo build --locked --release --no-default-features --all
+      - run: cargo build --verbose --locked --release --no-default-features --all
         working-directory: ./demo
-      - run: cargo test --locked --release --all
+      - run: cargo test --verbose --locked --release --all
         working-directory: ./demo
 
   swiftpm:
