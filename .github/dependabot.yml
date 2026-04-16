@@ -22,3 +22,5 @@ updates:
       minor-actions-dependencies:
         # Only group minor and patch updates (we want to carefully review major updates)
         update-types: [minor, patch]
+      major-actions-dependencies:
+        update-types: [major]
