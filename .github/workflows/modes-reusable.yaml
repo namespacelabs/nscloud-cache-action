@@ -535,6 +535,32 @@ jobs:
             system-features = kvm nixos-test
       - run: echo "Hello Nix" | nix run "https://flakehub.com/f/snowfallorg/cowsay/1.3.0"
 
+  npm:
+    needs: [setup, build-spacectl]
+    if: always() && (needs.build-spacectl.result == 'success' || needs.build-spacectl.result == 'skipped')
+    runs-on: namespace-profile-e2e-small
+    strategy:
+      matrix:
+        spacectl-version: ${{ fromJson(needs.setup.outputs.spacectl-version) }}
+    steps:
+      - uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6
+        with:
+          repository: namespacelabs/nscloud-cache-action
+          ref: ${{ github.job_workflow_sha }}
+      - name: Setup Node.js
+        uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f # v6
+        with:
+          node-version-file: package.json
+          package-manager-cache: false
+      - name: Setup cache
+        uses: ./
+        with:
+          spacectl-version: ${{ matrix.spacectl-version }}
+          cache: npm
+      - run: |
+          npm init -y
+          npm install express
+
   playwright:
     needs: [setup, build-spacectl]
     if: always() && (needs.build-spacectl.result == 'success' || needs.build-spacectl.result == 'skipped')
