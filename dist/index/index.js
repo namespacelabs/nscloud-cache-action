@@ -33279,6 +33279,8 @@ var __webpack_exports__ = {};
 
 ;// CONCATENATED MODULE: external "node:fs/promises"
 const promises_namespaceObject = require("node:fs/promises");
+;// CONCATENATED MODULE: external "node:os"
+const external_node_os_namespaceObject = require("node:os");
 ;// CONCATENATED MODULE: external "node:path"
 const external_node_path_namespaceObject = require("node:path");
 ;// CONCATENATED MODULE: external "os"
@@ -37030,8 +37032,6 @@ function _unique(values) {
     return Array.from(new Set(values));
 }
 //# sourceMappingURL=tool-cache.js.map
-;// CONCATENATED MODULE: external "node:os"
-const external_node_os_namespaceObject = require("node:os");
 ;// CONCATENATED MODULE: ./node_modules/@actions/github/lib/context.js
 
 
@@ -41612,6 +41612,7 @@ function shouldUseSymlinks() {
 
 
 
+
 const Input_SpacectlVersion = 'spacectl-version';
 const Input_SpacectlSystemBinary = 'spacectl-system-binary';
 const Input_GithubToken = 'github-token';
@@ -41644,7 +41645,7 @@ async function run() {
     const githubToken = getInput(Input_GithubToken) || undefined;
     const systemBinary = getInput(Input_SpacectlSystemBinary) || undefined;
     if (versionSpec && versionSpec.toLowerCase() === 'dev') {
-        await bustDevToolCache();
+        await useEphemeralToolCache();
     }
     await install({
         version: versionSpec,
@@ -41653,28 +41654,17 @@ async function run() {
     });
     await mount();
 }
-// Dev releases (e.g. 0.8.0-dev) share a single tag, so binaries change in place.
-// The Namespace runner's persistent tool cache would otherwise serve a stale
-// binary indefinitely.
-async function bustDevToolCache() {
-    const toolCache = process.env.RUNNER_TOOL_CACHE;
-    if (!toolCache)
-        return;
-    const spacectlDir = external_node_path_namespaceObject.join(toolCache, 'spacectl');
-    let entries;
-    try {
-        entries = await promises_namespaceObject.readdir(spacectlDir);
-    }
-    catch {
-        return;
-    }
-    for (const entry of entries) {
-        if (entry.endsWith('-dev')) {
-            const stalePath = external_node_path_namespaceObject.join(spacectlDir, entry);
-            await promises_namespaceObject.rm(stalePath, { recursive: true, force: true });
-            info(`Removed stale dev spacectl cache at ${stalePath}`);
-        }
-    }
+// Dev releases (e.g. 0.8.0-dev) reuse a single tag, so the binary changes in
+// place. Redirecting RUNNER_TOOL_CACHE to a per-run directory avoids serving a
+// stale binary from the runner's persistent tool cache, and also sidesteps
+// permission issues on shared /opt/hostedtoolcache/spacectl entries that can
+// leak across runners.
+async function useEphemeralToolCache() {
+    const base = process.env.RUNNER_TEMP ?? external_node_os_namespaceObject.tmpdir();
+    const ephemeral = external_node_path_namespaceObject.join(base, 'nscloud-cache-action-spacectl-toolcache');
+    await promises_namespaceObject.mkdir(ephemeral, { recursive: true });
+    process.env.RUNNER_TOOL_CACHE = ephemeral;
+    info(`Using ephemeral spacectl tool cache at ${ephemeral}`);
 }
 function verifyCacheVolume() {
     const localCachePath = process.env[Env_CacheRoot];

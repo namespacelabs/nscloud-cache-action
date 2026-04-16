@@ -1,4 +1,5 @@
 import * as fs from 'node:fs/promises';
+import * as os from 'node:os';
 import * as path from 'node:path';
 import * as core from '@actions/core';
 import {install as installSpacectl} from '@namespacelabs/actions-toolkit/spacectl';
@@ -48,7 +49,7 @@ async function run() {
       | 'ignore') || undefined;
 
   if (versionSpec && versionSpec.toLowerCase() === 'dev') {
-    await bustDevToolCache();
+    await useEphemeralToolCache();
   }
 
   await installSpacectl({
@@ -60,28 +61,17 @@ async function run() {
   await mount();
 }
 
-// Dev releases (e.g. 0.8.0-dev) share a single tag, so binaries change in place.
-// The Namespace runner's persistent tool cache would otherwise serve a stale
-// binary indefinitely.
-async function bustDevToolCache(): Promise<void> {
-  const toolCache = process.env.RUNNER_TOOL_CACHE;
-  if (!toolCache) return;
-
-  const spacectlDir = path.join(toolCache, 'spacectl');
-  let entries: string[];
-  try {
-    entries = await fs.readdir(spacectlDir);
-  } catch {
-    return;
-  }
-
-  for (const entry of entries) {
-    if (entry.endsWith('-dev')) {
-      const stalePath = path.join(spacectlDir, entry);
-      await fs.rm(stalePath, {recursive: true, force: true});
-      core.info(`Removed stale dev spacectl cache at ${stalePath}`);
-    }
-  }
+// Dev releases (e.g. 0.8.0-dev) reuse a single tag, so the binary changes in
+// place. Redirecting RUNNER_TOOL_CACHE to a per-run directory avoids serving a
+// stale binary from the runner's persistent tool cache, and also sidesteps
+// permission issues on shared /opt/hostedtoolcache/spacectl entries that can
+// leak across runners.
+async function useEphemeralToolCache(): Promise<void> {
+  const base = process.env.RUNNER_TEMP ?? os.tmpdir();
+  const ephemeral = path.join(base, 'nscloud-cache-action-spacectl-toolcache');
+  await fs.mkdir(ephemeral, {recursive: true});
+  process.env.RUNNER_TOOL_CACHE = ephemeral;
+  core.info(`Using ephemeral spacectl tool cache at ${ephemeral}`);
 }
 
 function verifyCacheVolume(): void {
