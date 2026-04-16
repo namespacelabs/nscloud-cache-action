@@ -33277,6 +33277,10 @@ var __webpack_exports__ = {};
 (() => {
 "use strict";
 
+;// CONCATENATED MODULE: external "node:fs/promises"
+const promises_namespaceObject = require("node:fs/promises");
+;// CONCATENATED MODULE: external "node:path"
+const external_node_path_namespaceObject = require("node:path");
 ;// CONCATENATED MODULE: external "os"
 const external_os_namespaceObject = require("os");
 ;// CONCATENATED MODULE: ./node_modules/@actions/core/lib/utils.js
@@ -36226,10 +36230,6 @@ function getIDToken(aud) {
 //# sourceMappingURL=core.js.map
 ;// CONCATENATED MODULE: external "node:fs"
 const external_node_fs_namespaceObject = require("node:fs");
-;// CONCATENATED MODULE: external "node:fs/promises"
-const promises_namespaceObject = require("node:fs/promises");
-;// CONCATENATED MODULE: external "node:path"
-const external_node_path_namespaceObject = require("node:path");
 // EXTERNAL MODULE: ./node_modules/semver/index.js
 var node_modules_semver = __nccwpck_require__(2088);
 ;// CONCATENATED MODULE: ./node_modules/@actions/tool-cache/lib/manifest.js
@@ -41610,6 +41610,8 @@ function shouldUseSymlinks() {
 
 
 
+
+
 const Input_SpacectlVersion = 'spacectl-version';
 const Input_SpacectlSystemBinary = 'spacectl-system-binary';
 const Input_GithubToken = 'github-token';
@@ -41641,12 +41643,38 @@ async function run() {
     const versionSpec = getInput(Input_SpacectlVersion) || undefined;
     const githubToken = getInput(Input_GithubToken) || undefined;
     const systemBinary = getInput(Input_SpacectlSystemBinary) || undefined;
+    if (versionSpec && versionSpec.toLowerCase() === 'dev') {
+        await bustDevToolCache();
+    }
     await install({
         version: versionSpec,
         githubToken: githubToken,
         systemBinary: systemBinary
     });
     await mount();
+}
+// Dev releases (e.g. 0.8.0-dev) share a single tag, so binaries change in place.
+// The Namespace runner's persistent tool cache would otherwise serve a stale
+// binary indefinitely.
+async function bustDevToolCache() {
+    const toolCache = process.env.RUNNER_TOOL_CACHE;
+    if (!toolCache)
+        return;
+    const spacectlDir = external_node_path_namespaceObject.join(toolCache, 'spacectl');
+    let entries;
+    try {
+        entries = await promises_namespaceObject.readdir(spacectlDir);
+    }
+    catch {
+        return;
+    }
+    for (const entry of entries) {
+        if (entry.endsWith('-dev')) {
+            const stalePath = external_node_path_namespaceObject.join(spacectlDir, entry);
+            await promises_namespaceObject.rm(stalePath, { recursive: true, force: true });
+            info(`Removed stale dev spacectl cache at ${stalePath}`);
+        }
+    }
 }
 function verifyCacheVolume() {
     const localCachePath = process.env[Env_CacheRoot];
