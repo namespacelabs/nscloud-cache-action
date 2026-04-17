@@ -57,8 +57,8 @@ export async function sudoMkdirP(path: string) {
 }
 
 export async function chownSelf(path: string) {
-  const uid = process.getuid();
-  const gid = process.getgid();
+  const uid = process.getuid!();
+  const gid = process.getgid!();
   const userColonGroup = `${uid}:${gid}`;
   await exec.exec('sudo', ['chown', userColonGroup, path]);
 }

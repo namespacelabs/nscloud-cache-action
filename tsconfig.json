@@ -4,6 +4,8 @@
     "module": "ES2022",
     "moduleResolution": "Bundler",
     "skipLibCheck": true,
+    "rootDir": "./src",
+    "types": ["node"],
     "outDir": "dist"
   }
 }
