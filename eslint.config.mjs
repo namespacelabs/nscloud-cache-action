@@ -1,7 +1,7 @@
 import eslint from '@eslint/js';
 import tseslint from 'typescript-eslint';
 import eslintConfigPrettier from 'eslint-config-prettier';
-import nodePlugin from 'eslint-plugin-node';
+import nodePlugin from 'eslint-plugin-n';
 
 export default tseslint.config(
   eslint.configs.recommended,
@@ -9,7 +9,7 @@ export default tseslint.config(
   eslintConfigPrettier,
   {
     plugins: {
-      node: nodePlugin
+      n: nodePlugin
     },
     rules: {
       '@typescript-eslint/no-require-imports': 'error',
@@ -32,7 +32,7 @@ export default tseslint.config(
       ],
       'no-control-regex': 'off',
       'no-constant-condition': ['error', {checkLoops: false}],
-      'node/no-extraneous-import': 'error'
+      'n/no-extraneous-import': 'error'
     }
   },
   {
