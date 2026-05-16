@@ -621,6 +621,7 @@ jobs:
       fail-fast: false
       matrix:
         os: [namespace-profile-macos, namespace-profile-e2e-small]
+        pnpm-version: ['10.3.0', '11', 'latest']
         spacectl-version: ${{ fromJson(needs.setup.outputs.spacectl-version) }}
     steps:
       - uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6
@@ -636,7 +637,7 @@ jobs:
       - name: Install pnpm
         uses: pnpm/action-setup@0e279bb959325dab635dd2c09392533439d90093 # v6.0.8
         with:
-          version: '10.3.0'
+          version: ${{ matrix.pnpm-version }}
       - name: Setup cache
         uses: ./
         with:
@@ -646,7 +647,7 @@ jobs:
             ~/.cache
         env:
           NSC_POWERTOYS_DIR: ${{ steps.space.outputs.powertoys-dir }}
-      - run: pnpm install
+      - run: pnpm install --ignore-scripts
         working-directory: ./demo/fullstack
 
   pnpm-ignore-warnings:
@@ -806,9 +807,9 @@ jobs:
           cache: rust
         env:
           NSC_POWERTOYS_DIR: ${{ steps.space.outputs.powertoys-dir }}
-      - run: cargo build --verbose --locked --release --no-default-features --all
+      - run: cargo build --locked --release --no-default-features --all
         working-directory: ./demo
-      - run: cargo test --verbose --locked --release --all
+      - run: cargo test --locked --release --all
         working-directory: ./demo
 
   ruby:
@@ -868,9 +869,9 @@ jobs:
           cache: rust
         env:
           NSC_POWERTOYS_DIR: ${{ steps.space.outputs.powertoys-dir }}
-      - run: cargo build --verbose --locked --release --no-default-features --all
+      - run: cargo build --locked --release --no-default-features --all
         working-directory: ./demo
-      - run: cargo test --verbose --locked --release --all
+      - run: cargo test --locked --release --all
         working-directory: ./demo
 
   swiftpm:
