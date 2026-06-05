@@ -387,7 +387,7 @@ jobs:
           go-version: '1.25'
           cache: false
       - name: Setup golangci-lint
-        uses: golangci/golangci-lint-action@1e7e51e771db61008b38414a730f564565cf7c20 # v9
+        uses: golangci/golangci-lint-action@82606bf257cbaff209d206a39f5134f0cfbfd2ee # v9
         with:
           version: v2.6
           install-only: true
@@ -498,7 +498,7 @@ jobs:
         env:
           NSC_POWERTOYS_DIR: ${{ steps.space.outputs.powertoys-dir }}
       - name: Install mise
-        uses: jdx/mise-action@1648a7812b9aeae629881980618f079932869151 # v4
+        uses: jdx/mise-action@dba19683ed58901619b14f395a24841710cb4925 # v4
         with:
           cache: false
           mise_toml: |
@@ -826,7 +826,7 @@ jobs:
           ref: ${{ github.job_workflow_sha }}
       - *download-spacectl-binary
       - *install-spacectl-binary
-      - uses: ruby/setup-ruby@97ecb7b512899eb71ab1bf2310a624c6f1589ac6 # v1
+      - uses: ruby/setup-ruby@afeafc3d1ab54a631816aba4c914a0081c12ff2f # v1
         with:
           ruby-version: '3.2'
           bundler-cache: false
@@ -974,7 +974,7 @@ jobs:
         uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6
         with:
           repository: nscloud-demo/ios-demo
-      - uses: ruby/setup-ruby@97ecb7b512899eb71ab1bf2310a624c6f1589ac6 # v1
+      - uses: ruby/setup-ruby@afeafc3d1ab54a631816aba4c914a0081c12ff2f # v1
         with:
           ruby-version: '3.2.7'
           bundler-cache: false
