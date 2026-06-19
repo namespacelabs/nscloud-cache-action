@@ -9,7 +9,7 @@ jobs:
     runs-on: nscloud-ubuntu-22.04-amd64-2x4
     steps:
       - name: Github Checkout current
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
 
       - name: Setup Go cache
         continue-on-error: true
@@ -22,7 +22,7 @@ jobs:
     runs-on: namespace-profile-default
     steps:
       - name: Github Checkout current
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
 
       - name: Setup Go cache
         continue-on-error: true
@@ -35,7 +35,7 @@ jobs:
     runs-on: namespace-profile-e2e-small
     steps:
       - name: Github Checkout current
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
 
       - name: Setup cache
         continue-on-error: true
