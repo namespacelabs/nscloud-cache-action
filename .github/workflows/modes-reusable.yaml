@@ -900,6 +900,101 @@ jobs:
           swift package init --type executable
           swift build
 
+  tuist:
+    needs: [setup, build-spacectl]
+    if: always() && (needs.build-spacectl.result == 'success' || needs.build-spacectl.result == 'skipped')
+    runs-on:
+      - nscloud-macos-tahoe-arm64-12x28-with-cache
+      - nscloud-cache-size-50gb
+      - nscloud-cache-tag-tuist
+    strategy:
+      matrix:
+        spacectl-version: ${{ fromJson(needs.setup.outputs.spacectl-version) }}
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v6
+        with:
+          repository: namespacelabs/nscloud-cache-action
+          ref: ${{ github.job_workflow_sha }}
+      - *download-spacectl-binary
+      - *install-spacectl-binary
+      - name: Setup cache
+        uses: ./
+        with:
+          spacectl-version: ${{ matrix.spacectl-version }}
+          cache: |
+            mise
+            tuist
+        env:
+          NSC_POWERTOYS_DIR: ${{ steps.space.outputs.powertoys-dir }}
+      - name: Install Tuist
+        uses: jdx/mise-action@e6a8b3978addb5a52f2b4cd9d91eafa7f0ab959d # v4
+        with:
+          cache: false
+          mise_toml: |
+            [tools]
+            tuist = "latest"
+      - name: Create minimal Tuist project
+        run: |
+          mkdir -p "$RUNNER_TEMP/tuist-demo/Sources"
+          cat > "$RUNNER_TEMP/tuist-demo/Tuist.swift" << 'EOF'
+          import ProjectDescription
+
+          let tuist = Tuist()
+          EOF
+          cat > "$RUNNER_TEMP/tuist-demo/Project.swift" << 'EOF'
+          import ProjectDescription
+
+          let project = Project(
+              name: "CacheDemo",
+              targets: [
+                  .target(
+                      name: "CacheDemo",
+                      destinations: [.mac],
+                      product: .framework,
+                      bundleId: "dev.namespace.CacheDemo",
+                      infoPlist: .default,
+                      sources: ["Sources/**"]
+                  ),
+              ]
+          )
+          EOF
+          cat > "$RUNNER_TEMP/tuist-demo/Sources/CacheDemo.swift" << 'EOF'
+          import Foundation
+
+          public final class CacheDemo {
+              public init() {}
+          }
+          EOF
+      - name: Show toolchain versions
+        run: |
+          xcodebuild -version
+          swift --version
+          tuist version
+      - name: Generate project
+        run: tuist generate --no-open
+        working-directory: ${{ runner.temp }}/tuist-demo
+      - name: Verify Tuist cache is populated and backed by the cache volume
+        run: |
+          cache_dir="$HOME/.cache/tuist"
+          # -L follows the symlink the macOS cache mount creates.
+          echo "Tuist cache tree:"
+          find -L "$cache_dir" -maxdepth 2 2>/dev/null || true
+          # tuist generate must write real artifacts (Manifests/, GenerationMetadata/), not just empty dirs.
+          file_count=$(find -L "$cache_dir" -type f 2>/dev/null | wc -l | tr -d ' ')
+          if [ "$file_count" -eq 0 ]; then
+            echo "FAIL: tuist generate stored no files in $cache_dir"
+            exit 1
+          fi
+          echo "tuist stored $file_count file(s) in $cache_dir."
+          # Those artifacts must land on the cache volume (scoped to .cache/tuist, not the mise-installed binary).
+          backed_count=$(find "$NSC_CACHE_PATH" -type f -path '*/.cache/tuist/*' 2>/dev/null | wc -l | tr -d ' ')
+          if [ "$backed_count" -eq 0 ]; then
+            echo "FAIL: no tuist cache files stored on the cache volume ($NSC_CACHE_PATH)"
+            find "$NSC_CACHE_PATH" -maxdepth 6 -type d
+            exit 1
+          fi
+          echo "$backed_count tuist cache file(s) are stored on the cache volume."
+
   uv:
     needs: [setup, build-spacectl]
     if: always() && (needs.build-spacectl.result == 'success' || needs.build-spacectl.result == 'skipped')
