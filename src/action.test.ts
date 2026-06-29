@@ -210,8 +210,14 @@ describe('mount', async () => {
 
     mockExecWithPayload(payload);
 
-    const result = await action.mount(action.parseMountInputs());
+    const result = await action.mount(
+      action.parseMountInputs(),
+      '/bin/spacectl'
+    );
     expect(result).toEqual(payload);
+    expect(spacectlExec).toHaveBeenCalledWith(expect.anything(), {
+      binPath: '/bin/spacectl'
+    });
   });
 
   test('parses response with add_envs', async () => {
@@ -228,7 +234,10 @@ describe('mount', async () => {
 
     mockExecWithPayload(payload);
 
-    const result = await action.mount(action.parseMountInputs());
+    const result = await action.mount(
+      action.parseMountInputs(),
+      '/bin/spacectl'
+    );
     expect(result.output.add_envs).toEqual({NODE_PATH: '/cache/node_modules'});
   });
 
@@ -252,7 +261,10 @@ describe('mount', async () => {
 
     mockExecWithPayload(payload);
 
-    const result = await action.mount(action.parseMountInputs());
+    const result = await action.mount(
+      action.parseMountInputs(),
+      '/bin/spacectl'
+    );
     expect(result.output.removed_paths).toEqual([
       '/etc/apt/apt.conf.d/docker-clean'
     ]);
@@ -271,7 +283,10 @@ describe('mount', async () => {
 
     mockExecWithPayload(payload);
 
-    const result = await action.mount(action.parseMountInputs());
+    const result = await action.mount(
+      action.parseMountInputs(),
+      '/bin/spacectl'
+    );
     expect(result.input.paths).toEqual(['/tmp/cache']);
   });
 
@@ -287,7 +302,10 @@ describe('mount', async () => {
 
     mockExecWithPayload(payload);
 
-    const result = await action.mount(action.parseMountInputs());
+    const result = await action.mount(
+      action.parseMountInputs(),
+      '/bin/spacectl'
+    );
     expect(result.output.mounts).toBeUndefined();
   });
 
@@ -323,7 +341,10 @@ describe('mount', async () => {
 
     mockExecWithPayload(payload);
 
-    const result = await action.mount(action.parseMountInputs());
+    const result = await action.mount(
+      action.parseMountInputs(),
+      '/bin/spacectl'
+    );
     expect(result.output.mounts).toHaveLength(3);
     expect(result.output.mounts[2].cache_hit).toBe(true);
   });
