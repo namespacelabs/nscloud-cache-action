@@ -41879,7 +41879,7 @@ async function downloadAndCache(version, platform, arch, token) {
 	info(`Cached spacectl ${version} to ${cachedPath}`);
 	return cachedPath;
 }
-async function install(options = {}) {
+async function spacectl_Ba68Nnfu_install(options = {}) {
 	const versionSpec = options.version ?? "";
 	const token = options.githubToken ?? process.env.GITHUB_TOKEN;
 	let platform;
@@ -41956,8 +41956,8 @@ const Input_Detect_Mode = 'detect';
 const Input_Cache = 'cache';
 const Input_Path = 'path';
 const Output_CacheHit = 'cache-hit';
-async function action_mount(options) {
-    const result = await spacectl_Ba68Nnfu_exec(getMountCommand(options));
+async function action_mount(options, binPath) {
+    const result = await spacectl_Ba68Nnfu_exec(getMountCommand(options), { binPath });
     return JSON.parse(result.stdout.trim());
 }
 function exportAddEnvs(addEnvs) {
@@ -42125,12 +42125,13 @@ async function run() {
     const versionSpec = getInput(Input_SpacectlVersion) || undefined;
     const githubToken = getInput(Input_GithubToken) || undefined;
     const systemBinary = getInput(Input_SpacectlSystemBinary) || undefined;
-    await install({
+    const install = await spacectl_Ba68Nnfu_install({
         version: versionSpec,
         githubToken: githubToken,
-        systemBinary: systemBinary
+        systemBinary: systemBinary,
+        addToPath: false
     });
-    await mount();
+    await mount(install.binPath);
 }
 function verifyCacheVolume() {
     const localCachePath = process.env[Env_CacheRoot];
@@ -42157,9 +42158,9 @@ See also https://namespace.so/docs/solutions/github-actions/caching
 
 Are you running in a container? Check out https://namespace.so/docs/reference/github-actions/runner-configuration#jobs-in-containers`);
 }
-async function mount() {
+async function mount(binPath) {
     const mountOptions = parseMountInputs();
-    const mount = await action_mount(mountOptions);
+    const mount = await action_mount(mountOptions, binPath);
     if (mount.input.modes.length > 0) {
         info(`Cache modes used: ${mount.input.modes.join(', ')}.`);
     }

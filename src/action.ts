@@ -41,8 +41,11 @@ export interface MountResponseOutputMount {
   cache_hit: boolean;
 }
 
-export async function mount(options: MountOptions): Promise<MountResponse> {
-  const result = await spacectlExec(getMountCommand(options));
+export async function mount(
+  options: MountOptions,
+  binPath: string
+): Promise<MountResponse> {
+  const result = await spacectlExec(getMountCommand(options), {binPath});
   return JSON.parse(result.stdout.trim()) as MountResponse;
 }
 

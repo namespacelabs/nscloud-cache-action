@@ -45,13 +45,14 @@ async function run() {
       | 'require'
       | 'ignore') || undefined;
 
-  await installSpacectl({
+  const install = await installSpacectl({
     version: versionSpec,
     githubToken: githubToken,
-    systemBinary: systemBinary
+    systemBinary: systemBinary,
+    addToPath: false
   });
 
-  await mount();
+  await mount(install.binPath);
 }
 
 function verifyCacheVolume(): void {
@@ -85,9 +86,9 @@ Are you running in a container? Check out https://namespace.so/docs/reference/gi
   );
 }
 
-async function mount() {
+async function mount(binPath: string) {
   const mountOptions = action.parseMountInputs();
-  const mount = await action.mount(mountOptions);
+  const mount = await action.mount(mountOptions, binPath);
 
   if (mount.input.modes.length > 0) {
     core.info(`Cache modes used: ${mount.input.modes.join(', ')}.`);
