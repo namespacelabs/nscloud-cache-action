@@ -31059,13 +31059,11 @@ const StateMountKey = 'mount';
 const privateNamespaceDir = '.ns';
 const metadataFileName = 'cache-metadata.json';
 function resolveHome(filepath) {
-    // Ugly, but should work
-    const home = process.env.HOME || '~';
-    const pathParts = filepath.split(external_node_path_namespaceObject.sep);
-    if (pathParts.length > 1 && pathParts[0] === '~') {
-        return external_node_path_namespaceObject.join(home, ...pathParts.slice(1));
+    if (!filepath.startsWith('~/') && !filepath.startsWith('~\\')) {
+        return filepath;
     }
-    return filepath;
+    const home = process.env.HOME || process.env.USERPROFILE || '~';
+    return external_node_path_namespaceObject.join(home, filepath.slice(2));
 }
 function ensureCacheMetadata(cachePath) {
     const namespaceFolderPath = path.join(cachePath, privateNamespaceDir);
@@ -31085,10 +31083,13 @@ function writeCacheMetadata(cachePath, metadata) {
     const rawData = JSON.stringify(metadata);
     fs.writeFileSync(metadataFilePath, rawData, { mode: 0o666 });
 }
-function shouldUseSymlinks() {
-    const useSymlinks = process.env.RUNNER_OS === 'macOS';
-    core_debug(`Using symlinks: ${useSymlinks} on ${process.env.RUNNER_OS}.`);
-    return useSymlinks;
+// macOS (symlink) and Windows (junction) expose the cache via a clobberable
+// link, so the post step verifies it survived. Linux uses a robust bind mount.
+function utils_usesLinkMount() {
+    const runnerOs = process.env.RUNNER_OS;
+    const linkMount = runnerOs === 'macOS' || runnerOs === 'Windows';
+    core_debug(`Using link mount: ${linkMount} on ${runnerOs}.`);
+    return linkMount;
 }
 
 ;// CONCATENATED MODULE: ./src/post.ts
@@ -31103,13 +31104,13 @@ async function main() {
         return;
     }
     const mount = JSON.parse(rawMount);
-    const useSymlinks = shouldUseSymlinks();
-    if (!useSymlinks) {
+    const usesLinkMount = utils_usesLinkMount();
+    if (!usesLinkMount) {
         core_debug('Using bind mounts: no risk of finding them deleted.');
     }
     let foundProblems = false;
     for (const m of mount.output.mounts ?? []) {
-        if (useSymlinks) {
+        if (usesLinkMount) {
             const expandedPath = resolveHome(m.mount_path);
             const st = external_node_fs_namespaceObject.lstatSync(expandedPath, { throwIfNoEntry: false });
             if (st == null) {
@@ -31117,8 +31118,9 @@ async function main() {
                 foundProblems = true;
                 continue;
             }
+            // isSymbolicLink() is true for both macOS symlinks and Windows junctions.
             if (!st.isSymbolicLink()) {
-                warning(`${m.mount_path}: was linked to the cache volume, but is not a symlink anymore. Did another action (e.g. checkout) overwrite it?`);
+                warning(`${m.mount_path}: was linked to the cache volume, but is not a link anymore. Did another action (e.g. checkout) overwrite it?`);
                 foundProblems = true;
                 continue;
             }
