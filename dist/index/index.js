@@ -41999,7 +41999,6 @@ function getMountCommand(options) {
 
 
 
-
 const Env_CacheRoot = 'NSC_CACHE_PATH';
 const StatePathsKey = 'paths';
 const StateMountKey = 'mount';
@@ -42013,57 +42012,6 @@ function resolveHome(filepath) {
         return path.join(home, ...pathParts.slice(1));
     }
     return filepath;
-}
-// Creates directories in path. Exercises root permissions,
-// but sets owner for created dirs to the current user.
-async function sudoMkdirP(path) {
-    const anc = ancestors(path);
-    for (const p of anc) {
-        if (fs.existsSync(p)) {
-            core.debug(`${p} already exists`);
-            continue;
-        }
-        const { exitCode, stderr } = await exec.getExecOutput('sudo', ['mkdir', p], {
-            silent: true,
-            ignoreReturnCode: true
-        });
-        if (exitCode > 0) {
-            // Sadly, the exit code is 1 and we cannot match for EEXIST in case of concurrent directory creation.
-            if (fs.existsSync(p)) {
-                core.debug(`${p} was concurrently created`);
-                continue;
-            }
-            core.info(stderr);
-            throw new Error(`'sudo mkdir ${p}' failed with exit code ${exitCode}`);
-        }
-        await chownSelf(p);
-    }
-}
-async function chownSelf(path) {
-    const uid = process.getuid();
-    const gid = process.getgid();
-    const userColonGroup = `${uid}:${gid}`;
-    await exec.exec('sudo', ['chown', userColonGroup, path]);
-}
-function ancestors(filepath) {
-    const res = [];
-    let norm = path.normalize(filepath);
-    while (norm !== '.' && norm !== '/') {
-        res.unshift(norm);
-        const next = path.dirname(norm);
-        if (next === norm)
-            break;
-        norm = next;
-    }
-    return res;
-}
-async function getCacheUtil(cachePath) {
-    const { stdout } = await exec.getExecOutput(`/bin/sh -c "du -sb ${cachePath} | cut -f1"`, [], {
-        silent: true,
-        ignoreReturnCode: true
-    });
-    const cacheUtil = Number.parseInt(stdout.trim());
-    return cacheUtil;
 }
 function ensureCacheMetadata(cachePath) {
     const namespaceFolderPath = path.join(cachePath, privateNamespaceDir);

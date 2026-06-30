@@ -1,6 +1,5 @@
 import * as path from 'node:path';
 import * as core from '@actions/core';
-import * as exec from '@actions/exec';
 import * as fs from 'node:fs';
 
 export const Env_CacheRoot = 'NSC_CACHE_PATH';
@@ -24,68 +23,6 @@ export function resolveHome(filepath: string): string {
     return path.join(home, ...pathParts.slice(1));
   }
   return filepath;
-}
-
-// Creates directories in path. Exercises root permissions,
-// but sets owner for created dirs to the current user.
-export async function sudoMkdirP(path: string) {
-  const anc = ancestors(path);
-  for (const p of anc) {
-    if (fs.existsSync(p)) {
-      core.debug(`${p} already exists`);
-      continue;
-    }
-
-    const {exitCode, stderr} = await exec.getExecOutput('sudo', ['mkdir', p], {
-      silent: true,
-      ignoreReturnCode: true
-    });
-
-    if (exitCode > 0) {
-      // Sadly, the exit code is 1 and we cannot match for EEXIST in case of concurrent directory creation.
-      if (fs.existsSync(p)) {
-        core.debug(`${p} was concurrently created`);
-        continue;
-      }
-
-      core.info(stderr);
-      throw new Error(`'sudo mkdir ${p}' failed with exit code ${exitCode}`);
-    }
-
-    await chownSelf(p);
-  }
-}
-
-export async function chownSelf(path: string) {
-  const uid = process.getuid!();
-  const gid = process.getgid!();
-  const userColonGroup = `${uid}:${gid}`;
-  await exec.exec('sudo', ['chown', userColonGroup, path]);
-}
-
-function ancestors(filepath: string) {
-  const res: string[] = [];
-  let norm = path.normalize(filepath);
-  while (norm !== '.' && norm !== '/') {
-    res.unshift(norm);
-    const next = path.dirname(norm);
-    if (next === norm) break;
-    norm = next;
-  }
-  return res;
-}
-
-export async function getCacheUtil(cachePath: string): Promise<number> {
-  const {stdout} = await exec.getExecOutput(
-    `/bin/sh -c "du -sb ${cachePath} | cut -f1"`,
-    [],
-    {
-      silent: true,
-      ignoreReturnCode: true
-    }
-  );
-  const cacheUtil = Number.parseInt(stdout.trim());
-  return cacheUtil;
 }
 
 export interface CacheMetadata {
