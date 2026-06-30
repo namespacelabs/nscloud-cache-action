@@ -16,13 +16,11 @@ export interface CachePath {
 }
 
 export function resolveHome(filepath: string): string {
-  // Ugly, but should work
-  const home = process.env.HOME || '~';
-  const pathParts = filepath.split(path.sep);
-  if (pathParts.length > 1 && pathParts[0] === '~') {
-    return path.join(home, ...pathParts.slice(1));
+  if (!filepath.startsWith('~/') && !filepath.startsWith('~\\')) {
+    return filepath;
   }
-  return filepath;
+  const home = process.env.HOME || process.env.USERPROFILE || '~';
+  return path.join(home, filepath.slice(2));
 }
 
 export interface CacheMetadata {
@@ -59,8 +57,11 @@ export function writeCacheMetadata(cachePath: string, metadata: CacheMetadata) {
   fs.writeFileSync(metadataFilePath, rawData, {mode: 0o666});
 }
 
-export function shouldUseSymlinks() {
-  const useSymlinks = process.env.RUNNER_OS === 'macOS';
-  core.debug(`Using symlinks: ${useSymlinks} on ${process.env.RUNNER_OS}.`);
-  return useSymlinks;
+// macOS (symlink) and Windows (junction) expose the cache via a clobberable
+// link, so the post step verifies it survived. Linux uses a robust bind mount.
+export function usesLinkMount() {
+  const runnerOs = process.env.RUNNER_OS;
+  const linkMount = runnerOs === 'macOS' || runnerOs === 'Windows';
+  core.debug(`Using link mount: ${linkMount} on ${runnerOs}.`);
+  return linkMount;
 }

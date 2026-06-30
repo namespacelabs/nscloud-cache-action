@@ -14,15 +14,15 @@ async function main() {
 
   const mount = JSON.parse(rawMount) as action.MountResponse;
 
-  const useSymlinks = utils.shouldUseSymlinks();
-  if (!useSymlinks) {
+  const usesLinkMount = utils.usesLinkMount();
+  if (!usesLinkMount) {
     core.debug('Using bind mounts: no risk of finding them deleted.');
   }
 
   let foundProblems = false;
 
   for (const m of mount.output.mounts ?? []) {
-    if (useSymlinks) {
+    if (usesLinkMount) {
       const expandedPath = utils.resolveHome(m.mount_path);
       const st = fs.lstatSync(expandedPath, {throwIfNoEntry: false});
 
@@ -34,9 +34,10 @@ async function main() {
         continue;
       }
 
+      // isSymbolicLink() is true for both macOS symlinks and Windows junctions.
       if (!st.isSymbolicLink()) {
         core.warning(
-          `${m.mount_path}: was linked to the cache volume, but is not a symlink anymore. Did another action (e.g. checkout) overwrite it?`
+          `${m.mount_path}: was linked to the cache volume, but is not a link anymore. Did another action (e.g. checkout) overwrite it?`
         );
         foundProblems = true;
         continue;

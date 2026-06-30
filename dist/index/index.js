@@ -42005,13 +42005,11 @@ const StateMountKey = 'mount';
 const privateNamespaceDir = '.ns';
 const metadataFileName = 'cache-metadata.json';
 function resolveHome(filepath) {
-    // Ugly, but should work
-    const home = process.env.HOME || '~';
-    const pathParts = filepath.split(path.sep);
-    if (pathParts.length > 1 && pathParts[0] === '~') {
-        return path.join(home, ...pathParts.slice(1));
+    if (!filepath.startsWith('~/') && !filepath.startsWith('~\\')) {
+        return filepath;
     }
-    return filepath;
+    const home = process.env.HOME || process.env.USERPROFILE || '~';
+    return path.join(home, filepath.slice(2));
 }
 function ensureCacheMetadata(cachePath) {
     const namespaceFolderPath = path.join(cachePath, privateNamespaceDir);
@@ -42031,10 +42029,13 @@ function writeCacheMetadata(cachePath, metadata) {
     const rawData = JSON.stringify(metadata);
     fs.writeFileSync(metadataFilePath, rawData, { mode: 0o666 });
 }
-function shouldUseSymlinks() {
-    const useSymlinks = process.env.RUNNER_OS === 'macOS';
-    core.debug(`Using symlinks: ${useSymlinks} on ${process.env.RUNNER_OS}.`);
-    return useSymlinks;
+// macOS (symlink) and Windows (junction) expose the cache via a clobberable
+// link, so the post step verifies it survived. Linux uses a robust bind mount.
+function usesLinkMount() {
+    const runnerOs = process.env.RUNNER_OS;
+    const linkMount = runnerOs === 'macOS' || runnerOs === 'Windows';
+    core.debug(`Using link mount: ${linkMount} on ${runnerOs}.`);
+    return linkMount;
 }
 
 ;// CONCATENATED MODULE: ./src/index.ts
