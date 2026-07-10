@@ -320,7 +320,7 @@ jobs:
       - *download-spacectl-binary
       - *install-spacectl-binary
       - name: Setup Deno
-        uses: denoland/setup-deno@667a34cdef165d8d2b2e98dde39547c9daac7282 # v2
+        uses: denoland/setup-deno@22d081ff2d3a40755e97629de92e3bcbfa7cf2ed # v2
         with:
           cache: false
       - name: Setup cache
@@ -387,7 +387,7 @@ jobs:
           go-version: '1.25'
           cache: false
       - name: Setup golangci-lint
-        uses: golangci/golangci-lint-action@82606bf257cbaff209d206a39f5134f0cfbfd2ee # v9
+        uses: golangci/golangci-lint-action@ba0d7d2ec06a0ea1cb5fa41b2e4a3ab91d21278a # v9
         with:
           version: v2.6
           install-only: true
@@ -423,7 +423,7 @@ jobs:
       - *download-spacectl-binary
       - *install-spacectl-binary
       - name: Set up JDK 17
-        uses: actions/setup-java@1bcf9fb12cf4aa7d266a90ae39939e61372fe520 # v5
+        uses: actions/setup-java@0f481fcb613427c0f801b606911222b5b6f3083a # v5
         with:
           java-version: '17'
           distribution: 'temurin'
@@ -457,7 +457,7 @@ jobs:
       - *download-spacectl-binary
       - *install-spacectl-binary
       - name: Set up JDK 11
-        uses: actions/setup-java@1bcf9fb12cf4aa7d266a90ae39939e61372fe520 # v5
+        uses: actions/setup-java@0f481fcb613427c0f801b606911222b5b6f3083a # v5
         with:
           java-version: '11'
           distribution: 'temurin'
@@ -528,7 +528,7 @@ jobs:
         env:
           NSC_POWERTOYS_DIR: ${{ steps.space.outputs.powertoys-dir }}
       - name: Install Nix
-        uses: cachix/install-nix-action@8aa03977d8d733052d78f4e008a241fd1dbf36b3 # v31
+        uses: cachix/install-nix-action@a49548c11d9846ad46ecc0115273879b045f001c # v31
         with:
           extra_nix_config: |
             access-tokens = github.com=${{ secrets.GITHUB_TOKEN }}
@@ -826,7 +826,7 @@ jobs:
           ref: ${{ github.job_workflow_sha }}
       - *download-spacectl-binary
       - *install-spacectl-binary
-      - uses: ruby/setup-ruby@9eb537ca036ebaed86729dcb9309076e4c5c3b74 # v1
+      - uses: ruby/setup-ruby@d45b1a4e94b71acab930e56e79c6aa188764e7f9 # v1
         with:
           ruby-version: '3.2'
           bundler-cache: false
@@ -1010,7 +1010,7 @@ jobs:
       - *download-spacectl-binary
       - *install-spacectl-binary
       - name: Install uv
-        uses: astral-sh/setup-uv@fac544c07dec837d0ccb6301d7b5580bf5edae39 # v8.2.0
+        uses: astral-sh/setup-uv@11f9893b081a58869d3b5fccaea48c9e9e46f990 # v8.3.2
         with:
           enable-cache: false
       - name: Setup cache
@@ -1069,7 +1069,7 @@ jobs:
         uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v6
         with:
           repository: nscloud-demo/ios-demo
-      - uses: ruby/setup-ruby@9eb537ca036ebaed86729dcb9309076e4c5c3b74 # v1
+      - uses: ruby/setup-ruby@d45b1a4e94b71acab930e56e79c6aa188764e7f9 # v1
         with:
           ruby-version: '3.2.7'
           bundler-cache: false
