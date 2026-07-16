@@ -41,9 +41,7 @@ async function run() {
   const githubToken = core.getInput(Input_GithubToken) || undefined;
   const systemBinary =
     (core.getInput(Input_SpacectlSystemBinary) as
-      | 'prefer'
-      | 'require'
-      | 'ignore') || undefined;
+      'prefer' | 'require' | 'ignore') || undefined;
 
   const install = await installSpacectl({
     version: versionSpec,
