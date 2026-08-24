@@ -38833,9 +38833,10 @@ async function mount(binPath) {
     }
     else {
         const cacheMisses = mounts.filter(m => !m.cache_hit).map(m => m.mount_path);
-        info(`Some cache paths missing: ${cacheMisses.join(', ')}`);
+        const cacheMissMessage = `Some cache paths missing: ${cacheMisses.join(', ')}. Learn more about cache hits and misses: https://namespace.so/docs/architecture/storage/cache-volumes#cache-hits-and-misses`;
+        info(cacheMissMessage);
         if (getBooleanInput(Input_FailOnCacheMiss)) {
-            throw new Error(`Some cache paths missing: ${cacheMisses.join(', ')}`);
+            throw new Error(cacheMissMessage);
         }
     }
     exportAddEnvs(mount.output.add_envs);
