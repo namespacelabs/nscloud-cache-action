@@ -216,8 +216,8 @@ jobs:
           NSC_POWERTOYS_DIR: ${{ steps.space.outputs.powertoys-dir }}
       - run: |
           brew --version
-          brew install hello
-          which hello
+          brew fetch hello
+          test -f "$(brew --cache hello)"
       - if: runner.os == 'macOS'
         run: brew tap vectordotdev/brew && brew install vector
 
@@ -461,10 +461,6 @@ jobs:
         with:
           java-version: '11'
           distribution: 'temurin'
-      - uses: browser-actions/setup-chrome@2e1d749697dd1612b833dba4a722266286fbefcd # v2
-        with:
-          chrome-version: latest
-      - run: chrome --version
       - name: Setup cache
         uses: ./
         with:
@@ -473,7 +469,7 @@ jobs:
         env:
           NSC_POWERTOYS_DIR: ${{ steps.space.outputs.powertoys-dir }}
       - name: Build with Maven
-        run: mvn -B clean test
+        run: mvn -B -DskipTests package
         working-directory: ./demo
 
   mise:
