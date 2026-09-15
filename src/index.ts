@@ -104,11 +104,12 @@ async function mount(binPath: string) {
     core.info('All cache paths found and restored.');
   } else {
     const cacheMisses = mounts.filter(m => !m.cache_hit).map(m => m.mount_path);
+    const cacheMissMessage = `Some cache paths missing: ${cacheMisses.join(', ')}. Learn more about cache hits and misses: https://namespace.so/docs/architecture/storage/cache-volumes#cache-hits-and-misses`;
 
-    core.info(`Some cache paths missing: ${cacheMisses.join(', ')}`);
+    core.info(cacheMissMessage);
 
     if (core.getBooleanInput(action.Input_FailOnCacheMiss)) {
-      throw new Error(`Some cache paths missing: ${cacheMisses.join(', ')}`);
+      throw new Error(cacheMissMessage);
     }
   }
 
