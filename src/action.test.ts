@@ -1,42 +1,41 @@
 import {beforeEach, describe, expect, test, vi} from 'vitest';
 import * as action from './action';
 
-beforeEach(() => {
-  vi.clearAllMocks();
-});
-
 const exportVariable = vi.hoisted(() => vi.fn());
 const getMultilineInput = vi.hoisted(() => vi.fn());
 const spacectlExec = vi.hoisted(() => vi.fn());
 
-beforeEach(() => {
-  vi.mock('@actions/core', () => ({
-    exportVariable,
-    getMultilineInput
-  }));
-  vi.mock('@namespacelabs/actions-toolkit/spacectl', () => ({
-    exec: spacectlExec,
-    SpacectlExecError: class SpacectlExecError extends Error {
-      exitCode: number;
-      stdout: string;
-      stderr: string;
-      command: string;
-      constructor(
-        message: string,
-        exitCode: number,
-        stdout: string,
-        stderr: string,
-        command: string
-      ) {
-        super(message);
-        this.name = 'SpacectlExecError';
-        this.exitCode = exitCode;
-        this.stdout = stdout;
-        this.stderr = stderr;
-        this.command = command;
-      }
+vi.mock('@actions/core', () => ({
+  exportVariable,
+  getMultilineInput
+}));
+
+vi.mock('@namespacelabs/actions-toolkit/spacectl', () => ({
+  exec: spacectlExec,
+  SpacectlExecError: class SpacectlExecError extends Error {
+    exitCode: number;
+    stdout: string;
+    stderr: string;
+    command: string;
+    constructor(
+      message: string,
+      exitCode: number,
+      stdout: string,
+      stderr: string,
+      command: string
+    ) {
+      super(message);
+      this.name = 'SpacectlExecError';
+      this.exitCode = exitCode;
+      this.stdout = stdout;
+      this.stderr = stderr;
+      this.command = command;
     }
-  }));
+  }
+}));
+
+beforeEach(() => {
+  vi.clearAllMocks();
 });
 
 describe('parseMountInputs', async () => {
